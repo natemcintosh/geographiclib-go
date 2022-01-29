@@ -10,6 +10,7 @@ A golang port of geographiclib. For a wrapper of the C functions, see [this repo
 ### Progress
 - [X] Geomath
 - [X] Geomath tests
+- [X] Geodesic Capability constants
 - [ ] Geodisic
 - [ ] Geodisic tests
 - [ ] Geodisic line
