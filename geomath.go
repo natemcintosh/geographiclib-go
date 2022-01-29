@@ -9,6 +9,7 @@ func Get_epsilon() float64 {
 	return math.Pow(TWO, 1.0-float64(DITGITS))
 }
 
+// Sq: square a number
 func Sq(x float64) float64 {
 	return math.Pow(x, 2.0)
 }
@@ -300,4 +301,67 @@ func _A1m1f(eps float64, geodesic_order int64) float64 {
 	m := geodesic_order / 2
 	t := Polyval(m, COEFF[:], Sq(eps)) / COEFF[(m+1)]
 	return (t + eps) / (1.0 - eps)
+}
+
+func _C1f(eps float64, c []float64, geodesic_order int) {
+
+	COEFF := [18]float64{
+		-1.0, 6.0, -16.0, 32.0, -9.0, 64.0, -128.0, 2048.0, 9.0, -16.0, 768.0, 3.0, -5.0, 512.0,
+		-7.0, 1280.0, -7.0, 2048.0,
+	}
+	eps2 := Sq(eps)
+	d := eps
+	var o int64 = 0
+
+	for l := 1; l <= geodesic_order; l++ {
+		m := int64((geodesic_order - l) / 2)
+		c[l] = d * Polyval(m, COEFF[o:], eps2) / COEFF[(o+m+1)]
+		o += m + 2
+		d *= eps
+	}
+}
+
+func _C1pf(eps float64, c []float64, geodesic_order int) {
+
+	COEFF := [18]float64{
+		205.0, -432.0, 768.0, 1536.0, 4005.0, -4736.0, 3840.0, 12288.0, -225.0, 116.0, 384.0,
+		-7173.0, 2695.0, 7680.0, 3467.0, 7680.0, 38081.0, 61440.0,
+	}
+
+	eps2 := Sq(eps)
+	d := eps
+	var o int64 = 0
+
+	for l := 1; l <= geodesic_order; l++ {
+		m := int64((geodesic_order - l) / 2)
+		c[l] = d * Polyval(m, COEFF[o:], eps2) / COEFF[(o+m+1)]
+		o += m + 2
+		d *= eps
+	}
+}
+
+func _A2m1f(eps float64, geodesic_order int64) float64 {
+
+	COEFF := []float64{-11.0, -28.0, -192.0, 0.0, 256.0}
+	var m int64 = geodesic_order / 2
+	t := Polyval(m, COEFF, Sq(eps)) / COEFF[(m+1)]
+	return (t - eps) / (1.0 + eps)
+}
+
+func _C2f(eps float64, c []float64, geodesic_order int) {
+
+	COEFF := [18]float64{
+		1.0, 2.0, 16.0, 32.0, 35.0, 64.0, 384.0, 2048.0, 15.0, 80.0, 768.0, 7.0, 35.0, 512.0, 63.0,
+		1280.0, 77.0, 2048.0,
+	}
+	eps2 := Sq(eps)
+	d := eps
+	var o int64 = 0
+
+	for l := 1; l <= geodesic_order; l++ {
+		m := int64((geodesic_order - l) / 2)
+		c[l] = d * Polyval(m, COEFF[o:], eps2) / COEFF[(o+m+1)]
+		o += m + 2
+		d *= eps
+	}
 }

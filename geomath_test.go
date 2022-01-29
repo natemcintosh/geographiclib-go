@@ -146,3 +146,70 @@ func TestSin_cos_series(t *testing.T) {
 		})
 	}
 }
+
+func Test_C1f(t *testing.T) {
+	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
+	_C1f(0.12, c, 6)
+	want_c := []float64{
+		1.0,
+		-0.059676777599999994,
+		-0.000893533122,
+		-3.57084e-05,
+		-2.007504e-06,
+		-1.3607999999999999e-07,
+		-1.0205999999999999e-08,
+	}
+	// Compare each number in c and want_c
+	for i := 0; i < len(c); i++ {
+		if !almost_equal(c[i], want_c[i]) {
+			t.Errorf("c[%v] = %v; want %v", i, c[i], want_c[i])
+		}
+	}
+}
+
+func Test_C1pf(t *testing.T) {
+	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
+	_C1pf(0.12, c, 6)
+	want_c := []float64{
+		1.0,
+		0.059517321000000005,
+		0.004421053215,
+		0.0005074200000000001,
+		6.997613759999999e-05,
+		1.1233080000000001e-05,
+		1.8507366e-06,
+	}
+	// Compare each number in c and want_c
+	for i := 0; i < len(c); i++ {
+		if !almost_equal(c[i], want_c[i]) {
+			t.Errorf("c[%v] = %v; want %v", i, c[i], want_c[i])
+		}
+	}
+}
+func Test_C2f(t *testing.T) {
+	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
+	_C2f(0.12, c, 6)
+	want_c := []float64{
+		1.0,
+		0.0601087776,
+		0.00270653103,
+		0.000180486,
+		1.4215824e-05,
+		1.22472e-06,
+		1.12266e-07,
+	}
+	// Compare each number in c and want_c
+	for i := 0; i < len(c); i++ {
+		if !almost_equal(c[i], want_c[i]) {
+			t.Errorf("c[%v] = %v; want %v", i, c[i], want_c[i])
+		}
+	}
+}
+
+func Test_A2m1f(t *testing.T) {
+	got := _A2m1f(0.12, 6)
+	want := -0.11680607884285714
+	if !almost_equal(got, want) {
+		t.Errorf("_A2m1f(%v) = %v; want %v", 0.12, got, want)
+	}
+}
