@@ -2,11 +2,15 @@ package geographiclibgo
 
 import "math"
 
-const DITGITS uint64 = 53
+const DIGITS uint64 = 53
 const TWO float64 = 2.0
 
 func Get_epsilon() float64 {
-	return math.Pow(TWO, 1.0-float64(DITGITS))
+	return math.Pow(TWO, 1.0-float64(DIGITS))
+}
+
+func Get_min_val() float64 {
+	return math.SmallestNonzeroFloat64
 }
 
 // Sq: square a number
