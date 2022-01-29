@@ -9,7 +9,7 @@ A golang port of geographiclib. For a wrapper of the C functions, see [this repo
 
 ### Progress
 - [ ] Geomath
-- [ ] Geomath tests
+- [X] Geomath tests
 - [ ] Geodisic
 - [ ] Geodisic tests
 - [ ] Geodisic line

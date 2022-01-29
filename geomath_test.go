@@ -46,3 +46,103 @@ func TestSincosd(t *testing.T) {
 		})
 	}
 }
+
+func Test_A1m1f(t *testing.T) {
+	exptected := 0.1404582405272727
+	got := _A1m1f(0.12, 6)
+	if !almost_equal(exptected, got) {
+		t.Errorf("_A1m1f(0.12, 6) = %v; want %v", got, exptected)
+	}
+}
+
+func TestAstroid(t *testing.T) {
+	expected := 23.44475767500982
+	got := Astroid(21.0, 12.0)
+	if !almost_equal(expected, got) {
+		t.Errorf("Astroid(21.0, 12.0) = %v; want %v", got, expected)
+	}
+}
+
+func TestSin_cos_series(t *testing.T) {
+	testCases := []struct {
+		desc string
+		sinp bool
+		sinx float64
+		cosx float64
+		c    []float64
+		want float64
+	}{
+		{
+			desc: "first",
+			sinp: false,
+			sinx: -0.8928657853278468,
+			cosx: 0.45032287238256896,
+			c: []float64{
+				0.6660771734724675,
+				1.5757752625233906e-05,
+				3.8461688963148916e-09,
+				1.3040960748120204e-12,
+				5.252912023008548e-16,
+				2.367770858285795e-19,
+			},
+			want: 0.29993425660538664,
+		},
+		{
+			desc: "second",
+			sinp: false,
+			sinx: -0.8928657853278468,
+			cosx: 0.45032287238256896,
+			c: []float64{
+				0.0, 1.0, 2.0, 3.0, 4.0, 5.0,
+			},
+			want: 1.8998562852254026,
+		},
+		{
+			desc: "third",
+			sinp: true,
+			sinx: -0.8928657853278468,
+			cosx: 0.45032287238256896,
+			c: []float64{0.0,
+				-0.0003561309485314716,
+				-3.170731714689771e-08,
+				-7.527972480734327e-12,
+				-2.5133854116682488e-15,
+				-1.0025061462383107e-18,
+				-4.462794158625518e-22,
+			},
+			want: 0.00028635444718997857,
+		},
+		{
+			desc: "fourth",
+			sinp: true,
+			sinx: 0.12,
+			cosx: 0.21,
+			c:    []float64{1.0, 2.0},
+			want: 0.10079999999999999,
+		},
+		{
+			desc: "fifth",
+			sinp: true,
+			sinx: -0.024679833885152578,
+			cosx: 0.9996954065111039,
+			c: []float64{
+				0.0,
+				-0.0008355098973052918,
+				-1.7444619952659748e-07,
+				-7.286557795511902e-11,
+				-3.80472772706481e-14,
+				-2.2251271876594078e-17,
+				1.2789961247944744e-20,
+			},
+			want: 4.124513511893872e-05,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got := Sin_cos_series(tC.sinp, tC.sinx, tC.cosx, tC.c)
+			if !almost_equal(tC.want, got) {
+				t.Errorf("Sin_cos_series(%v, %v, %v, %v) = %v; want %v", tC.sinp, tC.sinx, tC.cosx, tC.c, got, tC.want)
+			}
+		})
+	}
+}
