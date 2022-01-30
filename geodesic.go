@@ -213,16 +213,7 @@ func (g Geodesic) _C4f(eps float64, c []float64) {
 }
 
 func (g Geodesic) _Lengths(
-	eps,
-	sig12,
-	ssig1,
-	csig1,
-	dn1,
-	ssig2,
-	csig2,
-	dn2,
-	cbet1,
-	cbet2 float64,
+	eps, sig12, ssig1, csig1, dn1, ssig2, csig2, dn2, cbet1, cbet2 float64,
 	outmask uint64,
 	C1a []float64,
 	C2a []float64,
@@ -281,15 +272,7 @@ func (g Geodesic) _Lengths(
 }
 
 func (g Geodesic) _InverseStart(
-	sbet1,
-	cbet1,
-	dn1,
-	sbet2,
-	cbet2,
-	dn2,
-	lam12,
-	slam12,
-	clam12 float64,
+	sbet1, cbet1, dn1, sbet2, cbet2, dn2, lam12, slam12, clam12 float64,
 	C1a []float64,
 	C2a []float64,
 ) (float64, float64, float64, float64, float64, float64) {
@@ -422,4 +405,14 @@ func (g Geodesic) _InverseStart(
 		calp1 = 0.0
 	}
 	return sig12, salp1, calp1, salp2, calp2, dnm
+}
+
+func (g Geodesic) _Lambda12(
+	sbet1, cbet1, dn1, sbet2, cbet2, dn2, salp1, calp1, slam120, clam120 float64,
+	diffp bool,
+	C1a []float64,
+	C2a []float64,
+	C3a []float64,
+) (float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64) {
+
 }
