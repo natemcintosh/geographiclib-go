@@ -684,3 +684,262 @@ func Benchmark_InverseStart(b *testing.B) {
 		})
 	}
 }
+
+func Test_Lambda12(t *testing.T) {
+	geod := Wgs84()
+
+	testCases := []struct {
+		desc    string
+		sbet1   float64
+		cbet1   float64
+		dn1     float64
+		sbet2   float64
+		cbet2   float64
+		dn2     float64
+		salp1   float64
+		calp1   float64
+		slam120 float64
+		clam120 float64
+		diffp   bool
+		C1a     []float64
+		C2a     []float64
+		C3a     []float64
+		want1   float64
+		want2   float64
+		want3   float64
+		want4   float64
+		want5   float64
+		want6   float64
+		want7   float64
+		want8   float64
+		want9   float64
+		want10  float64
+		want11  float64
+	}{
+		{
+			desc:    "1",
+			sbet1:   -0.017393909556108908,
+			cbet1:   0.9998487145115275,
+			dn1:     1.0000010195104125,
+			sbet2:   0.0,
+			cbet2:   1.0,
+			dn2:     1.0,
+			salp1:   0.7095310092765433,
+			calp1:   0.7046742132893822,
+			slam120: 0.01745240643728351,
+			clam120: 0.9998476951563913,
+			diffp:   true,
+			C1a:     []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			C2a:     []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			C3a:     []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+			want1:   1.4834408705897495e-09,
+			want2:   0.7094236675312185,
+			want3:   0.7047822783999007,
+			want4:   0.024682339962725352,
+			want5:   -0.024679833885152578,
+			want6:   0.9996954065111039,
+			want7:   0.0,
+			want8:   1.0,
+			want9:   0.0008355095326524276,
+			want10:  -5.8708496511415445e-05,
+			want11:  0.034900275148485,
+		},
+		{
+			desc:    "2",
+			sbet1:   -0.017393909556108908,
+			cbet1:   0.9998487145115275,
+			dn1:     1.0000010195104125,
+			sbet2:   0.0,
+			cbet2:   1.0,
+			dn2:     1.0,
+			salp1:   0.7095309793242709,
+			calp1:   0.7046742434480923,
+			slam120: 0.01745240643728351,
+			clam120: 0.9998476951563913,
+			diffp:   true,
+			C1a: []float64{
+				0.0,
+				-0.00041775465696698233,
+				-4.362974596862037e-08,
+				-1.2151022357848552e-11,
+				-4.7588881620421004e-15,
+				-2.226614930167366e-18,
+				-1.1627237498131586e-21,
+			},
+			C2a: []float64{
+				0.0,
+				-0.0008355098973052918,
+				-1.7444619952659748e-07,
+				-7.286557795511902e-11,
+				-3.80472772706481e-14,
+				-2.2251271876594078e-17,
+				1.2789961247944744e-20,
+			},
+			C3a: []float64{
+				0.0,
+				0.00020861391868413911,
+				4.3547247296823945e-08,
+				1.515432276542012e-11,
+				6.645637323698485e-15,
+				3.3399223952510497e-18,
+			},
+			want1:  6.046459990680098e-17,
+			want2:  0.7094236375834774,
+			want3:  0.7047823085448635,
+			want4:  0.024682338906797385,
+			want5:  -0.02467983282954624,
+			want6:  0.9996954065371639,
+			want7:  0.0,
+			want8:  1.0,
+			want9:  0.0008355096040059597,
+			want10: -5.870849152149326e-05,
+			want11: 0.03490027216297455,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got1, got2, got3, got4, got5, got6, got7, got8, got9, got10, got11 := geod._Lambda12(
+				tC.sbet1, tC.cbet1, tC.dn1, tC.sbet2, tC.cbet2, tC.dn2,
+				tC.salp1, tC.calp1, tC.slam120, tC.clam120, tC.diffp,
+				tC.C1a, tC.C2a, tC.C3a,
+			)
+
+			if !f64_equals(tC.want1, got1) {
+				t.Errorf("_Lambda12() got1 = %v, want %v", got1, tC.want1)
+			}
+
+			if !f64_equals(tC.want2, got2) {
+				t.Errorf("_Lambda12() got2 = %v, want %v", got2, tC.want2)
+			}
+
+			if !f64_equals(tC.want3, got3) {
+				t.Errorf("_Lambda12() got3 = %v, want %v", got3, tC.want3)
+			}
+
+			if !f64_equals(tC.want4, got4) {
+				t.Errorf("_Lambda12() got4 = %v, want %v", got4, tC.want4)
+			}
+
+			if !f64_equals(tC.want5, got5) {
+				t.Errorf("_Lambda12() got5 = %v, want %v", got5, tC.want5)
+			}
+
+			if !f64_equals(tC.want6, got6) {
+				t.Errorf("_Lambda12() got6 = %v, want %v", got6, tC.want6)
+			}
+
+			if !f64_equals(tC.want7, got7) {
+				t.Errorf("_Lambda12() got7 = %v, want %v", got7, tC.want7)
+			}
+
+			if !f64_equals(tC.want8, got8) {
+				t.Errorf("_Lambda12() got8 = %v, want %v", got8, tC.want8)
+			}
+
+			if !f64_equals(tC.want9, got9) {
+				t.Errorf("_Lambda12() got9 = %v, want %v", got9, tC.want9)
+			}
+
+			if !f64_equals(tC.want10, got10) {
+				t.Errorf("_Lambda12() got10 = %v, want %v", got10, tC.want10)
+			}
+
+			if !f64_equals(tC.want11, got11) {
+				t.Errorf("_Lambda12() got11 = %v, want %v", got11, tC.want11)
+			}
+		})
+	}
+}
+
+func Benchmark_Lambda12(b *testing.B) {
+	geod := Wgs84()
+
+	benchmarks := []struct {
+		desc    string
+		sbet1   float64
+		cbet1   float64
+		dn1     float64
+		sbet2   float64
+		cbet2   float64
+		dn2     float64
+		salp1   float64
+		calp1   float64
+		slam120 float64
+		clam120 float64
+		diffp   bool
+		C1a     []float64
+		C2a     []float64
+		C3a     []float64
+	}{
+		{
+			desc:    "1",
+			sbet1:   -0.017393909556108908,
+			cbet1:   0.9998487145115275,
+			dn1:     1.0000010195104125,
+			sbet2:   0.0,
+			cbet2:   1.0,
+			dn2:     1.0,
+			salp1:   0.7095310092765433,
+			calp1:   0.7046742132893822,
+			slam120: 0.01745240643728351,
+			clam120: 0.9998476951563913,
+			diffp:   true,
+			C1a:     []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			C2a:     []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			C3a:     []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0},
+		},
+		{
+			desc:    "2",
+			sbet1:   -0.017393909556108908,
+			cbet1:   0.9998487145115275,
+			dn1:     1.0000010195104125,
+			sbet2:   0.0,
+			cbet2:   1.0,
+			dn2:     1.0,
+			salp1:   0.7095309793242709,
+			calp1:   0.7046742434480923,
+			slam120: 0.01745240643728351,
+			clam120: 0.9998476951563913,
+			diffp:   true,
+			C1a: []float64{
+				0.0,
+				-0.00041775465696698233,
+				-4.362974596862037e-08,
+				-1.2151022357848552e-11,
+				-4.7588881620421004e-15,
+				-2.226614930167366e-18,
+				-1.1627237498131586e-21,
+			},
+			C2a: []float64{
+				0.0,
+				-0.0008355098973052918,
+				-1.7444619952659748e-07,
+				-7.286557795511902e-11,
+				-3.80472772706481e-14,
+				-2.2251271876594078e-17,
+				1.2789961247944744e-20,
+			},
+			C3a: []float64{
+				0.0,
+				0.00020861391868413911,
+				4.3547247296823945e-08,
+				1.515432276542012e-11,
+				6.645637323698485e-15,
+				3.3399223952510497e-18,
+			},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				geod._Lambda12(
+					bm.sbet1, bm.cbet1, bm.dn1, bm.sbet2, bm.cbet2, bm.dn2,
+					bm.salp1, bm.calp1, bm.slam120, bm.clam120, bm.diffp,
+					bm.C1a, bm.C2a, bm.C3a,
+				)
+			}
+
+		})
+	}
+}

@@ -415,4 +415,82 @@ func (g Geodesic) _Lambda12(
 	C3a []float64,
 ) (float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64) {
 
+	if sbet1 == 0.0 && calp1 == 0.0 {
+		calp1 = -g.tiny_
+	}
+	salp0 := salp1 * cbet1
+	calp0 := math.Hypot(calp1, salp1*sbet1)
+
+	ssig1 := sbet1
+	somg1 := salp0 * sbet1
+	csig1 := calp1 * cbet1
+	comg1 := calp1 * cbet1
+	ssig1, csig1 = Norm(ssig1, csig1)
+
+	var salp2 float64
+	if cbet2 != cbet1 {
+		salp2 = salp0 / cbet2
+	} else {
+		salp2 = salp1
+	}
+
+	var to_add float64
+	if cbet1 < -sbet1 {
+		to_add = (cbet2 - cbet1) * (cbet1 + cbet2)
+	} else {
+		to_add = (sbet1 - sbet2) * (sbet1 + sbet2)
+	}
+
+	calp2 := math.Abs(calp1)
+	if cbet2 != cbet1 || math.Abs(sbet2) != -sbet1 {
+		calp2 = math.Sqrt(Sq(calp1*cbet1)+to_add) / cbet2
+
+	}
+
+	ssig2 := sbet2
+	somg2 := salp0 * sbet2
+	csig2 := calp2 * cbet2
+	comg2 := calp2 * cbet2
+	ssig2, csig2 = Norm(ssig2, csig2)
+
+	sig12 := math.Atan2(math.Max(csig1*ssig2-ssig1*csig2, 0.0), csig1*csig2+ssig1*ssig2)
+	somg12 := math.Max((comg1*somg2 - somg1*comg2), 0.0)
+	comg12 := comg1*comg2 + somg1*somg2
+	eta := math.Atan2(somg12*clam120-comg12*slam120, comg12*clam120+somg12*slam120)
+
+	k2 := Sq(calp0) * g._ep2
+	eps := k2 / (2.0*(1.0+math.Sqrt(1.0+k2)) + k2)
+	g._C3f(eps, C3a)
+	B312 := Sin_cos_series(true, ssig2, csig2, C3a) - Sin_cos_series(true, ssig1, csig1, C3a)
+	domg12 := -g.f * g._A3f(eps) * salp0 * (sig12 + B312)
+	lam12 := eta + domg12
+
+	var dlam12 float64
+	if diffp {
+		if calp2 == 0.0 {
+			dlam12 = -2.0 * g._f1 * dn1 / sbet1
+		} else {
+			_, res, _, _, _ := g._Lengths(
+				eps,
+				sig12,
+				ssig1,
+				csig1,
+				dn1,
+				ssig2,
+				csig2,
+				dn2,
+				cbet1,
+				cbet2,
+				REDUCEDLENGTH,
+				C1a,
+				C2a,
+			)
+			dlam12 = res
+			dlam12 *= g._f1 / (calp2 * cbet2)
+		}
+	} else {
+		dlam12 = math.NaN()
+	}
+	return lam12, salp2, calp2, sig12, ssig1, csig1, ssig2, csig2, eps, domg12, dlam12
+
 }
