@@ -109,3 +109,76 @@ func BenchmarkWgs84(b *testing.B) {
 		Wgs84()
 	}
 }
+
+func Test_A3f(t *testing.T) {
+	geod := Wgs84()
+	if !almost_equal(geod._A3f(0.12), 0.9363788874000158) {
+		t.Errorf("A3f() failed: %v, exptected %v", geod._A3f(0.12), 0.9363788874000158)
+	}
+}
+
+func Benchmark_A3f(b *testing.B) {
+	geod := Wgs84()
+	for i := 0; i < b.N; i++ {
+		geod._A3f(0.12)
+	}
+}
+
+func Test_C3f(t *testing.T) {
+	geod := Wgs84()
+	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
+	geod._C3f(0.12, c)
+	want := []float64{
+		1.0,
+		0.031839442894193756,
+		0.0009839921354137713,
+		5.0055242248766214e-05,
+		3.1656788204092044e-06,
+		2.0412e-07,
+		7.0,
+	}
+	// Compare each element of `c` with each corresponding element of `want`
+	for i := 0; i < len(c); i++ {
+		if !almost_equal(c[i], want[i]) {
+			t.Errorf("C3f() at index %d failed: %v, exptected %v", i, c[i], want[i])
+		}
+	}
+}
+
+func Benchmark_C3f(b *testing.B) {
+	geod := Wgs84()
+	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
+	for i := 0; i < b.N; i++ {
+		geod._C3f(0.12, c)
+	}
+}
+
+func Test_C4f(t *testing.T) {
+	geod := Wgs84()
+	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
+	geod._C4f(0.12, c)
+	want := []float64{
+		0.6420952961066771,
+		0.0023680700061156517,
+		9.96704067834604e-05,
+		5.778187189466089e-06,
+		3.9979026199316593e-07,
+		3.2140078103714466e-08,
+		7.0,
+	}
+
+	// Compare each element of `c` with each corresponding element of `want`
+	for i := 0; i < len(c); i++ {
+		if !almost_equal(c[i], want[i]) {
+			t.Errorf("C3f() at index %d failed: %v, exptected %v", i, c[i], want[i])
+		}
+	}
+}
+
+func Benchmark_C4f(b *testing.B) {
+	geod := Wgs84()
+	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
+	for i := 0; i < b.N; i++ {
+		geod._C4f(0.12, c)
+	}
+}
