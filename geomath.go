@@ -5,6 +5,9 @@ import "math"
 const DIGITS uint64 = 53
 const TWO float64 = 2.0
 
+const RAD2DEG float64 = 180.0 / math.Pi
+const DEG2RAD float64 = math.Pi / 180.0
+
 func Get_epsilon() float64 {
 	return math.Pow(TWO, 1.0-float64(DIGITS))
 }
@@ -162,7 +165,7 @@ func Sincosd(x float64) (float64, float64) {
 
 	// r -= 90 * q; r = math.radians(r)
 	r -= 90.0 * q
-	r = math.Pi * r / 180.0
+	r *= DEG2RAD
 
 	// s = math.sin(r); c = math.cos(r)
 	s := math.Sin(r)
@@ -208,11 +211,11 @@ func Sincosd(x float64) (float64, float64) {
 // Atan2deg: compute the arc tangent of y/x in degrees
 func Atan2deg(x_deg, y_deg float64) float64 {
 	// First convert to radians.
-	x_rad := math.Pi * x_deg / 180.0
-	y_rad := math.Pi * y_deg / 180.0
+	x_rad := x_deg * DEG2RAD
+	y_rad := y_deg * DEG2RAD
 
 	// Then use the atan2 function.
-	return 180.0 * math.Atan2(y_rad, x_rad) / math.Pi
+	return math.Atan2(y_rad, x_rad) * RAD2DEG
 }
 
 func Eatanhe(x float64, es float64) float64 {
