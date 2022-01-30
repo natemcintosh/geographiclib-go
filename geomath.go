@@ -61,7 +61,7 @@ func Polyval(n int64, p []float64, x float64) float64 {
 	}
 }
 
-// Ang_round: round an angle so taht small values underflow to 0
+// Ang_round: round an angle so that small values underflow to 0
 func Ang_round(x float64) float64 {
 	// The makes the smallest gap in x = 1/16 - nextafter(1/16, 0) = 1/2^57
 	// for reals = 0.7 pm on the earth if x is an angle in degrees.  (This
@@ -205,7 +205,7 @@ func Sincosd(x float64) (float64, float64) {
 	return s, c
 }
 
-// Atan2d: compute the arc tangent of y/x in degrees
+// Atan2deg: compute the arc tangent of y/x in degrees
 func Atan2deg(x_deg, y_deg float64) float64 {
 	// First convert to radians.
 	x_rad := math.Pi * x_deg / 180.0
