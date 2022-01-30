@@ -1,6 +1,26 @@
 package geographiclibgo
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
+
+// f64_equals tests if two float64 values are equal to within a small epsilon.
+// If `want` is NaN, then `got` must also be NaN.
+// Otherwise just a regular float comparison is performed.
+func f64_equals(want, got float64) bool {
+	// If want is NaN, then got should be NaN
+	if math.IsNaN(want) {
+		if !math.IsNaN(got) {
+			return false
+		}
+	} else {
+		if !almost_equal(got, want) {
+			return false
+		}
+	}
+	return true
+}
 
 func TestGeodesicInit(t *testing.T) {
 	geod := Wgs84()
@@ -180,5 +200,342 @@ func Benchmark_C4f(b *testing.B) {
 	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
 	for i := 0; i < b.N; i++ {
 		geod._C4f(0.12, c)
+	}
+}
+
+func Test_Lengths(t *testing.T) {
+	geod := Wgs84()
+
+	testCases := []struct {
+		desc    string
+		eps     float64
+		sig12   float64
+		ssig1   float64
+		csig1   float64
+		dn1     float64
+		ssig2   float64
+		csig2   float64
+		dn2     float64
+		cbet1   float64
+		cbet2   float64
+		outmask uint64
+		c1a     []float64
+		c2a     []float64
+		want1   float64
+		want2   float64
+		want3   float64
+		want4   float64
+		want5   float64
+	}{
+		{
+			desc:    "1",
+			eps:     0.0008355095326524276,
+			sig12:   0.024682339962725352,
+			ssig1:   -0.024679833885152578,
+			csig1:   0.9996954065111039,
+			dn1:     1.0000010195104125,
+			ssig2:   0.0,
+			csig2:   1.0,
+			dn2:     1.0,
+			cbet1:   0.9998487145115275,
+			cbet2:   1.0,
+			outmask: 4101,
+			c1a:     []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			c2a:     []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			want1:   math.NaN(),
+			want2:   0.024679842274314294,
+			want3:   0.0016717180169067588,
+			want4:   math.NaN(),
+			want5:   math.NaN(),
+		},
+		{
+			desc:    "2",
+			eps:     0.0008355096040059597,
+			sig12:   0.024682338906797385,
+			ssig1:   -0.02467983282954624,
+			csig1:   0.9996954065371639,
+			dn1:     1.0000010195104125,
+			ssig2:   0.0,
+			csig2:   1.0,
+			dn2:     1.0,
+			cbet1:   0.9998487145115275,
+			cbet2:   1.0,
+			outmask: 4101,
+			c1a: []float64{
+				0.0,
+				-0.00041775465696698233,
+				-4.362974596862037e-08,
+				-1.2151022357848552e-11,
+				-4.7588881620421004e-15,
+				-2.226614930167366e-18,
+				-1.1627237498131586e-21,
+			},
+			c2a: []float64{
+				0.0,
+				-0.0008355098973052918,
+				-1.7444619952659748e-07,
+				-7.286557795511902e-11,
+				-3.80472772706481e-14,
+				-2.2251271876594078e-17,
+				1.2789961247944744e-20,
+			},
+			want1: math.NaN(),
+			want2: 0.02467984121870759,
+			want3: 0.0016717181597332804,
+			want4: math.NaN(),
+			want5: math.NaN(),
+		},
+		{
+			desc:    "3",
+			eps:     0.0008355096040059597,
+			sig12:   0.024682338906797385,
+			ssig1:   -0.02467983282954624,
+			csig1:   0.9996954065371639,
+			dn1:     1.0000010195104125,
+			ssig2:   0.0,
+			csig2:   1.0,
+			dn2:     1.0,
+			cbet1:   0.9998487145115275,
+			cbet2:   1.0,
+			outmask: 1920,
+			c1a: []float64{
+				0.0,
+				-0.00041775469264372037,
+				-4.362975342068502e-08,
+				-1.215102547098435e-11,
+				-4.758889787701359e-15,
+				-2.2266158809456692e-18,
+				-1.1627243456014359e-21,
+			},
+			c2a: []float64{
+				0.0,
+				-0.0008355099686589174,
+				-1.744462293162189e-07,
+				-7.286559662008413e-11,
+				-3.804729026574989e-14,
+				-2.2251281376754273e-17,
+				1.2789967801615795e-20,
+			},
+			want1: 0.024682347295447677,
+			want2: math.NaN(),
+			want3: math.NaN(),
+			want4: math.NaN(),
+			want5: math.NaN(),
+		},
+		{
+			desc:    "4",
+			eps:     0.0007122620325664751,
+			sig12:   1.405117407023628,
+			ssig1:   -0.8928657853278468,
+			csig1:   0.45032287238256896,
+			dn1:     1.0011366173804046,
+			ssig2:   0.2969032234925426,
+			csig2:   0.9549075745221299,
+			dn2:     1.0001257451360057,
+			cbet1:   0.8139459053827204,
+			cbet2:   0.9811634781422108,
+			outmask: 1920,
+			c1a: []float64{
+				0.0,
+				-0.0003561309485314716,
+				-3.170731714689771e-08,
+				-7.527972480734327e-12,
+				-2.5133854116682488e-15,
+				-1.0025061462383107e-18,
+				-4.462794158625518e-22,
+			},
+			c2a: []float64{
+				0.0,
+				-0.0007122622584701569,
+				-1.2678416507678478e-07,
+				-4.514641118748122e-11,
+				-2.0096353119518367e-14,
+				-1.0019350865558619e-17,
+				4.90907357448807e-21,
+			},
+			want1: 1.4056304412645388,
+			want2: math.NaN(),
+			want3: math.NaN(),
+			want4: math.NaN(),
+			want5: math.NaN(),
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			c1a := make([]float64, len(tC.c1a))
+			copy(c1a, tC.c1a)
+			c2a := make([]float64, len(tC.c2a))
+			copy(c2a, tC.c2a)
+			got1, got2, got3, got4, got5 := geod._Lengths(
+				tC.eps, tC.sig12, tC.ssig1, tC.csig1, tC.dn1, tC.ssig2, tC.csig2, tC.dn2,
+				tC.cbet1, tC.cbet2, tC.outmask, c1a, c2a)
+
+			// Compare all return values
+			if !f64_equals(tC.want1, got1) {
+				t.Errorf("Lengths() got1 = %v, want %v", got1, tC.want1)
+			}
+
+			if !f64_equals(tC.want2, got2) {
+				t.Errorf("Lengths() got2 = %v, want %v", got2, tC.want2)
+			}
+
+			if !f64_equals(tC.want3, got3) {
+				t.Errorf("Lengths() got3 = %v, want %v", got3, tC.want3)
+			}
+
+			if !f64_equals(tC.want4, got4) {
+				t.Errorf("Lengths() got4 = %v, want %v", got4, tC.want4)
+			}
+
+			if !f64_equals(tC.want5, got5) {
+				t.Errorf("Lengths() got5 = %v, want %v", got5, tC.want5)
+			}
+
+		})
+	}
+}
+
+func Benchmark_Lengths(b *testing.B) {
+	geod := Wgs84()
+
+	benchmarks := []struct {
+		desc    string
+		eps     float64
+		sig12   float64
+		ssig1   float64
+		csig1   float64
+		dn1     float64
+		ssig2   float64
+		csig2   float64
+		dn2     float64
+		cbet1   float64
+		cbet2   float64
+		outmask uint64
+		c1a     []float64
+		c2a     []float64
+	}{
+		{
+			desc:    "1",
+			eps:     0.0008355095326524276,
+			sig12:   0.024682339962725352,
+			ssig1:   -0.024679833885152578,
+			csig1:   0.9996954065111039,
+			dn1:     1.0000010195104125,
+			ssig2:   0.0,
+			csig2:   1.0,
+			dn2:     1.0,
+			cbet1:   0.9998487145115275,
+			cbet2:   1.0,
+			outmask: 4101,
+			c1a:     []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			c2a:     []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+		},
+		{
+			desc:    "2",
+			eps:     0.0008355096040059597,
+			sig12:   0.024682338906797385,
+			ssig1:   -0.02467983282954624,
+			csig1:   0.9996954065371639,
+			dn1:     1.0000010195104125,
+			ssig2:   0.0,
+			csig2:   1.0,
+			dn2:     1.0,
+			cbet1:   0.9998487145115275,
+			cbet2:   1.0,
+			outmask: 4101,
+			c1a: []float64{
+				0.0,
+				-0.00041775465696698233,
+				-4.362974596862037e-08,
+				-1.2151022357848552e-11,
+				-4.7588881620421004e-15,
+				-2.226614930167366e-18,
+				-1.1627237498131586e-21,
+			},
+			c2a: []float64{
+				0.0,
+				-0.0008355098973052918,
+				-1.7444619952659748e-07,
+				-7.286557795511902e-11,
+				-3.80472772706481e-14,
+				-2.2251271876594078e-17,
+				1.2789961247944744e-20,
+			},
+		},
+		{
+			desc:    "3",
+			eps:     0.0008355096040059597,
+			sig12:   0.024682338906797385,
+			ssig1:   -0.02467983282954624,
+			csig1:   0.9996954065371639,
+			dn1:     1.0000010195104125,
+			ssig2:   0.0,
+			csig2:   1.0,
+			dn2:     1.0,
+			cbet1:   0.9998487145115275,
+			cbet2:   1.0,
+			outmask: 1920,
+			c1a: []float64{
+				0.0,
+				-0.00041775469264372037,
+				-4.362975342068502e-08,
+				-1.215102547098435e-11,
+				-4.758889787701359e-15,
+				-2.2266158809456692e-18,
+				-1.1627243456014359e-21,
+			},
+			c2a: []float64{
+				0.0,
+				-0.0008355099686589174,
+				-1.744462293162189e-07,
+				-7.286559662008413e-11,
+				-3.804729026574989e-14,
+				-2.2251281376754273e-17,
+				1.2789967801615795e-20,
+			},
+		},
+		{
+			desc:    "4",
+			eps:     0.0007122620325664751,
+			sig12:   1.405117407023628,
+			ssig1:   -0.8928657853278468,
+			csig1:   0.45032287238256896,
+			dn1:     1.0011366173804046,
+			ssig2:   0.2969032234925426,
+			csig2:   0.9549075745221299,
+			dn2:     1.0001257451360057,
+			cbet1:   0.8139459053827204,
+			cbet2:   0.9811634781422108,
+			outmask: 1920,
+			c1a: []float64{
+				0.0,
+				-0.0003561309485314716,
+				-3.170731714689771e-08,
+				-7.527972480734327e-12,
+				-2.5133854116682488e-15,
+				-1.0025061462383107e-18,
+				-4.462794158625518e-22,
+			},
+			c2a: []float64{
+				0.0,
+				-0.0007122622584701569,
+				-1.2678416507678478e-07,
+				-4.514641118748122e-11,
+				-2.0096353119518367e-14,
+				-1.0019350865558619e-17,
+				4.90907357448807e-21,
+			},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				geod._Lengths(
+					bm.eps, bm.sig12, bm.ssig1, bm.csig1, bm.dn1, bm.ssig2, bm.csig2, bm.dn2,
+					bm.cbet1, bm.cbet2, bm.outmask, bm.c1a, bm.c2a)
+			}
+
+		})
 	}
 }

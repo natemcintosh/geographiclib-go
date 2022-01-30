@@ -211,3 +211,71 @@ func (g Geodesic) _C4f(eps float64, c []float64) {
 		mult *= eps
 	}
 }
+
+func (g Geodesic) _Lengths(
+	eps,
+	sig12,
+	ssig1,
+	csig1,
+	dn1,
+	ssig2,
+	csig2,
+	dn2,
+	cbet1,
+	cbet2 float64,
+	outmask uint64,
+	C1a []float64,
+	C2a []float64,
+) (float64, float64, float64, float64, float64) {
+	outmask &= OUT_MASK
+	s12b := math.NaN()
+	m12b := math.NaN()
+	m0 := math.NaN()
+	M12 := math.NaN()
+	M21 := math.NaN()
+
+	A1 := 0.0
+	A2 := 0.0
+	m0x := 0.0
+	J12 := 0.0
+
+	if outmask&(DISTANCE|REDUCEDLENGTH|GEODESICSCALE) != 0 {
+		A1 = _A1m1f(eps, GEODESIC_ORDER)
+		_C1f(eps, C1a, int(GEODESIC_ORDER))
+		if outmask&(REDUCEDLENGTH|GEODESICSCALE) != 0 {
+			A2 = _A2m1f(eps, GEODESIC_ORDER)
+			_C2f(eps, C2a, int(GEODESIC_ORDER))
+			m0x = A1 - A2
+			A2 = 1.0 + A2
+		}
+		A1 = 1.0 + A1
+	}
+
+	if outmask&DISTANCE != 0 {
+		B1 := Sin_cos_series(true, ssig2, csig2, C1a) - Sin_cos_series(true, ssig1, csig1, C1a)
+		s12b = A1 * (sig12 + B1)
+		if outmask&(REDUCEDLENGTH|GEODESICSCALE) != 0 {
+			B2 := Sin_cos_series(true, ssig2, csig2, C2a) - Sin_cos_series(true, ssig1, csig1, C2a)
+			J12 = m0x*sig12 + (A1*B1 - A2*B2)
+		}
+	} else if outmask&(REDUCEDLENGTH|GEODESICSCALE) != 0 {
+		for l := 1; l <= int(GEODESIC_ORDER); l++ {
+			C2a[l] = A1*C1a[l] - A2*C2a[l]
+		}
+		J12 = m0x*sig12 + (Sin_cos_series(true, ssig2, csig2, C2a) - Sin_cos_series(true, ssig1, csig1, C2a))
+	}
+
+	if outmask&REDUCEDLENGTH != 0 {
+		m0 = m0x
+		// J12 is wrong
+		m12b = dn2*(csig1*ssig2) - dn1*(ssig1*csig2) - csig1*csig2*J12
+	}
+
+	if outmask&GEODESICSCALE != 0 {
+		csig12 := csig1*csig2 + ssig1*ssig2
+		t := g._ep2 * (cbet1 - cbet2) * (cbet1 + cbet2) / (dn1 + dn2)
+		M12 = csig12 + (t*ssig2-csig2*J12)*ssig1/dn1
+		M21 = csig12 - (t*ssig1-csig1*J12)*ssig2/dn2
+	}
+	return s12b, m12b, m0, M12, M21
+}
