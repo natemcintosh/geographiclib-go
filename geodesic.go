@@ -4,7 +4,7 @@ import "math"
 
 const WGS84_A float64 = 6378137.0
 
-// Evaluating this as 1000000000.0 / (298257223563f64) reduces the
+// Evaluating this as 1000000000.0 / (298257223563f_64) reduces the
 // round-off error by about 10%.  However, expressing the flattening as
 // 1/298.257223563 is well ingrained.
 const WGS84_F float64 = 1.0 / ((298257223563.0) / 1000000000.0)
@@ -278,4 +278,148 @@ func (g Geodesic) _Lengths(
 		M21 = csig12 - (t*ssig1-csig1*J12)*ssig2/dn2
 	}
 	return s12b, m12b, m0, M12, M21
+}
+
+func (g Geodesic) _InverseStart(
+	sbet1,
+	cbet1,
+	dn1,
+	sbet2,
+	cbet2,
+	dn2,
+	lam12,
+	slam12,
+	clam12 float64,
+	C1a []float64,
+	C2a []float64,
+) (float64, float64, float64, float64, float64, float64) {
+	sig12 := -1.0
+	salp2 := math.NaN()
+	calp2 := math.NaN()
+	dnm := math.NaN()
+
+	var somg12 float64
+	var comg12 float64
+
+	sbet12 := sbet2*cbet1 - cbet2*sbet1
+	cbet12 := cbet2*cbet1 + sbet2*sbet1
+
+	sbet12a := sbet2 * cbet1
+	sbet12a += cbet2 * sbet1
+
+	shortline := cbet12 >= 0.0 && sbet12 < 0.5 && cbet2*lam12 < 0.5
+	if shortline {
+		sbetm2 := Sq(sbet1 + sbet2)
+		sbetm2 /= sbetm2 + Sq(cbet1+cbet2)
+		dnm = math.Sqrt(1.0 + g._ep2*sbetm2)
+		omg12 := lam12 / (g._f1 * dnm)
+		somg12 = math.Sin(omg12)
+		comg12 = math.Cos(omg12)
+	} else {
+		somg12 = slam12
+		comg12 = clam12
+	}
+
+	salp1 := cbet2 * somg12
+
+	calp1 := sbet12a - cbet2*sbet1*Sq(somg12)/(1.0-comg12)
+	if comg12 >= 0.0 {
+		calp1 = sbet12 + cbet2*sbet1*Sq(somg12)/(1.0+comg12)
+	}
+
+	ssig12 := math.Hypot(salp1, calp1)
+	csig12 := sbet1*sbet2 + cbet1*cbet2*comg12
+
+	if shortline && (ssig12 < g._etol2) {
+		salp2 = cbet1 * somg12
+		var to_mul float64
+		if comg12 >= 0.0 {
+			to_mul = Sq(somg12) / (1.0 + comg12)
+		} else {
+			to_mul = 1.0 - comg12
+		}
+		calp2 = sbet12 - cbet1*sbet2*to_mul
+
+		salp2, calp2 = Norm(salp2, calp2)
+		sig12 = math.Atan2(ssig12, csig12)
+	} else if math.Abs(g._n) > 0.1 || csig12 >= 0.0 || ssig12 >= 6.0*math.Abs(g._n)*math.Pi*Sq(cbet1) {
+	} else {
+		var x float64
+		var y float64
+		var betscale float64
+		var lamscale float64
+		lam12x := math.Atan2(-slam12, -clam12)
+		if g.f >= 0.0 {
+			k2 := Sq(sbet1) * g._ep2
+			eps := k2 / (2.0*(1.0+math.Sqrt(1.0+k2)) + k2)
+			lamscale = g.f * cbet1 * g._A3f(eps) * math.Pi
+			betscale = lamscale * cbet1
+			x = lam12x / lamscale
+			y = sbet12a / betscale
+		} else {
+			cbet12a := cbet2*cbet1 - sbet2*sbet1
+			bet12a := math.Atan2(sbet12, cbet12a)
+			_, m12b, m0, _, _ := g._Lengths(
+				g._n,
+				math.Pi+bet12a,
+				sbet1,
+				-cbet1,
+				dn1,
+				sbet2,
+				cbet2,
+				dn2,
+				cbet1,
+				cbet2,
+				REDUCEDLENGTH,
+				C1a,
+				C2a,
+			)
+			x = -1.0 + m12b/(cbet1*cbet2*m0*math.Pi)
+			var betscale float64
+			if x < -0.01 {
+				betscale = sbet12a / x
+			} else {
+				betscale = -g.f * Sq(cbet1) * math.Pi
+			}
+			lamscale = betscale / cbet1
+			y = lam12x / lamscale
+		}
+		if y > -g.tol1_ && x > -1.0-g.xthresh_ {
+			if g.f >= 0.0 {
+				salp1 = math.Min(-x, 1.0)
+				calp1 = -math.Sqrt(1.0 - Sq(salp1))
+			} else {
+				var to_compare float64
+				if x > -g.tol1_ {
+					to_compare = 0.0
+				} else {
+					to_compare = -1.0
+				}
+				calp1 = math.Max(x, to_compare)
+				salp1 = math.Sqrt(1.0 - Sq(calp1))
+			}
+		} else {
+			k := Astroid(x, y)
+			var to_mul float64
+			if g.f >= 0.0 {
+				to_mul = -x * k / (1.0 + k)
+			} else {
+				to_mul = -y * (1.0 + k) / k
+			}
+
+			omg12a := lamscale * to_mul
+			somg12 = math.Sin(omg12a)
+			comg12 = -math.Cos(omg12a)
+			salp1 = cbet2 * somg12
+			calp1 = sbet12a - cbet2*sbet1*Sq(somg12)/(1.0-comg12)
+		}
+	}
+
+	if !(salp1 <= 0.0) {
+		salp1, calp1 = Norm(salp1, calp1)
+	} else {
+		salp1 = 1.0
+		calp1 = 0.0
+	}
+	return sig12, salp1, calp1, salp2, calp2, dnm
 }

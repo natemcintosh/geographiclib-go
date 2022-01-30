@@ -539,3 +539,148 @@ func Benchmark_Lengths(b *testing.B) {
 		})
 	}
 }
+
+func Test_InverseStart(t *testing.T) {
+	geod := Wgs84()
+
+	testCases := []struct {
+		desc   string
+		sbet1  float64
+		cbet1  float64
+		dn1    float64
+		sbet2  float64
+		cbet2  float64
+		dn2    float64
+		lam12  float64
+		slam12 float64
+		clam12 float64
+		C1a    []float64
+		C2a    []float64
+		want1  float64
+		want2  float64
+		want3  float64
+		want4  float64
+		want5  float64
+		want6  float64
+	}{
+		{
+			desc:   "1",
+			sbet1:  -0.017393909556108908,
+			cbet1:  0.9998487145115275,
+			dn1:    1.0000010195104125,
+			sbet2:  0.0,
+			cbet2:  1.0,
+			dn2:    1.0,
+			lam12:  0.017453292519943295,
+			slam12: 0.01745240643728351,
+			clam12: 0.9998476951563913,
+			C1a:    []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			C2a:    []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			want1:  -1.0,
+			want2:  0.7095310092765433,
+			want3:  0.7046742132893822,
+			want4:  math.NaN(),
+			want5:  math.NaN(),
+			want6:  1.0000002548969817,
+		},
+		{
+			desc:   "2",
+			sbet1:  -0.017393909556108908,
+			cbet1:  0.9998487145115275,
+			dn1:    1.0000010195104125,
+			sbet2:  0.0,
+			cbet2:  1.0,
+			dn2:    1.0,
+			lam12:  0.017453292519943295,
+			slam12: 0.01745240643728351,
+			clam12: 0.9998476951563913,
+			C1a:    []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			C2a:    []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			want1:  -1.0,
+			want2:  0.7095310092765433,
+			want3:  0.7046742132893822,
+			want4:  math.NaN(),
+			want5:  math.NaN(),
+			want6:  1.0000002548969817,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got1, got2, got3, got4, got5, got6 := geod._InverseStart(
+				tC.sbet1, tC.cbet1, tC.dn1, tC.sbet2, tC.cbet2, tC.dn2,
+				tC.lam12, tC.slam12, tC.clam12, tC.C1a, tC.C2a,
+			)
+
+			// Compare all return values
+			if !f64_equals(tC.want1, got1) {
+				t.Errorf("_InverseStart() got1 = %v, want %v", got1, tC.want1)
+			}
+
+			if !f64_equals(tC.want2, got2) {
+				t.Errorf("_InverseStart() got2 = %v, want %v", got2, tC.want2)
+			}
+
+			if !f64_equals(tC.want3, got3) {
+				t.Errorf("_InverseStart() got3 = %v, want %v", got3, tC.want3)
+			}
+
+			if !f64_equals(tC.want4, got4) {
+				t.Errorf("_InverseStart() got4 = %v, want %v", got4, tC.want4)
+			}
+
+			if !f64_equals(tC.want5, got5) {
+				t.Errorf("_InverseStart() got5 = %v, want %v", got5, tC.want5)
+			}
+
+			if !f64_equals(tC.want6, got6) {
+				t.Errorf("_InverseStart() got6 = %v, want %v", got6, tC.want6)
+			}
+		})
+	}
+}
+
+func Benchmark_InverseStart(b *testing.B) {
+	geod := Wgs84()
+
+	benchmarks := []struct {
+		desc   string
+		sbet1  float64
+		cbet1  float64
+		dn1    float64
+		sbet2  float64
+		cbet2  float64
+		dn2    float64
+		lam12  float64
+		slam12 float64
+		clam12 float64
+		C1a    []float64
+		C2a    []float64
+	}{
+		{
+			desc:   "1",
+			sbet1:  -0.017393909556108908,
+			cbet1:  0.9998487145115275,
+			dn1:    1.0000010195104125,
+			sbet2:  0.0,
+			cbet2:  1.0,
+			dn2:    1.0,
+			lam12:  0.017453292519943295,
+			slam12: 0.01745240643728351,
+			clam12: 0.9998476951563913,
+			C1a:    []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+			C2a:    []float64{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				geod._InverseStart(
+					bm.sbet1, bm.cbet1, bm.dn1, bm.sbet2, bm.cbet2, bm.dn2,
+					bm.lam12, bm.slam12, bm.clam12, bm.C1a, bm.C2a,
+				)
+			}
+
+		})
+	}
+}
