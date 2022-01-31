@@ -542,14 +542,10 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 	var slam12 float64
 	var clam12 float64
 	if lon12 > 90.0 {
-		s, c := Sincosd(lon12s)
-		slam12 = s
-		clam12 = c
+		slam12, clam12 = Sincosd(lon12s)
 		clam12 = -clam12
 	} else {
-		s, c := Sincosd(lon12)
-		slam12 = s
-		clam12 = c
+		slam12, clam12 = Sincosd(lon12)
 	}
 	lat1 = Ang_round(Lat_fix(lat1))
 	lat2 = Ang_round(Lat_fix(lat2))

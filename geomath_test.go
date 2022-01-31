@@ -7,8 +7,8 @@ import (
 
 const float64EqualityThreshold = 1e-9
 
-func almost_equal(a, b float64) bool {
-	return math.Abs(a-b) < float64EqualityThreshold
+func almost_equal(a, b, threshold float64) bool {
+	return math.Abs(a-b) < threshold
 }
 
 func TestSincosd(t *testing.T) {
@@ -40,7 +40,7 @@ func TestSincosd(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			sin, cos := Sincosd(tC.in)
-			if !almost_equal(sin, tC.out1) || !almost_equal(cos, tC.out2) {
+			if !almost_equal(sin, tC.out1, float64EqualityThreshold) || !almost_equal(cos, tC.out2, float64EqualityThreshold) {
 				t.Errorf("Sincosd(%v) = %v, %v; want %v, %v", tC.in, sin, cos, tC.out1, tC.out2)
 			}
 		})
@@ -79,7 +79,7 @@ func BenchmarkSincosd(b *testing.B) {
 func Test_A1m1f(t *testing.T) {
 	exptected := 0.1404582405272727
 	got := _A1m1f(0.12, 6)
-	if !almost_equal(exptected, got) {
+	if !almost_equal(exptected, got, float64EqualityThreshold) {
 		t.Errorf("_A1m1f(0.12, 6) = %v; want %v", got, exptected)
 	}
 }
@@ -110,7 +110,7 @@ func Benchmark_A1m1f(b *testing.B) {
 func TestAstroid(t *testing.T) {
 	expected := 23.44475767500982
 	got := Astroid(21.0, 12.0)
-	if !almost_equal(expected, got) {
+	if !almost_equal(expected, got, float64EqualityThreshold) {
 		t.Errorf("Astroid(21.0, 12.0) = %v; want %v", got, expected)
 	}
 }
@@ -215,7 +215,7 @@ func TestSin_cos_series(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			got := Sin_cos_series(tC.sinp, tC.sinx, tC.cosx, tC.c)
-			if !almost_equal(tC.want, got) {
+			if !almost_equal(tC.want, got, float64EqualityThreshold) {
 				t.Errorf("Sin_cos_series(%v, %v, %v, %v) = %v; want %v", tC.sinp, tC.sinx, tC.cosx, tC.c, got, tC.want)
 			}
 		})
@@ -315,7 +315,7 @@ func Test_C1f(t *testing.T) {
 	}
 	// Compare each number in c and want_c
 	for i := 0; i < len(c); i++ {
-		if !almost_equal(c[i], want_c[i]) {
+		if !almost_equal(c[i], want_c[i], float64EqualityThreshold) {
 			t.Errorf("c[%v] = %v; want %v", i, c[i], want_c[i])
 		}
 	}
@@ -360,7 +360,7 @@ func Test_C1pf(t *testing.T) {
 	}
 	// Compare each number in c and want_c
 	for i := 0; i < len(c); i++ {
-		if !almost_equal(c[i], want_c[i]) {
+		if !almost_equal(c[i], want_c[i], float64EqualityThreshold) {
 			t.Errorf("c[%v] = %v; want %v", i, c[i], want_c[i])
 		}
 	}
@@ -405,7 +405,7 @@ func Test_C2f(t *testing.T) {
 	}
 	// Compare each number in c and want_c
 	for i := 0; i < len(c); i++ {
-		if !almost_equal(c[i], want_c[i]) {
+		if !almost_equal(c[i], want_c[i], float64EqualityThreshold) {
 			t.Errorf("c[%v] = %v; want %v", i, c[i], want_c[i])
 		}
 	}
@@ -439,7 +439,7 @@ func Benchmark_C2f(b *testing.B) {
 func Test_A2m1f(t *testing.T) {
 	got := _A2m1f(0.12, 6)
 	want := -0.11680607884285714
-	if !almost_equal(got, want) {
+	if !almost_equal(got, want, float64EqualityThreshold) {
 		t.Errorf("_A2m1f(%v) = %v; want %v", 0.12, got, want)
 	}
 }
@@ -487,11 +487,11 @@ func TestAng_diff(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			d, tvar := Ang_diff(tC.x, tC.y)
 
-			if !f64_equals(d, tC.d) {
+			if !f64_equals(d, tC.d, float64EqualityThreshold) {
 				t.Errorf("d = %v; want %v", d, tC.d)
 			}
 
-			if !f64_equals(tvar, tC.t) {
+			if !f64_equals(tvar, tC.t, float64EqualityThreshold) {
 				t.Errorf("t = %v; want %v", tvar, tC.t)
 			}
 		})
@@ -518,7 +518,7 @@ func TestAng_normalize(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			got := Ang_normalize(tC.in)
-			if !f64_equals(got, tC.want) {
+			if !f64_equals(got, tC.want, float64EqualityThreshold) {
 				t.Errorf("Ang_normalize(%v) = %v; want %v", tC.in, got, tC.want)
 			}
 		})
