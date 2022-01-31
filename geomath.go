@@ -179,11 +179,11 @@ func Sincosd(x float64) (float64, float64) {
 	return s, c
 }
 
-// Atan2deg: compute the arc tangent of y/x in degrees
-func Atan2deg(x_deg, y_deg float64) float64 {
+// Atan2_deg: compute the arc tangent of y/x in degrees
+func Atan2_deg(y_deg, x_deg float64) float64 {
 	// First convert to radians.
-	x_rad := x_deg * DEG2RAD
 	y_rad := y_deg * DEG2RAD
+	x_rad := x_deg * DEG2RAD
 
 	// Then use the atan2 function.
 	return math.Atan2(y_rad, x_rad) * RAD2DEG

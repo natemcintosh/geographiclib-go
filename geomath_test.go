@@ -524,3 +524,32 @@ func TestAng_normalize(t *testing.T) {
 		})
 	}
 }
+
+func TestAtan2_deg(t *testing.T) {
+	testCases := []struct {
+		desc       string
+		x, y, want float64
+	}{
+		{
+			desc: "1",
+			x:    0.82632552653105184,
+			y:    0.56319279487860996,
+			want: 55.723110355324408,
+		},
+		{
+			desc: "2",
+			x:    0.82632951065581195,
+			y:    0.56318694926225565,
+			want: 55.72351567783663,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got := Atan2_deg(tC.x, tC.y)
+
+			if !f64_equals(tC.want, got) {
+				t.Errorf("Atan2_deg(%v, %v) = %v; want %v", tC.x, tC.y, got, tC.want)
+			}
+		})
+	}
+}
