@@ -1079,8 +1079,6 @@ func Test_gen_inverse(t *testing.T) {
 }
 
 func Benchmark_gen_inverse(b *testing.B) {
-	geod := Wgs84()
-
 	benchmarks := []struct {
 		desc                   string
 		geodesic               Geodesic
@@ -1128,7 +1126,157 @@ func Benchmark_gen_inverse(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				geod._gen_inverse(
+				bm.geodesic._gen_inverse(
+					bm.lat1, bm.lon1, bm.lat2, bm.lon2, bm.outmask,
+				)
+			}
+
+		})
+	}
+}
+
+func Test_gen_inverse_azi(t *testing.T) {
+	testCases := []struct {
+		desc                                     string
+		geodesic                                 Geodesic
+		lat1, lon1, lat2, lon2                   float64
+		outmask                                  uint64
+		a12, s12, azi1, azi2, m12, M12, M21, S12 float64
+	}{
+		{
+			desc:     "1",
+			geodesic: Wgs84(),
+			lat1:     54.1589,
+			lon1:     15.3872,
+			lat2:     54.1591,
+			lon2:     15.3877,
+			outmask:  ALL,
+			a12:      0.00035549325126265914,
+			s12:      39.527686386021514,
+			azi1:     55.723110355324408,
+			azi2:     55.72351567783663,
+			m12:      39.527686385839779,
+			M12:      0.99999999998083666,
+			M21:      0.99999999998083666,
+			S12:      286698586.30231881,
+		},
+		{
+			desc:     "2",
+			geodesic: Wgs84(),
+			lat1:     20.001,
+			lon1:     0.0,
+			lat2:     20.001,
+			lon2:     0.0,
+			outmask:  ALL,
+			a12:      0,
+			s12:      0,
+			azi1:     180.0,
+			azi2:     180.0,
+			m12:      0,
+			M12:      0.99999999999999988,
+			M21:      0.99999999999999988,
+			S12:      0,
+		},
+		{
+			desc:     "3",
+			geodesic: Wgs84(),
+			lat1:     90.0,
+			lon1:     0.0,
+			lat2:     90.0,
+			lon2:     180.0,
+			outmask:  ALL,
+			a12:      0,
+			s12:      0,
+			azi1:     0.0,
+			azi2:     180.0,
+			m12:      0,
+			M12:      1.0,
+			M21:      1.0,
+			S12:      127516405431022.11,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			a12, s12, azi1, azi2, m12, M12, M21, S12 := tC.geodesic._gen_inverse_azi(
+				tC.lat1, tC.lon1, tC.lat2, tC.lon2, tC.outmask,
+			)
+
+			if !f64_equals(tC.a12, a12) {
+				t.Errorf("_gen_inverse() a12 = %v, want %v", a12, tC.a12)
+			}
+
+			if !f64_equals(tC.s12, s12) {
+				t.Errorf("_gen_inverse() s12 = %v, want %v", s12, tC.s12)
+			}
+
+			if !f64_equals(tC.azi1, azi1) {
+				t.Errorf("_gen_inverse() azi1 = %v, want %v", azi1, tC.azi1)
+			}
+
+			if !f64_equals(tC.azi2, azi2) {
+				t.Errorf("_gen_inverse() azi2 = %v, want %v", azi2, tC.azi2)
+			}
+
+			if !f64_equals(tC.m12, m12) {
+				t.Errorf("_gen_inverse() m12 = %v, want %v", m12, tC.m12)
+			}
+
+			if !f64_equals(tC.M12, M12) {
+				t.Errorf("_gen_inverse() M12 = %v, want %v", M12, tC.M12)
+			}
+
+			if !f64_equals(tC.M21, M21) {
+				t.Errorf("_gen_inverse() M21 = %v, want %v", M21, tC.M21)
+			}
+
+			if !f64_equals(tC.S12, S12) {
+				t.Errorf("_gen_inverse() S12 = %v, want %v", S12, tC.S12)
+			}
+
+		})
+	}
+}
+
+func Benchmark_gen_inverse_azi(b *testing.B) {
+	benchmarks := []struct {
+		desc                   string
+		geodesic               Geodesic
+		lat1, lon1, lat2, lon2 float64
+		outmask                uint64
+	}{
+		{
+			desc:     "1",
+			geodesic: Wgs84(),
+			lat1:     54.1589,
+			lon1:     15.3872,
+			lat2:     54.1591,
+			lon2:     15.3877,
+			outmask:  ALL,
+		},
+		{
+			desc:     "2",
+			geodesic: Wgs84(),
+			lat1:     20.001,
+			lon1:     0.0,
+			lat2:     20.001,
+			lon2:     0.0,
+			outmask:  ALL,
+		},
+		{
+			desc:     "3",
+			geodesic: Wgs84(),
+			lat1:     90.0,
+			lon1:     0.0,
+			lat2:     90.0,
+			lon2:     180.0,
+			outmask:  ALL,
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.geodesic._gen_inverse_azi(
 					bm.lat1, bm.lon1, bm.lat2, bm.lon2, bm.outmask,
 				)
 			}

@@ -510,8 +510,8 @@ func (g Geodesic) _gen_inverse_azi(
 	)
 
 	if outmask&AZIMUTH != 0 {
-		azi1 = Atan2deg(salp1, calp1)
-		azi2 = Atan2deg(salp2, calp2)
+		azi1 = Atan2_deg(salp1, calp1)
+		azi2 = Atan2_deg(salp2, calp2)
 	}
 	return a12, s12, azi1, azi2, m12, M12, M21, S12
 }
