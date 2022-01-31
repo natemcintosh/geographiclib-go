@@ -466,3 +466,61 @@ func Benchmark_A2m1f(b *testing.B) {
 		})
 	}
 }
+
+func TestAng_diff(t *testing.T) {
+	testCases := []struct {
+		desc string
+		x    float64
+		y    float64
+		d    float64
+		t    float64
+	}{
+		{
+			desc: "1",
+			x:    0.0,
+			y:    1.0,
+			d:    1.0,
+			t:    0.0,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			d, tvar := Ang_diff(tC.x, tC.y)
+
+			if !f64_equals(d, tC.d) {
+				t.Errorf("d = %v; want %v", d, tC.d)
+			}
+
+			if !f64_equals(tvar, tC.t) {
+				t.Errorf("t = %v; want %v", tvar, tC.t)
+			}
+		})
+	}
+}
+
+func TestAng_normalize(t *testing.T) {
+	testCases := []struct {
+		desc string
+		in   float64
+		want float64
+	}{
+		{
+			desc: "0",
+			in:   0,
+			want: 0,
+		},
+		{
+			desc: "1",
+			in:   1,
+			want: 1,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got := Ang_normalize(tC.in)
+			if !f64_equals(got, tC.want) {
+				t.Errorf("Ang_normalize(%v) = %v; want %v", tC.in, got, tC.want)
+			}
+		})
+	}
+}
