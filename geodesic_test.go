@@ -943,3 +943,80 @@ func Benchmark_Lambda12(b *testing.B) {
 		})
 	}
 }
+
+func Test_gen_inverse(t *testing.T) {
+	geod := Wgs84()
+
+	testCases := []struct {
+		desc                                                     string
+		lat1, lon1, lat2, lon2                                   float64
+		outmask                                                  uint64
+		a12, s12, salp1, calp1, salp2, calp2, m12, M12, M21, S12 float64
+	}{
+		{
+			desc:    "1",
+			lat1:    0.0,
+			lon1:    0.0,
+			lat2:    1.0,
+			lon2:    1.0,
+			outmask: STANDARD,
+			a12:     1.4141938478710363,
+			s12:     156899.56829134026,
+			salp1:   0.7094236375834774,
+			calp1:   0.7047823085448635,
+			salp2:   0.7095309793242709,
+			calp2:   0.7046742434480923,
+			m12:     math.NaN(),
+			M12:     math.NaN(),
+			M21:     math.NaN(),
+			S12:     math.NaN(),
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			a12, s12, salp1, calp1, salp2, calp2, m12, M12, M21, S12 := geod._gen_inverse(
+				tC.lat1, tC.lon1, tC.lat2, tC.lon2, tC.outmask,
+			)
+
+			if !f64_equals(tC.a12, a12) {
+				t.Errorf("_gen_inverse() a12 = %v, want %v", a12, tC.a12)
+			}
+
+			if !f64_equals(tC.s12, s12) {
+				t.Errorf("_gen_inverse() s12 = %v, want %v", s12, tC.s12)
+			}
+
+			if !f64_equals(tC.salp1, salp1) {
+				t.Errorf("_gen_inverse() salp1 = %v, want %v", salp1, tC.salp1)
+			}
+
+			if !f64_equals(tC.calp1, calp1) {
+				t.Errorf("_gen_inverse() calp1 = %v, want %v", calp1, tC.calp1)
+			}
+
+			if !f64_equals(tC.salp2, salp2) {
+				t.Errorf("_gen_inverse() salp2 = %v, want %v", salp2, tC.salp2)
+			}
+
+			if !f64_equals(tC.calp2, calp2) {
+				t.Errorf("_gen_inverse() calp2 = %v, want %v", calp2, tC.calp2)
+			}
+
+			if !f64_equals(tC.m12, m12) {
+				t.Errorf("_gen_inverse() m12 = %v, want %v", m12, tC.m12)
+			}
+
+			if !f64_equals(tC.M12, M12) {
+				t.Errorf("_gen_inverse() M12 = %v, want %v", M12, tC.M12)
+			}
+
+			if !f64_equals(tC.M21, M21) {
+				t.Errorf("_gen_inverse() M21 = %v, want %v", M21, tC.M21)
+			}
+
+			if !f64_equals(tC.S12, S12) {
+				t.Errorf("_gen_inverse() S12 = %v, want %v", S12, tC.S12)
+			}
+		})
+	}
+}

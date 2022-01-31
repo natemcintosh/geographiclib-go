@@ -561,6 +561,11 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 		swapp = 1.0
 	}
 
+	if swapp < 0.0 {
+		lonsign *= -1.0
+		lat2, lat1 = lat1, lat2
+	}
+
 	var latsign float64
 	if lat1 < 0.0 {
 		latsign = 1.0
@@ -795,7 +800,7 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 
 			m12x *= g._b
 			s12x *= g._b
-			a12 = sig12 * DEG2RAD
+			a12 = sig12 * RAD2DEG
 			if outmask&AREA != 0 {
 				sdomg12 := math.Sin(domg12)
 				cdomg12 := math.Cos(domg12)
@@ -870,5 +875,6 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 	calp1 *= swapp * latsign
 	salp2 *= swapp * lonsign
 	calp2 *= swapp * latsign
+
 	return a12, s12, salp1, calp1, salp2, calp2, m12, M12, M21, S12
 }
