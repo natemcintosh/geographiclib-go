@@ -494,3 +494,381 @@ func (g Geodesic) _Lambda12(
 	return lam12, salp2, calp2, sig12, ssig1, csig1, ssig2, csig2, eps, domg12, dlam12
 
 }
+
+// _gen_inverse_azi returns (a12, s12, azi1, azi2, m12, M12, M21, S12)
+func (g Geodesic) _gen_inverse_azi(
+	lat1, lon1, lat2, lon2 float64,
+	outmask uint64,
+) (float64, float64, float64, float64, float64, float64, float64, float64) {
+
+	azi1 := math.NaN()
+	azi2 := math.NaN()
+	outmask &= OUT_MASK
+
+	a12, s12, salp1, calp1, salp2, calp2, m12, M12, M21, S12 := g._gen_inverse(
+		lat1, lon1, lat2, lon2, outmask,
+	)
+
+	if outmask&AZIMUTH != 0 {
+		azi1 = Atan2deg(salp1, calp1)
+		azi2 = Atan2deg(salp2, calp2)
+	}
+	return a12, s12, azi1, azi2, m12, M12, M21, S12
+}
+
+// _gen_inverse returns (a12, s12, salp1, calp1, salp2, calp2, m12, M12, M21, S12)
+func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
+	float64, float64, float64, float64, float64, float64, float64, float64, float64, float64,
+) {
+	a12 := math.NaN()
+	s12 := math.NaN()
+	m12 := math.NaN()
+	M12 := math.NaN()
+	M21 := math.NaN()
+	S12 := math.NaN()
+	outmask &= OUT_MASK
+
+	lon12, lon12s := Ang_diff(lon1, lon2)
+	var lonsign float64
+	if lon12 >= 0.0 {
+		lonsign = 1.0
+	} else {
+		lonsign = -1.0
+	}
+
+	lon12 = lonsign * Ang_round(lon12)
+	lon12s = Ang_round((180.0 - lon12) - lonsign*lon12s)
+	lam12 := lon12 * DEG2RAD
+	var slam12 float64
+	var clam12 float64
+	if lon12 > 90.0 {
+		s, c := Sincosd(lon12s)
+		slam12 = s
+		clam12 = c
+		clam12 = -clam12
+	} else {
+		s, c := Sincosd(lon12)
+		slam12 = s
+		clam12 = c
+	}
+	lat1 = Ang_round(Lat_fix(lat1))
+	lat2 = Ang_round(Lat_fix(lat2))
+
+	var swapp float64
+	if math.Abs(lat1) < math.Abs(lat2) {
+		swapp = -1.0
+	} else {
+		swapp = 1.0
+	}
+
+	var latsign float64
+	if lat1 < 0.0 {
+		latsign = 1.0
+	} else {
+		latsign = -1.0
+	}
+	lat1 *= latsign
+	lat2 *= latsign
+
+	sbet1, cbet1 := Sincosd(lat1)
+	sbet1 *= g._f1
+
+	sbet1, cbet1 = Norm(sbet1, cbet1)
+	cbet1 = math.Max(cbet1, g.tiny_)
+
+	sbet2, cbet2 := Sincosd(lat2)
+	sbet2 *= g._f1
+
+	sbet2, cbet2 = Norm(sbet2, cbet2)
+	cbet2 = math.Max(cbet2, g.tiny_)
+
+	if cbet1 < -sbet1 {
+		if cbet2 == cbet1 {
+			if sbet2 < 0.0 {
+				sbet2 = sbet1
+			} else {
+				sbet2 = -sbet1
+			}
+		}
+	} else if math.Abs(sbet2) == -sbet1 {
+		cbet2 = cbet1
+	}
+
+	dn1 := math.Sqrt(1.0 + g._ep2*Sq(sbet1))
+	dn2 := math.Sqrt(1.0 + g._ep2*Sq(sbet2))
+
+	const CARR_SIZE uint64 = uint64(GEODESIC_ORDER) + 1
+	C1a := [CARR_SIZE]float64{}
+	C2a := [CARR_SIZE]float64{}
+	C3a := [GEODESIC_ORDER]float64{}
+
+	meridian := lat1 == -90.0 || slam12 == 0.0
+	calp1 := 0.0
+	salp1 := 0.0
+	calp2 := 0.0
+	salp2 := 0.0
+	ssig1 := 0.0
+	csig1 := 0.0
+	ssig2 := 0.0
+	csig2 := 0.0
+	var sig12 float64
+	s12x := 0.0
+	m12x := 0.0
+
+	if meridian {
+		calp1 = clam12
+		salp1 = slam12
+		calp2 = 1.0
+		salp2 = 0.0
+
+		ssig1 = sbet1
+		csig1 = calp1 * cbet1
+		ssig2 = sbet2
+		csig2 = calp2 * cbet2
+
+		sig12 = math.Atan2(math.Max((csig1*ssig2-ssig1*csig2), 0.0), csig1*csig2+ssig1*ssig2)
+		res1, res2, _, res4, res5 := g._Lengths(
+			g._n,
+			sig12,
+			ssig1,
+			csig1,
+			dn1,
+			ssig2,
+			csig2,
+			dn2,
+			cbet1,
+			cbet2,
+			outmask|DISTANCE|REDUCEDLENGTH,
+			C1a[:],
+			C2a[:],
+		)
+		s12x = res1
+		m12x = res2
+		M12 = res4
+		M21 = res5
+
+		if sig12 < 1.0 || m12x >= 0.0 {
+			if sig12 < 3.0*g.tiny_ {
+				sig12 = 0.0
+				m12x = 0.0
+				s12x = 0.0
+			}
+			m12x *= g._b
+			s12x *= g._b
+			a12 = sig12 * RAD2DEG
+		} else {
+			meridian = false
+		}
+	}
+
+	somg12 := 2.0
+	comg12 := 0.0
+	omg12 := 0.0
+	var dnm float64
+	eps := 0.0
+
+	if !meridian && sbet1 == 0.0 && (g.f <= 0.0 || lon12s >= g.f*180.0) {
+		calp1 = 0.0
+		calp2 = 0.0
+		salp1 = 1.0
+		salp2 = 1.0
+
+		s12x = g.a * lam12
+		sig12 = lam12 / g._f1
+		omg12 = lam12 / g._f1
+		m12x = g._b * math.Sin(sig12)
+		if outmask&GEODESICSCALE != 0 {
+			M12 = math.Cos(sig12)
+			M21 = math.Cos(sig12)
+		}
+		a12 = lon12 / g._f1
+	} else if !meridian {
+		res1, res2, res3, res4, res5, res6 := g._InverseStart(
+			sbet1, cbet1, dn1, sbet2, cbet2, dn2, lam12, slam12, clam12, C1a[:], C2a[:],
+		)
+		sig12 = res1
+		salp1 = res2
+		calp1 = res3
+		salp2 = res4
+		calp2 = res5
+		dnm = res6
+
+		if sig12 >= 0.0 {
+			s12x = sig12 * g._b * dnm
+			m12x = Sq(dnm) * g._b * math.Sin(sig12/dnm)
+			if outmask&GEODESICSCALE != 0 {
+				M12 = math.Cos(sig12 / dnm)
+				M21 = math.Cos(sig12 / dnm)
+			}
+			a12 = sig12 * RAD2DEG
+			omg12 = lam12 / (g._f1 * dnm)
+		} else {
+			tripn := false
+			tripb := false
+			salp1a := g.tiny_
+			calp1a := 1.0
+			salp1b := g.tiny_
+			calp1b := -1.0
+			domg12 := 0.0
+
+			for numit := uint64(0); numit < g.maxit2_; numit++ {
+				res1, res2, res3, res4, res5, res6, res7, res8, res9, res10, res11 := g._Lambda12(
+					sbet1,
+					cbet1,
+					dn1,
+					sbet2,
+					cbet2,
+					dn2,
+					salp1,
+					calp1,
+					slam12,
+					clam12,
+					numit < g.maxit1_,
+					C1a[:],
+					C2a[:],
+					C3a[:],
+				)
+				v := res1
+				salp2 = res2
+				calp2 = res3
+				sig12 = res4
+				ssig1 = res5
+				csig1 = res6
+				ssig2 = res7
+				csig2 = res8
+				eps = res9
+				domg12 = res10
+				dv := res11
+
+				var to_mul float64
+				if tripn {
+					to_mul = 8.0
+				} else {
+					to_mul = 1.0
+				}
+				if tripb || !(math.Abs(v) >= to_mul*g.tol0_) {
+					break
+				}
+				if v > 0.0 && (numit > g.maxit1_ || calp1/salp1 > calp1b/salp1b) {
+					salp1b = salp1
+					calp1b = calp1
+				} else if v < 0.0 && (numit > g.maxit1_ || calp1/salp1 < calp1a/salp1a) {
+					salp1a = salp1
+					calp1a = calp1
+				}
+				if numit < g.maxit1_ && dv > 0.0 {
+					dalp1 := -v / dv
+					sdalp1 := math.Sin(dalp1)
+					cdalp1 := math.Cos(dalp1)
+					nsalp1 := salp1*cdalp1 + calp1*sdalp1
+					if nsalp1 > 0.0 && math.Abs(dalp1) < math.Pi {
+						calp1 = calp1*cdalp1 - salp1*sdalp1
+						salp1 = nsalp1
+						salp1, calp1 = Norm(salp1, calp1)
+						tripn = math.Abs(v) <= 16.0*g.tol0_
+						continue
+					}
+				}
+
+				salp1 = (salp1a + salp1b) / 2.0
+				calp1 = (calp1a + calp1b) / 2.0
+				salp1, calp1 = Norm(salp1, calp1)
+				tripn = false
+				tripb = math.Abs(salp1a-salp1)+(calp1a-calp1) < g.tolb_ || math.Abs(salp1-salp1b)+(calp1-calp1b) < g.tolb_
+			}
+			var to_cmp uint64
+			if outmask&(REDUCEDLENGTH|GEODESICSCALE) != 0 {
+				to_cmp = DISTANCE
+			} else {
+				to_cmp = EMPTY
+			}
+
+			lengthmask := outmask | to_cmp
+			res1, res2, _, res4, res5 = g._Lengths(
+				eps, sig12, ssig1, csig1, dn1, ssig2, csig2, dn2, cbet1, cbet2, lengthmask,
+				C1a[:], C2a[:],
+			)
+			s12x = res1
+			m12x = res2
+			M12 = res4
+			M21 = res5
+
+			m12x *= g._b
+			s12x *= g._b
+			a12 = sig12 * DEG2RAD
+			if outmask&AREA != 0 {
+				sdomg12 := math.Sin(domg12)
+				cdomg12 := math.Cos(domg12)
+				somg12 = slam12*cdomg12 - clam12*sdomg12
+				comg12 = clam12*cdomg12 + slam12*sdomg12
+			}
+		}
+	}
+
+	if outmask&DISTANCE != 0 {
+		s12 = 0.0 + s12x
+	}
+	if outmask&REDUCEDLENGTH != 0 {
+		m12 = 0.0 + m12x
+	}
+
+	if outmask&AREA != 0 {
+		salp0 := salp1 * cbet1
+		calp0 := math.Hypot(calp1, salp1*sbet1)
+		if calp0 != 0.0 && salp0 != 0.0 {
+			ssig1 = sbet1
+			csig1 = calp1 * cbet1
+			ssig2 = sbet2
+			csig2 = calp2 * cbet2
+			k2 := Sq(calp0) * g._ep2
+			eps = k2 / (2.0*(1.0+math.Sqrt(1.0+k2)) + k2)
+			A4 := Sq(g.a) * calp0 * salp0 * g._e2
+			ssig1, csig1 = Norm(ssig1, csig1)
+			ssig2, csig2 = Norm(ssig2, csig2)
+			C4a := [GEODESIC_ORDER]float64{}
+			g._C4f(eps, C4a[:])
+			B41 := Sin_cos_series(false, ssig1, csig1, C4a[:])
+			B42 := Sin_cos_series(false, ssig2, csig2, C4a[:])
+			S12 = A4 * (B42 - B41)
+		} else {
+			S12 = 0.0
+		}
+
+		if !meridian && somg12 > 1.0 {
+			somg12, comg12 = math.Sincos(omg12)
+		}
+
+		var alp12 float64
+		if !meridian && comg12 > -0.7071 && sbet2-sbet1 < 1.75 {
+			domg12 := 1.0 + comg12
+			dbet1 := 1.0 + cbet1
+			dbet2 := 1.0 + cbet2
+			alp12 = 2.0 * math.Atan2(somg12*(sbet1*dbet2+sbet2*dbet1), domg12*(sbet1*sbet2+dbet1*dbet2))
+		} else {
+			salp12 := salp2*calp1 - calp2*salp1
+			calp12 := calp2*calp1 + salp2*salp1
+
+			if salp12 == 0.0 && calp12 < 0.0 {
+				salp12 = g.tiny_ * calp1
+				calp12 = -1.0
+			}
+			alp12 = math.Atan2(salp12, calp12)
+		}
+		S12 += g._c2 * alp12
+		S12 *= swapp * lonsign * latsign
+		S12 += 0.0
+	}
+
+	if swapp < 0.0 {
+		salp2, salp1 = salp1, salp2
+		calp2, calp1 = calp1, calp2
+		if outmask&GEODESICSCALE != 0 {
+			M21, M12 = M12, M21
+		}
+	}
+	salp1 *= swapp * lonsign
+	calp1 *= swapp * latsign
+	salp2 *= swapp * lonsign
+	calp2 *= swapp * latsign
+	return a12, s12, salp1, calp1, salp2, calp2, m12, M12, M21, S12
+}
