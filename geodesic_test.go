@@ -8,14 +8,14 @@ import (
 // f64_equals tests if two float64 values are equal to within a small epsilon.
 // If `want` is NaN, then `got` must also be NaN.
 // Otherwise just a regular float comparison is performed.
-func f64_equals(want, got, threshold float64) bool {
+func f64_equals(want, got float64) bool {
 	// If want is NaN, then got should be NaN
 	if math.IsNaN(want) {
 		if !math.IsNaN(got) {
 			return false
 		}
 	} else {
-		if !almost_equal(got, want, threshold) {
+		if !almost_equal(got, want, float64EqualityThreshold) {
 			return false
 		}
 	}
@@ -371,23 +371,23 @@ func Test_Lengths(t *testing.T) {
 				tC.cbet1, tC.cbet2, tC.outmask, c1a, c2a)
 
 			// Compare all return values
-			if !f64_equals(tC.want1, got1, float64EqualityThreshold) {
+			if !f64_equals(tC.want1, got1) {
 				t.Errorf("Lengths() got1 = %v, want %v", got1, tC.want1)
 			}
 
-			if !f64_equals(tC.want2, got2, float64EqualityThreshold) {
+			if !f64_equals(tC.want2, got2) {
 				t.Errorf("Lengths() got2 = %v, want %v", got2, tC.want2)
 			}
 
-			if !f64_equals(tC.want3, got3, float64EqualityThreshold) {
+			if !f64_equals(tC.want3, got3) {
 				t.Errorf("Lengths() got3 = %v, want %v", got3, tC.want3)
 			}
 
-			if !f64_equals(tC.want4, got4, float64EqualityThreshold) {
+			if !f64_equals(tC.want4, got4) {
 				t.Errorf("Lengths() got4 = %v, want %v", got4, tC.want4)
 			}
 
-			if !f64_equals(tC.want5, got5, float64EqualityThreshold) {
+			if !f64_equals(tC.want5, got5) {
 				t.Errorf("Lengths() got5 = %v, want %v", got5, tC.want5)
 			}
 
@@ -612,27 +612,27 @@ func Test_InverseStart(t *testing.T) {
 			)
 
 			// Compare all return values
-			if !f64_equals(tC.want1, got1, float64EqualityThreshold) {
+			if !f64_equals(tC.want1, got1) {
 				t.Errorf("_InverseStart() got1 = %v, want %v", got1, tC.want1)
 			}
 
-			if !f64_equals(tC.want2, got2, float64EqualityThreshold) {
+			if !f64_equals(tC.want2, got2) {
 				t.Errorf("_InverseStart() got2 = %v, want %v", got2, tC.want2)
 			}
 
-			if !f64_equals(tC.want3, got3, float64EqualityThreshold) {
+			if !f64_equals(tC.want3, got3) {
 				t.Errorf("_InverseStart() got3 = %v, want %v", got3, tC.want3)
 			}
 
-			if !f64_equals(tC.want4, got4, float64EqualityThreshold) {
+			if !f64_equals(tC.want4, got4) {
 				t.Errorf("_InverseStart() got4 = %v, want %v", got4, tC.want4)
 			}
 
-			if !f64_equals(tC.want5, got5, float64EqualityThreshold) {
+			if !f64_equals(tC.want5, got5) {
 				t.Errorf("_InverseStart() got5 = %v, want %v", got5, tC.want5)
 			}
 
-			if !f64_equals(tC.want6, got6, float64EqualityThreshold) {
+			if !f64_equals(tC.want6, got6) {
 				t.Errorf("_InverseStart() got6 = %v, want %v", got6, tC.want6)
 			}
 		})
@@ -804,47 +804,47 @@ func Test_Lambda12(t *testing.T) {
 				tC.C1a, tC.C2a, tC.C3a,
 			)
 
-			if !f64_equals(tC.want1, got1, float64EqualityThreshold) {
+			if !f64_equals(tC.want1, got1) {
 				t.Errorf("_Lambda12() got1 = %v, want %v", got1, tC.want1)
 			}
 
-			if !f64_equals(tC.want2, got2, float64EqualityThreshold) {
+			if !f64_equals(tC.want2, got2) {
 				t.Errorf("_Lambda12() got2 = %v, want %v", got2, tC.want2)
 			}
 
-			if !f64_equals(tC.want3, got3, float64EqualityThreshold) {
+			if !f64_equals(tC.want3, got3) {
 				t.Errorf("_Lambda12() got3 = %v, want %v", got3, tC.want3)
 			}
 
-			if !f64_equals(tC.want4, got4, float64EqualityThreshold) {
+			if !f64_equals(tC.want4, got4) {
 				t.Errorf("_Lambda12() got4 = %v, want %v", got4, tC.want4)
 			}
 
-			if !f64_equals(tC.want5, got5, float64EqualityThreshold) {
+			if !f64_equals(tC.want5, got5) {
 				t.Errorf("_Lambda12() got5 = %v, want %v", got5, tC.want5)
 			}
 
-			if !f64_equals(tC.want6, got6, float64EqualityThreshold) {
+			if !f64_equals(tC.want6, got6) {
 				t.Errorf("_Lambda12() got6 = %v, want %v", got6, tC.want6)
 			}
 
-			if !f64_equals(tC.want7, got7, float64EqualityThreshold) {
+			if !f64_equals(tC.want7, got7) {
 				t.Errorf("_Lambda12() got7 = %v, want %v", got7, tC.want7)
 			}
 
-			if !f64_equals(tC.want8, got8, float64EqualityThreshold) {
+			if !f64_equals(tC.want8, got8) {
 				t.Errorf("_Lambda12() got8 = %v, want %v", got8, tC.want8)
 			}
 
-			if !f64_equals(tC.want9, got9, float64EqualityThreshold) {
+			if !f64_equals(tC.want9, got9) {
 				t.Errorf("_Lambda12() got9 = %v, want %v", got9, tC.want9)
 			}
 
-			if !f64_equals(tC.want10, got10, float64EqualityThreshold) {
+			if !f64_equals(tC.want10, got10) {
 				t.Errorf("_Lambda12() got10 = %v, want %v", got10, tC.want10)
 			}
 
-			if !f64_equals(tC.want11, got11, float64EqualityThreshold) {
+			if !f64_equals(tC.want11, got11) {
 				t.Errorf("_Lambda12() got11 = %v, want %v", got11, tC.want11)
 			}
 		})
@@ -972,14 +972,32 @@ func Test_gen_inverse(t *testing.T) {
 			S12:     math.NaN(),
 		},
 		{
-			desc:    "1",
+			desc:    "2",
 			lat1:    0.0,
 			lon1:    539.0,
 			lat2:    0.0,
 			lon2:    181.0,
 			outmask: STANDARD,
 			a12:     2.0067281796419527,
-			s12:     222639.0,
+			s12:     222638.98158654713,
+			salp1:   1,
+			calp1:   0,
+			salp2:   1,
+			calp2:   0,
+			m12:     math.NaN(),
+			M12:     math.NaN(),
+			M21:     math.NaN(),
+			S12:     math.NaN(),
+		},
+		{
+			desc:    "3",
+			lat1:    0.0,
+			lon1:    539.0,
+			lat2:    0.0,
+			lon2:    181.0,
+			outmask: STANDARD | LONG_UNROLL,
+			a12:     2.0067281796419527,
+			s12:     222638.98158654713,
 			salp1:   1,
 			calp1:   0,
 			salp2:   1,
@@ -996,43 +1014,43 @@ func Test_gen_inverse(t *testing.T) {
 				tC.lat1, tC.lon1, tC.lat2, tC.lon2, tC.outmask,
 			)
 
-			if !f64_equals(tC.a12, a12, float64EqualityThreshold) {
+			if !f64_equals(tC.a12, a12) {
 				t.Errorf("_gen_inverse() a12 = %v, want %v", a12, tC.a12)
 			}
 
-			if !f64_equals(tC.s12, s12, 0.5) {
+			if !f64_equals(tC.s12, s12) {
 				t.Errorf("_gen_inverse() s12 = %v, want %v", s12, tC.s12)
 			}
 
-			if !f64_equals(tC.salp1, salp1, float64EqualityThreshold) {
+			if !f64_equals(tC.salp1, salp1) {
 				t.Errorf("_gen_inverse() salp1 = %v, want %v", salp1, tC.salp1)
 			}
 
-			if !f64_equals(tC.calp1, calp1, float64EqualityThreshold) {
+			if !f64_equals(tC.calp1, calp1) {
 				t.Errorf("_gen_inverse() calp1 = %v, want %v", calp1, tC.calp1)
 			}
 
-			if !f64_equals(tC.salp2, salp2, float64EqualityThreshold) {
+			if !f64_equals(tC.salp2, salp2) {
 				t.Errorf("_gen_inverse() salp2 = %v, want %v", salp2, tC.salp2)
 			}
 
-			if !f64_equals(tC.calp2, calp2, float64EqualityThreshold) {
+			if !f64_equals(tC.calp2, calp2) {
 				t.Errorf("_gen_inverse() calp2 = %v, want %v", calp2, tC.calp2)
 			}
 
-			if !f64_equals(tC.m12, m12, float64EqualityThreshold) {
+			if !f64_equals(tC.m12, m12) {
 				t.Errorf("_gen_inverse() m12 = %v, want %v", m12, tC.m12)
 			}
 
-			if !f64_equals(tC.M12, M12, float64EqualityThreshold) {
+			if !f64_equals(tC.M12, M12) {
 				t.Errorf("_gen_inverse() M12 = %v, want %v", M12, tC.M12)
 			}
 
-			if !f64_equals(tC.M21, M21, float64EqualityThreshold) {
+			if !f64_equals(tC.M21, M21) {
 				t.Errorf("_gen_inverse() M21 = %v, want %v", M21, tC.M21)
 			}
 
-			if !f64_equals(tC.S12, S12, float64EqualityThreshold) {
+			if !f64_equals(tC.S12, S12) {
 				t.Errorf("_gen_inverse() S12 = %v, want %v", S12, tC.S12)
 			}
 		})
@@ -1053,6 +1071,14 @@ func Benchmark_gen_inverse(b *testing.B) {
 			lon1:    0.0,
 			lat2:    1.0,
 			lon2:    1.0,
+			outmask: STANDARD,
+		},
+		{
+			desc:    "2",
+			lat1:    0.0,
+			lon1:    539.0,
+			lat2:    0.0,
+			lon2:    181.0,
 			outmask: STANDARD,
 		},
 	}

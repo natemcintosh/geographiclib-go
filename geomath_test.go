@@ -487,11 +487,11 @@ func TestAng_diff(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			d, tvar := Ang_diff(tC.x, tC.y)
 
-			if !f64_equals(d, tC.d, float64EqualityThreshold) {
+			if !f64_equals(d, tC.d) {
 				t.Errorf("d = %v; want %v", d, tC.d)
 			}
 
-			if !f64_equals(tvar, tC.t, float64EqualityThreshold) {
+			if !f64_equals(tvar, tC.t) {
 				t.Errorf("t = %v; want %v", tvar, tC.t)
 			}
 		})
@@ -518,7 +518,7 @@ func TestAng_normalize(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			got := Ang_normalize(tC.in)
-			if !f64_equals(got, tC.want, float64EqualityThreshold) {
+			if !f64_equals(got, tC.want) {
 				t.Errorf("Ang_normalize(%v) = %v; want %v", tC.in, got, tC.want)
 			}
 		})
