@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-const float64EqualityThreshold = 1e-9
+const float64EqualityThreshold = 4e-6
 
 func almost_equal(a, b, threshold float64) bool {
 	return math.Abs(a-b) < threshold
