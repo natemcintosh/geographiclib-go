@@ -1759,44 +1759,44 @@ func read_dot_dat(filename string) []dat_struct {
 	return data
 }
 
-// func TestDirect100(t *testing.T) {
-// 	// Create a geod with which to do the computations
-// 	geod := Wgs84()
+func TestDirect100(t *testing.T) {
+	// Create a geod with which to do the computations
+	geod := Wgs84()
 
-// 	// Get the set of 100 test cases from the test_fixtures folder
-// 	filename := "test_fixtures/GeodTest-100.dat"
+	// Get the set of 100 test cases from the test_fixtures folder
+	filename := "test_fixtures/GeodTest-100.dat"
 
-// 	// Read in the file
-// 	test_cases := read_dot_dat(filename)
+	// Read in the file
+	test_cases := read_dot_dat(filename)
 
-// 	// For each test case, run the direct computation, and compare the results
-// 	for row_num, tc := range test_cases {
-// 		res := geod.DirectGetAll(tc.lat1, tc.lon1, tc.azi1, tc.s12_dist)
+	// For each test case, run the direct computation, and compare the results
+	for row_num, tc := range test_cases {
+		res := geod.DirectGetAll(tc.lat1, tc.lon1, tc.azi1, tc.s12_dist)
 
-// 		// Check each result. Note that there should not be any NaN results from this file
-// 		if !almost_equal(res.LatDeg, tc.lat2, float64EqualityThreshold) {
-// 			t.Errorf("Row: %d -- Direct() Lat2 = %v; want %v", row_num, res.LatDeg, tc.lat2)
-// 		}
+		// Check each result. Note that there should not be any NaN results from this file
+		if !almost_equal(res.LatDeg, tc.lat2, float64EqualityThreshold) {
+			t.Errorf("Row: %d -- Direct() Lat2 = %v; want %v", row_num, res.LatDeg, tc.lat2)
+		}
 
-// 		if !almost_equal(res.LonDeg, tc.lon2, float64EqualityThreshold) {
-// 			t.Errorf("Row: %d -- Direct() Lon2 = %v; want %v", row_num, res.LonDeg, tc.lon2)
-// 		}
+		if !almost_equal(res.LonDeg, tc.lon2, float64EqualityThreshold) {
+			t.Errorf("Row: %d -- Direct() Lon2 = %v; want %v", row_num, res.LonDeg, tc.lon2)
+		}
 
-// 		if !almost_equal(res.AziDeg, tc.azi2, float64EqualityThreshold) {
-// 			t.Errorf("Row: %d -- Direct() AziDeg = %v; want %v", row_num, res.AziDeg, tc.azi2)
-// 		}
+		if !almost_equal(res.AziDeg, tc.azi2, float64EqualityThreshold) {
+			t.Errorf("Row: %d -- Direct() AziDeg = %v; want %v", row_num, res.AziDeg, tc.azi2)
+		}
 
-// 		if !almost_equal(res.ReducedLengthM, tc.m12, float64EqualityThreshold) {
-// 			t.Errorf("Row: %d -- Direct() ReducedLengthM = %v; want %v", row_num, res.ReducedLengthM, tc.m12)
-// 		}
+		if !almost_equal(res.ReducedLengthM, tc.m12, float64EqualityThreshold) {
+			t.Errorf("Row: %d -- Direct() ReducedLengthM = %v; want %v", row_num, res.ReducedLengthM, tc.m12)
+		}
 
-// 		if !almost_equal(res.S12M2, tc.s12_area, float64EqualityThreshold) {
-// 			t.Errorf("Row: %d -- Direct() S12M2 = %v; want %v", row_num, res.S12M2, tc.s12_area)
-// 		}
+		if !almost_equal(res.S12M2, tc.s12_area, 8.8e2) {
+			t.Errorf("Row: %d -- Direct() S12M2 = %v; want %v", row_num, res.S12M2, tc.s12_area)
+		}
 
-// 		if !almost_equal(res.A12Deg, tc.a12, float64EqualityThreshold) {
-// 			t.Errorf("Row: %d -- Direct() A12Deg = %v; want %v", row_num, res.A12Deg, tc.a12)
-// 		}
+		if !almost_equal(res.A12Deg, tc.a12, float64EqualityThreshold) {
+			t.Errorf("Row: %d -- Direct() A12Deg = %v; want %v", row_num, res.A12Deg, tc.a12)
+		}
 
-// 	}
-// }
+	}
+}
