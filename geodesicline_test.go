@@ -82,6 +82,37 @@ func BenchmarkNewGeodesicLine(b *testing.B) {
 	}
 }
 
-// func Test_gen_position(t *testing.T) {
+func Test_gen_position(t *testing.T) {
+	geod := Wgs84()
+	gl := NewGeodesicLine(geod, 0.0, 0.0, 10.0, math.NaN(), math.NaN())
+	a12, lat2, lon2, azi2, s12, m12, M12, M21, S12 := gl._gen_position(false, 150.0, 3979)
 
-// }
+	if !f64_equals(a12, 0.0013520059461334633) {
+		t.Errorf("a12 = %v; want %v", a12, 0.0013520059461334633)
+	}
+
+	if !f64_equals(lat2, 0.0013359451088740494) {
+		t.Errorf("lat2 = %v; want %v", lat2, 0.0013359451088740494)
+	}
+	if !f64_equals(lon2, 0.00023398621812867812) {
+		t.Errorf("lon2 = %v; want %v", lon2, 0.00023398621812867812)
+	}
+	if !f64_equals(azi2, 10.000000002727887) {
+		t.Errorf("azi2 = %v; want %v", azi2, 10.000000002727887)
+	}
+	if !f64_equals(s12, 150.0) {
+		t.Errorf("s12 = %v; want %v", s12, 150.0)
+	}
+	if !f64_equals(math.NaN(), m12) {
+		t.Errorf("m12 = %v; want %v", m12, math.NaN())
+	}
+	if !f64_equals(math.NaN(), M12) {
+		t.Errorf("M12 = %v; want %v", M12, math.NaN())
+	}
+	if !f64_equals(math.NaN(), M21) {
+		t.Errorf("M21 = %v; want %v", M21, math.NaN())
+	}
+	if !f64_equals(math.NaN(), S12) {
+		t.Errorf("S12 = %v; want %v", S12, math.NaN())
+	}
+}
