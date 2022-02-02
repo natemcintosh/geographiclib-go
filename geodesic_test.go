@@ -1284,3 +1284,172 @@ func Benchmark_gen_inverse_azi(b *testing.B) {
 		})
 	}
 }
+
+func Test_gen_direct(t *testing.T) {
+	testCases := []struct {
+		desc                  string
+		geod                  Geodesic
+		lat1, lon1, azi1      float64
+		arcmode               bool
+		s12_a12               float64
+		outmask               uint64
+		a12, lat2, lon2, azi2 float64
+		s12, m12              float64
+		M12, M21, S12         float64
+	}{
+		{
+			desc:    "geodsolve28",
+			geod:    NewGeodesic(6.4e6, 0.1),
+			lat1:    1.0,
+			lon1:    2.0,
+			azi1:    10.0,
+			arcmode: false,
+			s12_a12: 5e6,
+			outmask: STANDARD,
+			a12:     48.555706903681603,
+			lat2:    51.434124142195124,
+			lon2:    12.486884576686398,
+			azi2:    15.178966424439388,
+			s12:     5000000,
+			m12:     math.NaN(),
+			M12:     math.NaN(),
+			M21:     math.NaN(),
+			S12:     math.NaN(),
+		},
+		{
+			desc:    "geodsolve61",
+			geod:    Wgs84(),
+			lat1:    45.0,
+			lon1:    0.0,
+			azi1:    -0.000000000000000003,
+			arcmode: false,
+			s12_a12: 1e7,
+			outmask: STANDARD | LONG_UNROLL,
+			a12:     89.88610143063056,
+			lat2:    45.306319097990396,
+			lon2:    -180,
+			azi2:    -180,
+			s12:     1.0e7,
+			m12:     math.NaN(),
+			M12:     math.NaN(),
+			M21:     math.NaN(),
+			S12:     math.NaN(),
+		},
+		{
+			desc:    "geodsolve17",
+			geod:    NewGeodesic(6.4e6, -1/150.0),
+			lat1:    40.0,
+			lon1:    -75.0,
+			azi1:    -10.0,
+			arcmode: false,
+			s12_a12: 2e7,
+			outmask: STANDARD | LONG_UNROLL,
+			a12:     178.44443367991155,
+			lat2:    -38.469547002608067,
+			lon2:    -254.81220904664144,
+			azi2:    -170.21964804643204,
+			s12:     2.0e7,
+			m12:     math.NaN(),
+			M12:     math.NaN(),
+			M21:     math.NaN(),
+			S12:     math.NaN(),
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			a12, lat2, lon2, azi2, s12, m12, M12, M21, S12, _ := tC.geod._gen_direct(
+				tC.lat1, tC.lon1, tC.azi1, tC.arcmode, tC.s12_a12, tC.outmask,
+			)
+
+			if !f64_equals(tC.a12, a12) {
+				t.Errorf("_gen_direct() a12 = %v, want %v", a12, tC.a12)
+			}
+
+			if !f64_equals(tC.lat2, lat2) {
+				t.Errorf("_gen_direct() lat2 = %v, want %v", lat2, tC.lat2)
+			}
+
+			if !f64_equals(tC.lon2, lon2) {
+				t.Errorf("_gen_direct() lon2 = %v, want %v", lon2, tC.lon2)
+			}
+
+			if !f64_equals(tC.azi2, azi2) {
+				t.Errorf("_gen_direct() azi2 = %v, want %v", azi2, tC.azi2)
+			}
+
+			if !f64_equals(tC.s12, s12) {
+				t.Errorf("_gen_direct() s12 = %v, want %v", s12, tC.s12)
+			}
+
+			if !f64_equals(tC.m12, m12) {
+				t.Errorf("_gen_direct() m12 = %v, want %v", m12, tC.m12)
+			}
+
+			if !f64_equals(tC.M12, M12) {
+				t.Errorf("_gen_direct() M12 = %v, want %v", M12, tC.M12)
+			}
+
+			if !f64_equals(tC.M21, M21) {
+				t.Errorf("_gen_direct() M21 = %v, want %v", M21, tC.M21)
+			}
+
+			if !f64_equals(tC.S12, S12) {
+				t.Errorf("_gen_direct() S12 = %v, want %v", S12, tC.S12)
+			}
+
+		})
+	}
+}
+
+func Benchmark_gen_direct(b *testing.B) {
+	benchmarks := []struct {
+		desc             string
+		geod             Geodesic
+		lat1, lon1, azi1 float64
+		arcmode          bool
+		s12_a12          float64
+		outmask          uint64
+	}{
+		{
+			desc:    "geodsolve28",
+			geod:    NewGeodesic(6.4e6, 0.1),
+			lat1:    1.0,
+			lon1:    2.0,
+			azi1:    10.0,
+			arcmode: false,
+			s12_a12: 5e6,
+			outmask: STANDARD,
+		},
+		{
+			desc:    "geodsolve61",
+			geod:    Wgs84(),
+			lat1:    45.0,
+			lon1:    0.0,
+			azi1:    -0.000000000000000003,
+			arcmode: false,
+			s12_a12: 1e7,
+			outmask: STANDARD | LONG_UNROLL,
+		},
+		{
+			desc:    "geodsolve17",
+			geod:    NewGeodesic(6.4e6, -1/150.0),
+			lat1:    40.0,
+			lon1:    -75.0,
+			azi1:    -10.0,
+			arcmode: false,
+			s12_a12: 2e7,
+			outmask: STANDARD | LONG_UNROLL,
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.geod._gen_direct(
+					bm.lat1, bm.lon1, bm.azi1, bm.arcmode, bm.s12_a12, bm.outmask,
+				)
+			}
+
+		})
+	}
+}
