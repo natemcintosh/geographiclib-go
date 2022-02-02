@@ -874,3 +874,22 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 
 	return a12, s12, salp1, calp1, salp2, calp2, m12, M12, M21, S12
 }
+
+// _gen_direct returns (a12, lat2, lon2, azi2, s12, m12, M12, M21, S12, outmask)
+func (g Geodesic) _gen_direct(
+	lat1 float64,
+	lon1 float64,
+	azi1 float64,
+	arcmode bool,
+	s12_a12 float64,
+	outmask uint64,
+) (float64, float64, float64, float64, float64, float64, float64, float64, float64, uint64) {
+	if !arcmode {
+		outmask |= DISTANCE_IN
+	}
+
+	line := NewGeodesicLineWithCaps(g, lat1, lon1, azi1, outmask, math.NaN(), math.NaN())
+	a12, lat2, lon2, azi2, s12, m12, M12, M21, S12 := line._gen_position(arcmode, s12_a12, outmask)
+
+	return a12, lat2, lon2, azi2, s12, m12, M12, M21, S12, outmask
+}
