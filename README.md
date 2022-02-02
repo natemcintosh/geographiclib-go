@@ -15,6 +15,7 @@ A golang port of geographiclib. For a wrapper of the C functions, see [this repo
 - [ ] Geodisic tests
 - [X] Geodisic line
 - [X] Geodisic line tests
+- [ ] Benchmarks comparing go implementation with C wrapper
 
 #### General Notes
 There is a lot of probably unnecessary math in `geomath.go`. First make sure the tests pass, then replace them with standard library functions.

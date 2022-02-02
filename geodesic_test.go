@@ -1,7 +1,12 @@
 package geographiclibgo
 
 import (
+	"encoding/csv"
+	"io"
+	"log"
 	"math"
+	"os"
+	"strconv"
 	"testing"
 )
 
@@ -1453,3 +1458,345 @@ func Benchmark_gen_direct(b *testing.B) {
 		})
 	}
 }
+
+func TestDirectBadInputs(t *testing.T) {
+	geod := Wgs84()
+	testCases := []struct {
+		desc    string
+		lat     float64
+		lon     float64
+		azi     float64
+		s12     float64
+		wantlat float64
+		wantlon float64
+		wantazi float64
+	}{
+		{
+			desc:    "inf s12",
+			lat:     0.0,
+			lon:     0.0,
+			azi:     90.0,
+			s12:     math.Inf(0),
+			wantlat: math.NaN(),
+			wantlon: math.NaN(),
+			wantazi: math.NaN(),
+		},
+		{
+			desc:    "nan s12",
+			lat:     0.0,
+			lon:     0.0,
+			azi:     90.0,
+			s12:     math.NaN(),
+			wantlat: math.NaN(),
+			wantlon: math.NaN(),
+			wantazi: math.NaN(),
+		},
+		{
+			desc:    "inf azi",
+			lat:     0.0,
+			lon:     0.0,
+			azi:     math.Inf(0),
+			s12:     1000.0,
+			wantlat: math.NaN(),
+			wantlon: math.NaN(),
+			wantazi: math.NaN(),
+		},
+		{
+			desc:    "nan azi",
+			lat:     0.0,
+			lon:     0.0,
+			azi:     math.NaN(),
+			s12:     1000.0,
+			wantlat: math.NaN(),
+			wantlon: math.NaN(),
+			wantazi: math.NaN(),
+		},
+		{
+			desc:    "inf lon",
+			lat:     0.0,
+			lon:     math.Inf(0),
+			azi:     90.0,
+			s12:     1000.0,
+			wantlat: 0.0,
+			wantlon: math.NaN(),
+			wantazi: 90,
+		},
+		{
+			desc:    "nan lon",
+			lat:     0.0,
+			lon:     math.NaN(),
+			azi:     90.0,
+			s12:     1000.0,
+			wantlat: 0.0,
+			wantlon: math.NaN(),
+			wantazi: 90,
+		},
+		{
+			desc:    "inf lat",
+			lat:     math.Inf(0),
+			lon:     0.0,
+			azi:     90.0,
+			s12:     1000.0,
+			wantlat: math.NaN(),
+			wantlon: math.NaN(),
+			wantazi: math.NaN(),
+		},
+		{
+			desc:    "nan lat",
+			lat:     math.NaN(),
+			lon:     0.0,
+			azi:     90.0,
+			s12:     1000.0,
+			wantlat: math.NaN(),
+			wantlon: math.NaN(),
+			wantazi: math.NaN(),
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			latlonazi := geod.DirectGetLatLonAzi(tC.lat, tC.lon, tC.azi, tC.s12)
+
+			if !f64_equals(tC.wantlat, latlonazi.LatDeg) {
+				t.Errorf("Direct() lat = %v; want %v", latlonazi.LatDeg, tC.wantlat)
+			}
+
+			if !f64_equals(tC.wantlon, latlonazi.LonDeg) {
+				t.Errorf("Direct() lon = %v; want %v", latlonazi.LonDeg, tC.wantlon)
+			}
+
+			if !f64_equals(tC.wantazi, latlonazi.AziDeg) {
+				t.Errorf("Direct() lon = %v; want %v", latlonazi.AziDeg, tC.wantazi)
+			}
+		})
+	}
+}
+
+func BenchmarkDirectBadInputs(b *testing.B) {
+	geod := Wgs84()
+	benchmarks := []struct {
+		desc string
+		lat  float64
+		lon  float64
+		azi  float64
+		s12  float64
+	}{
+		{
+			desc: "inf s12",
+			lat:  0.0,
+			lon:  0.0,
+			azi:  90.0,
+			s12:  math.Inf(0),
+		},
+		{
+			desc: "nan s12",
+			lat:  0.0,
+			lon:  0.0,
+			azi:  90.0,
+			s12:  math.NaN(),
+		},
+		{
+			desc: "inf azi",
+			lat:  0.0,
+			lon:  0.0,
+			azi:  math.Inf(0),
+			s12:  1000.0,
+		},
+		{
+			desc: "nan azi",
+			lat:  0.0,
+			lon:  0.0,
+			azi:  math.NaN(),
+			s12:  1000.0,
+		},
+		{
+			desc: "inf lon",
+			lat:  0.0,
+			lon:  math.Inf(0),
+			azi:  90.0,
+			s12:  1000.0,
+		},
+		{
+			desc: "nan lon",
+			lat:  0.0,
+			lon:  math.NaN(),
+			azi:  90.0,
+			s12:  1000.0,
+		},
+		{
+			desc: "inf lat",
+			lat:  math.Inf(0),
+			lon:  0.0,
+			azi:  90.0,
+			s12:  1000.0,
+		},
+		{
+			desc: "nan lat",
+			lat:  math.NaN(),
+			lon:  0.0,
+			azi:  90.0,
+			s12:  1000.0,
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				geod.DirectGetLatLonAzi(bm.lat, bm.lon, bm.azi, bm.s12)
+			}
+		})
+	}
+}
+
+type dat_struct struct {
+	lat1     float64 // latitude at point 1, lat1 (degrees, exact)
+	lon1     float64 // longitude at point 1, lon1 (degrees, always 0)
+	azi1     float64 // azimuth at point 1, azi1 (clockwise from north in degrees, exact)
+	lat2     float64 // latitude at point 2, lat2 (degrees, accurate to 10−18 deg)
+	lon2     float64 // longitude at point 2, lon2 (degrees, accurate to 10−18 deg)
+	azi2     float64 // azimuth at point 2, azi2 (degrees, accurate to 10−18 deg)
+	s12_dist float64 // geodesic distance from point 1 to point 2, s12 (meters, exact)
+	a12      float64 // arc distance on the auxiliary sphere, a12 (degrees, accurate to 10−18 deg)
+	m12      float64 // reduced length of the geodesic, m12 (meters, accurate to 0.1 pm)
+	s12_area float64 // the area under the geodesic, S12 (m2, accurate to 1 mm2)
+}
+
+func parse_dat_struct(record []string) (dat_struct, error) {
+	var result dat_struct
+	var err error
+
+	result.lat1, err = strconv.ParseFloat(record[0], 64)
+	if err != nil {
+		return result, err
+	}
+
+	result.lon1, err = strconv.ParseFloat(record[1], 64)
+	if err != nil {
+		return result, err
+	}
+
+	result.azi1, err = strconv.ParseFloat(record[2], 64)
+	if err != nil {
+		return result, err
+	}
+
+	result.lat2, err = strconv.ParseFloat(record[3], 64)
+	if err != nil {
+		return result, err
+	}
+
+	result.lon2, err = strconv.ParseFloat(record[4], 64)
+	if err != nil {
+		return result, err
+	}
+
+	result.azi2, err = strconv.ParseFloat(record[5], 64)
+	if err != nil {
+		return result, err
+	}
+
+	result.s12_dist, err = strconv.ParseFloat(record[6], 64)
+	if err != nil {
+		return result, err
+	}
+
+	result.a12, err = strconv.ParseFloat(record[7], 64)
+	if err != nil {
+		return result, err
+	}
+
+	result.m12, err = strconv.ParseFloat(record[8], 64)
+	if err != nil {
+		return result, err
+	}
+
+	result.s12_area, err = strconv.ParseFloat(record[9], 64)
+	if err != nil {
+		return result, err
+	}
+
+	return result, err
+
+}
+
+func read_dot_dat(filename string) []dat_struct {
+	// Open the file
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatalf("Could not open file %s", filename)
+	}
+
+	// Create the CSV reader and the slice of data to fill
+	reader := csv.NewReader(file)
+	reader.Comma = ' '
+	reader.FieldsPerRecord = 10
+	data := make([]dat_struct, 0)
+
+	// For each row
+	for {
+		// Read the record
+		record, err := reader.Read()
+
+		// Check for end of file
+		if err == io.EOF {
+			break
+		}
+
+		// Check for error
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Parse everything to floats
+		test_case, err := parse_dat_struct(record)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		data = append(data, test_case)
+
+	}
+
+	return data
+}
+
+// func TestDirect100(t *testing.T) {
+// 	// Create a geod with which to do the computations
+// 	geod := Wgs84()
+
+// 	// Get the set of 100 test cases from the test_fixtures folder
+// 	filename := "test_fixtures/GeodTest-100.dat"
+
+// 	// Read in the file
+// 	test_cases := read_dot_dat(filename)
+
+// 	// For each test case, run the direct computation, and compare the results
+// 	for row_num, tc := range test_cases {
+// 		res := geod.DirectGetAll(tc.lat1, tc.lon1, tc.azi1, tc.s12_dist)
+
+// 		// Check each result. Note that there should not be any NaN results from this file
+// 		if !almost_equal(res.LatDeg, tc.lat2, float64EqualityThreshold) {
+// 			t.Errorf("Row: %d -- Direct() Lat2 = %v; want %v", row_num, res.LatDeg, tc.lat2)
+// 		}
+
+// 		if !almost_equal(res.LonDeg, tc.lon2, float64EqualityThreshold) {
+// 			t.Errorf("Row: %d -- Direct() Lon2 = %v; want %v", row_num, res.LonDeg, tc.lon2)
+// 		}
+
+// 		if !almost_equal(res.AziDeg, tc.azi2, float64EqualityThreshold) {
+// 			t.Errorf("Row: %d -- Direct() AziDeg = %v; want %v", row_num, res.AziDeg, tc.azi2)
+// 		}
+
+// 		if !almost_equal(res.ReducedLengthM, tc.m12, float64EqualityThreshold) {
+// 			t.Errorf("Row: %d -- Direct() ReducedLengthM = %v; want %v", row_num, res.ReducedLengthM, tc.m12)
+// 		}
+
+// 		if !almost_equal(res.S12M2, tc.s12_area, float64EqualityThreshold) {
+// 			t.Errorf("Row: %d -- Direct() S12M2 = %v; want %v", row_num, res.S12M2, tc.s12_area)
+// 		}
+
+// 		if !almost_equal(res.A12Deg, tc.a12, float64EqualityThreshold) {
+// 			t.Errorf("Row: %d -- Direct() A12Deg = %v; want %v", row_num, res.A12Deg, tc.a12)
+// 		}
+
+// 	}
+// }
