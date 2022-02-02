@@ -1072,7 +1072,7 @@ type AllDirectResults struct {
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
 func (g Geodesic) DirectGetAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
-	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE
+	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE | AREA
 	a12, lat2, lon2, azi2, _, m12, M12, M21, S12, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
 	)
