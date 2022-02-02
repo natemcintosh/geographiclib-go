@@ -116,3 +116,11 @@ func Test_gen_position(t *testing.T) {
 		t.Errorf("S12 = %v; want %v", S12, math.NaN())
 	}
 }
+
+func Benchmark_gen_position(b *testing.B) {
+	geod := Wgs84()
+	gl := NewGeodesicLine(geod, 0.0, 0.0, 10.0, math.NaN(), math.NaN())
+	for i := 0; i < b.N; i++ {
+		gl._gen_position(false, 150.0, 3979)
+	}
+}
