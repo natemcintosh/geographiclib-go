@@ -15,14 +15,14 @@
 // There are a variety of outputs associated with this calculation. We save computation by
 // only calculating the outputs you need. You can get any and all of the following
 //
-//  - lat2 latitude of point 2 (degrees).
-//  - lon2 longitude of point 2 (degrees).
-//  - azi2 (forward) azimuth at point 2 (degrees).
+//  - lat2 latitude of point 2 [degrees].
+//  - lon2 longitude of point 2 [degrees].
+//  - azi2 (forward) azimuth at point 2 [degrees].
 //  - m12 reduced length of geodesic (meters).
 //  - M12 geodesic scale of point 2 relative to point 1 [dimensionless].
 //  - M21 geodesic scale of point 1 relative to point 2 [dimensionless].
-//  - S12 area under the geodesic (meters<sup>2</sup>).
-//  - a12 arc length of between point 1 and point 2 (degrees).
+//  - S12 area under the geodesic [meters^2]
+//  - a12 arc length of between point 1 and point 2 [degrees].
 //
 // Call the appropriate function to get the output you need. The following functions are
 // available for solving the Direct problem. Each describes what it returns
@@ -42,6 +42,49 @@
 //
 // - DirectGetAll -> calculates all of the above plus Area under the geodesic and the
 // arc length between point 1 and point 2
+//
+//
+// Indirect:
+//
+// Measure the distance (and other values) between two points.
+//
+// # Arguments
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+//
+// # Returns
+//
+// There are a variety of outputs associated with this calculation. We save computation by
+// only calculating the outputs you need. You can get any and all of the following
+//
+// - s12 distance between point 1 and point 2 (meters).
+// - azi1 azimuth at point 1 [degrees].
+// - azi2 (forward) azimuth at point 2 [degrees].
+// - m12 reduced length of geodesic (meters).
+// - M12 geodesic scale of point 2 relative to point 1 [dimensionless].
+// - M21 geodesic scale of point 1 relative to point 2 [dimensionless].
+// - S12 area under the geodesic [meters^2]
+// - a12 arc length of between point 1 and point 2 [degrees].
+//
+// Call the appropriate function to get the output you need. The following functions are
+// available for solving the Direct problem. Each describes what it returns
+//
+//
+//
+//  `lat1` and `lat2` should be in the range [&minus;90&deg;, 90&deg;].
+//  The values of `azi1` and `azi2` returned are in the range
+//  [&minus;180&deg;, 180&deg;].
+//
+// If either point is at a pole, the azimuth is defined by keeping the
+// longitude fixed, writing `lat` = &plusmn;(90&deg; &minus; &epsilon;),
+// and taking the limit &epsilon; &rarr; 0+.
+//
+// The solution to the inverse problem is found using Newton's method.  If
+// this fails to converge (this is very unlikely in geodetic applications
+// but does occur for very eccentric ellipsoids), then the bisection method
+// is used to refine the solution.
 package geographiclibgo
 
 import "math"
@@ -1086,4 +1129,34 @@ func (g Geodesic) DirectGetAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllD
 		S12M2:          S12,
 		A12Deg:         a12,
 	}
+}
+
+// InverseGetDistance returns the distance from point 1 to point 2 in meters. Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g Geodesic) InverseGetDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) float64 {
+	capabilities := DISTANCE
+	_, s12, _, _, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return s12
+}
+
+type DistanceArcLength struct {
+	DistanceM    float64 // distance between point 1 and point 2 [meters]
+	ArcLengthDeg float64 // arc length between point 1 and point 2 [degrees]
+}
+
+// InverseGetDistanceArcLength returns the distance from one point to the next, and the
+// arc length between the points. Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g Geodesic) InverseGetDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceArcLength {
+	capabilities := DISTANCE
+	a12, s12, _, _, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return DistanceArcLength{DistanceM: s12, ArcLengthDeg: a12}
 }
