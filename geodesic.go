@@ -1217,6 +1217,100 @@ type DistanceAzimuthsArcLengthReducedLength struct {
 	ReducedLengthM float64 // reduced length of geodesic [meters]
 }
 
-func (g Geodesic) InverseCalcDistanceAzimuthsArcLengthReducedLength() {
+// InverseCalcDistanceAzimuthsArcLengthReducedLength returns the distance from one point
+// to the next, the azimuth at point 1, the azimuth at point 2, the arc length
+// between the points, and the reduceed length of the geodesic.
+// Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g Geodesic) InverseCalcDistanceAzimuthsArcLengthReducedLength(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) DistanceAzimuthsArcLengthReducedLength {
+	capabilities := DISTANCE | AZIMUTH | REDUCEDLENGTH
+	a12, s12, azi1, azi2, m12, _, _, _ := g._gen_inverse_azi(
+		lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities,
+	)
 
+	return DistanceAzimuthsArcLengthReducedLength{
+		DistanceM:      s12,
+		Azimuth1Deg:    azi1,
+		Azimuth2Deg:    azi2,
+		ArcLengthDeg:   a12,
+		ReducedLengthM: m12,
+	}
+}
+
+type DistanceAzimuthsArcLengthReducedLengthScales struct {
+	DistanceM      float64 // distance between point 1 and point 2 [meters]
+	Azimuth1Deg    float64 // azimuth at point 1 [degrees]
+	Azimuth2Deg    float64 // (forward) azimuth at point 2 [degrees]
+	ArcLengthDeg   float64 // arc length between point 1 and point 2 [degrees]
+	ReducedLengthM float64 // reduced length of geodesic [meters]
+	M12            float64 // geodesic scale of point 2 relative to point 1 [dimensionless]
+	M21            float64 // geodesic scale of point 1 relative to point 2 [dimensionless]
+}
+
+// InverseCalcDistanceAzimuthsArcLengthReducedLengthScales returns everything described
+// by the `DistanceAzimuthsArcLengthReducedLengthScales` type.
+// Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g Geodesic) InverseCalcDistanceAzimuthsArcLengthReducedLengthScales(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) DistanceAzimuthsArcLengthReducedLengthScales {
+	capabilities := DISTANCE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE
+	a12, s12, azi1, azi2, m12, M12, M21, _ := g._gen_inverse_azi(
+		lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities,
+	)
+
+	return DistanceAzimuthsArcLengthReducedLengthScales{
+		DistanceM:      s12,
+		Azimuth1Deg:    azi1,
+		Azimuth2Deg:    azi2,
+		ArcLengthDeg:   a12,
+		ReducedLengthM: m12,
+		M12:            M12,
+		M21:            M21,
+	}
+}
+
+type AllInverseResults struct {
+	DistanceM      float64 // distance between point 1 and point 2 [meters]
+	Azimuth1Deg    float64 // azimuth at point 1 [degrees]
+	Azimuth2Deg    float64 // (forward) azimuth at point 2 [degrees]
+	ArcLengthDeg   float64 // arc length between point 1 and point 2 [degrees]
+	ReducedLengthM float64 // reduced length of geodesic [meters]
+	M12            float64 // geodesic scale of point 2 relative to point 1 [dimensionless]
+	M21            float64 // geodesic scale of point 1 relative to point 2 [dimensionless]
+	S12M2          float64 // area under the geodesic [meters^2]
+}
+
+// InverseCalcAll returns everything described in the `AllInverseResults` results type.
+// Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g Geodesic) InverseCalcAll(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) AllInverseResults {
+	capabilities := DISTANCE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE | AREA
+	a12, s12, azi1, azi2, m12, M12, M21, S12 := g._gen_inverse_azi(
+		lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities,
+	)
+
+	return AllInverseResults{
+		DistanceM:      s12,
+		Azimuth1Deg:    azi1,
+		Azimuth2Deg:    azi2,
+		ArcLengthDeg:   a12,
+		ReducedLengthM: m12,
+		M12:            M12,
+		M21:            M21,
+		S12M2:          S12,
+	}
 }

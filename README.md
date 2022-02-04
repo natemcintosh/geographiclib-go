@@ -20,7 +20,7 @@ go implementation.
 - [X] Geodisic Direct tests
 - [X] Geodisic line
 - [X] Geodisic line tests
-- [ ] Geodisic Inverse
+- [X] Geodisic Inverse
 - [ ] Geodisic Inverse tests
 - [ ] C Wrapper
 - [ ] Benchmarks comparing go implementation with C wrapper

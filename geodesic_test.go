@@ -2,6 +2,7 @@ package geographiclibgo
 
 import (
 	"encoding/csv"
+	"errors"
 	"io"
 	"log"
 	"math"
@@ -1724,6 +1725,7 @@ func read_dot_dat(filename string) []dat_struct {
 	if err != nil {
 		log.Fatalf("Could not open file %s", filename)
 	}
+	defer file.Close()
 
 	// Create the CSV reader and the slice of data to fill
 	reader := csv.NewReader(file)
@@ -1796,6 +1798,242 @@ func TestDirect100(t *testing.T) {
 
 		if !almost_equal(res.A12Deg, tc.a12, float64EqualityThreshold) {
 			t.Errorf("Row: %d -- Direct() A12Deg = %v; want %v", row_num, res.A12Deg, tc.a12)
+		}
+
+	}
+}
+
+func BenchmarkDirect100(b *testing.B) {
+	// Create a geod with which to do the computations
+	geod := Wgs84()
+
+	// Get the set of 100 test cases from the test_fixtures folder
+	filename := "test_fixtures/GeodTest-100.dat"
+
+	// Read in the file
+	test_cases := read_dot_dat(filename)
+
+	for i := 0; i < b.N; i++ {
+		for _, tc := range test_cases {
+			geod.DirectCalcLatLonAzi(tc.lat1, tc.lon1, tc.azi1, tc.s12_dist)
+		}
+	}
+}
+
+func file_exists(filename string) bool {
+	_, err := os.Open(filename)
+	return !errors.Is(err, os.ErrNotExist)
+}
+
+func Test_file_exists(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		filename string
+		want     bool
+	}{
+		{
+			desc:     "yes",
+			filename: "test_fixtures/GeodTest-100.dat",
+			want:     true,
+		},
+		{
+			desc:     "no",
+			filename: "somemadeupfile.txt",
+			want:     false,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got := file_exists(tC.filename)
+
+			if tC.want != got {
+				t.Errorf("file_exists() = %v; want %v", got, tC.want)
+			}
+		})
+	}
+}
+
+func TestDirectAll(t *testing.T) {
+	// Create a geod with which to do the computations
+	// geod := Wgs84()
+
+	// Get the set of 100 test cases from the test_fixtures folder
+	filename := "test_fixtures/GeodTest-100.dat"
+
+	// Check if the file is there
+	if !file_exists(filename) {
+		t.SkipNow()
+	}
+
+	// If not, skip this test
+}
+
+func TestInverseLength(t *testing.T) {
+	geod := Wgs84()
+
+	testCases := []struct {
+		desc       string
+		lat1, lon1 float64
+		lat2, lon2 float64
+		wants12    float64
+	}{
+		{
+			desc:    "short line bug",
+			lat1:    36.493349428792,
+			lon1:    0.0,
+			lat2:    36.49334942879201,
+			lon2:    0.0000008,
+			wants12: 0.072,
+		},
+		{
+			desc:    "volatile sbet12a bug test 1",
+			lat1:    88.202499451857,
+			lon1:    0.0,
+			lat2:    -88.202499451857,
+			lon2:    179.981022032992859592,
+			wants12: 20003898.214,
+		},
+		{
+			desc:    "volatile sbet12a bug test 2",
+			lat1:    89.333123580033,
+			lon1:    0.0,
+			lat2:    -89.333123580032997687,
+			lon2:    179.99295812360148422,
+			wants12: 20003926.881,
+		},
+		{
+			desc:    "volatile x bug",
+			lat1:    56.320923501171,
+			lon1:    0.0,
+			lat2:    -56.320923501171,
+			lon2:    179.664747671772880215,
+			wants12: 19993558.287,
+		},
+		{
+			desc:    "tol1_ bug",
+			lat1:    52.784459512564,
+			lon1:    0.0,
+			lat2:    -52.784459512563990912,
+			lon2:    179.634407464943777557,
+			wants12: 19991596.095,
+		},
+		{
+			desc:    "bet2 = -bet1 bug",
+			lat1:    48.522876735459,
+			lon1:    0.0,
+			lat2:    -48.52287673545898293,
+			lon2:    179.599720456223079643,
+			wants12: 19989144.774,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			s12 := geod.InverseCalcDistance(tC.lat1, tC.lon1, tC.lat2, tC.lon2)
+
+			if !almost_equal(tC.wants12, s12, 0.5e-3) {
+				t.Errorf("InverseCalcDistance() s12 = %v; want %v", s12, tC.wants12)
+			}
+		})
+	}
+}
+
+func BenchmarkInverseLength(b *testing.B) {
+	geod := Wgs84()
+	benchmarks := []struct {
+		desc       string
+		lat1, lon1 float64
+		lat2, lon2 float64
+	}{
+		{
+			desc: "short line bug",
+			lat1: 36.493349428792,
+			lon1: 0.0,
+			lat2: 36.49334942879201,
+			lon2: 0.0000008,
+		},
+		{
+			desc: "volatile sbet12a bug test 1",
+			lat1: 88.202499451857,
+			lon1: 0.0,
+			lat2: -88.202499451857,
+			lon2: 179.981022032992859592,
+		},
+		{
+			desc: "volatile sbet12a bug test 2",
+			lat1: 89.333123580033,
+			lon1: 0.0,
+			lat2: -89.333123580032997687,
+			lon2: 179.99295812360148422,
+		},
+		{
+			desc: "volatile x bug",
+			lat1: 56.320923501171,
+			lon1: 0.0,
+			lat2: -56.320923501171,
+			lon2: 179.664747671772880215,
+		},
+		{
+			desc: "tol1_ bug",
+			lat1: 52.784459512564,
+			lon1: 0.0,
+			lat2: -52.784459512563990912,
+			lon2: 179.634407464943777557,
+		},
+		{
+			desc: "bet2 = -bet1 bug",
+			lat1: 48.522876735459,
+			lon1: 0.0,
+			lat2: -48.52287673545898293,
+			lon2: 179.599720456223079643,
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				geod.DirectCalcLatLonAzi(bm.lat1, bm.lon1, bm.lat2, bm.lon2)
+			}
+		})
+	}
+}
+
+func TestInverse100(t *testing.T) {
+	// Create a geod with which to do the computations
+	geod := Wgs84()
+
+	// Get the set of 100 test cases from the test_fixtures folder
+	filename := "test_fixtures/GeodTest-100.dat"
+
+	// Read in the file
+	test_cases := read_dot_dat(filename)
+
+	// For each test case, run the direct computation, and compare the results
+	for row_num, tc := range test_cases {
+		res := geod.InverseCalcAll(tc.lat1, tc.lon1, tc.lat2, tc.lon2)
+
+		// Check each result. Note that there should not be any NaN results from this file
+		if !almost_equal(res.DistanceM, tc.s12_dist, float64EqualityThreshold) {
+			t.Errorf("Row: %d -- Inverse() DistanceM = %v; want %v", row_num, res.DistanceM, tc.s12_dist)
+		}
+
+		if !almost_equal(res.Azimuth1Deg, tc.azi1, 1e-3) {
+			t.Errorf("Row: %d -- Inverse() Azimuth1Deg = %v; want %v", row_num, res.Azimuth1Deg, tc.azi1)
+		}
+
+		if !almost_equal(res.Azimuth2Deg, tc.azi2, 1e-3) {
+			t.Errorf("Row: %d -- Inverse() Azimuth2Deg = %v; want %v", row_num, res.Azimuth2Deg, tc.azi2)
+		}
+
+		if !almost_equal(res.ArcLengthDeg, tc.a12, float64EqualityThreshold) {
+			t.Errorf("Row: %d -- Inverse() ArcLengthDeg = %v; want %v", row_num, res.ArcLengthDeg, tc.a12)
+		}
+
+		if !almost_equal(res.ReducedLengthM, tc.m12, float64EqualityThreshold) {
+			t.Errorf("Row: %d -- Inverse() ReducedLengthM = %v; want %v", row_num, res.ReducedLengthM, tc.m12)
+		}
+
+		if !almost_equal(res.S12M2, tc.s12_area, 1e3) {
+			t.Errorf("Row: %d -- Inverse() S12M2 = %v; want %v", row_num, res.S12M2, tc.s12_area)
 		}
 
 	}
