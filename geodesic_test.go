@@ -1554,7 +1554,7 @@ func TestDirectBadInputs(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			latlonazi := geod.DirectGetLatLonAzi(tC.lat, tC.lon, tC.azi, tC.s12)
+			latlonazi := geod.DirectCalcLatLonAzi(tC.lat, tC.lon, tC.azi, tC.s12)
 
 			if !f64_equals(tC.wantlat, latlonazi.LatDeg) {
 				t.Errorf("Direct() lat = %v; want %v", latlonazi.LatDeg, tC.wantlat)
@@ -1641,7 +1641,7 @@ func BenchmarkDirectBadInputs(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				geod.DirectGetLatLonAzi(bm.lat, bm.lon, bm.azi, bm.s12)
+				geod.DirectCalcLatLonAzi(bm.lat, bm.lon, bm.azi, bm.s12)
 			}
 		})
 	}
@@ -1771,7 +1771,7 @@ func TestDirect100(t *testing.T) {
 
 	// For each test case, run the direct computation, and compare the results
 	for row_num, tc := range test_cases {
-		res := geod.DirectGetAll(tc.lat1, tc.lon1, tc.azi1, tc.s12_dist)
+		res := geod.DirectCalcAll(tc.lat1, tc.lon1, tc.azi1, tc.s12_dist)
 
 		// Check each result. Note that there should not be any NaN results from this file
 		if !almost_equal(res.LatDeg, tc.lat2, float64EqualityThreshold) {

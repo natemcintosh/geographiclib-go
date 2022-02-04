@@ -27,20 +27,20 @@
 // Call the appropriate function to get the output you need. The following functions are
 // available for solving the Direct problem. Each describes what it returns
 //
-// - DirectGetLatLon -> calculate latitude and longitude
+// - DirectCalcLatLon -> calculate latitude and longitude
 //
-// - DirectGetLatLonAzi -> calculate latitude, longitude, and azimuth
+// - DirectCalcLatLonAzi -> calculate latitude, longitude, and azimuth
 //
-// - DirectGetLatLonAziReducedLength -> calculate latitude, longitude, azimuth, and
+// - DirectCalcLatLonAziReducedLength -> calculate latitude, longitude, azimuth, and
 // reduced length of the geodesic
 //
-// - DirectGetLatLonAziGeodesicScales -> calculate latitude, longitude, azimuth, and
+// - DirectCalcLatLonAziGeodesicScales -> calculate latitude, longitude, azimuth, and
 // the geodesic scales
 //
-// - DirectGetLatLonAziReducedLengthGeodesicScales -> calculate latitude, longitude,
+// - DirectCalcLatLonAziReducedLengthGeodesicScales -> calculate latitude, longitude,
 // azimuth, reduced length, and the geodesic scales
 //
-// - DirectGetAll -> calculates all of the above plus Area under the geodesic and the
+// - DirectCalcAll -> calculates all of the above plus Area under the geodesic and the
 // arc length between point 1 and point 2
 //
 // =====================================================================================
@@ -988,12 +988,12 @@ type LatLon struct {
 	LatDeg, LonDeg float64
 }
 
-// DirectGetLatLon gets the lat and lon of the second point, based on input
+// DirectCalcLatLon gets the lat and lon of the second point, based on input
 //   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectGetLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
+func (g Geodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
 	capabilities := LATITUDE | LONGITUDE
 	_, lat2, lon2, _, _, _, _, _, _, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
@@ -1006,12 +1006,12 @@ type LatLonAzi struct {
 	LatDeg, LonDeg, AziDeg float64
 }
 
-// DirectGetLatLonAzi gets the lat, lon, and azimuth of the second point, based on input
+// DirectCalcLatLonAzi gets the lat, lon, and azimuth of the second point, based on input
 //   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectGetLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
+func (g Geodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH
 	_, lat2, lon2, azi2, _, _, _, _, _, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
@@ -1027,13 +1027,13 @@ type LatLonAziReducedLength struct {
 	ReducedLengthM float64 // Reduced length of the geodesic [meters]
 }
 
-// DirectGetLatLonAziReducedLength gets the lat, lon, azimuth, and reduced length of geodesic
+// DirectCalcLatLonAziReducedLength gets the lat, lon, azimuth, and reduced length of geodesic
 // of the second point, based on input
 //   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectGetLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziReducedLength {
+func (g Geodesic) DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziReducedLength {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH
 	_, lat2, lon2, azi2, _, m12, _, _, _, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
@@ -1050,13 +1050,13 @@ type LatLonAziGeodesicScales struct {
 	M21    float64 // Geodesic scale of point 1 relative to point 2 [dimensionless]
 }
 
-// DirectGetLatLonAziGeodesicScales gets the lat, lon, azimuth, and geodesic scales,
+// DirectCalcLatLonAziGeodesicScales gets the lat, lon, azimuth, and geodesic scales,
 // based on input
 //   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectGetLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziGeodesicScales {
+func (g Geodesic) DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziGeodesicScales {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | GEODESICSCALE
 	_, lat2, lon2, azi2, _, _, M12, M21, _, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
@@ -1074,13 +1074,13 @@ type LatLonAziReducedLengthGeodesicScales struct {
 	M21            float64 // Geodesic scale of point 1 relative to point 2 [dimensionless]
 }
 
-// DirectGetLatLonAziReducedLengthGeodesicScales gets the lat, lon, azimuth, reduced length,
+// DirectCalcLatLonAziReducedLengthGeodesicScales gets the lat, lon, azimuth, reduced length,
 // and geodesic scales based on input
 //   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectGetLatLonAziReducedLengthGeodesicScales(
+func (g Geodesic) DirectCalcLatLonAziReducedLengthGeodesicScales(
 	lat1_deg, lon1_deg, azi1_deg, s12_m float64,
 ) LatLonAziReducedLengthGeodesicScales {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE
@@ -1111,12 +1111,12 @@ type AllDirectResults struct {
 	A12Deg         float64 // Arc length between point 1 and point 2 [degrees]
 }
 
-// DirectGetAll calculates everything possible for the direct method. Takes inputs
+// DirectCalcAll calculates everything possible for the direct method. Takes inputs
 //   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectGetAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
+func (g Geodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE | AREA
 	a12, lat2, lon2, azi2, _, m12, M12, M21, S12, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
@@ -1133,12 +1133,12 @@ func (g Geodesic) DirectGetAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllD
 	}
 }
 
-// InverseGetDistance returns the distance from point 1 to point 2 in meters. Takes inputs
+// InverseCalcDistance returns the distance from point 1 to point 2 in meters. Takes inputs
 // - lat1_deg latitude of point 1 [degrees].
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseGetDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) float64 {
+func (g Geodesic) InverseCalcDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) float64 {
 	capabilities := DISTANCE
 	_, s12, _, _, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
 
@@ -1150,13 +1150,13 @@ type DistanceArcLength struct {
 	ArcLengthDeg float64 // arc length between point 1 and point 2 [degrees]
 }
 
-// InverseGetDistanceArcLength returns the distance from one point to the next, and the
+// InverseCalcDistanceArcLength returns the distance from one point to the next, and the
 // arc length between the points. Takes inputs
 // - lat1_deg latitude of point 1 [degrees].
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseGetDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceArcLength {
+func (g Geodesic) InverseCalcDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceArcLength {
 	capabilities := DISTANCE
 	a12, s12, _, _, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
 
@@ -1169,13 +1169,13 @@ type AzimuthsArcLength struct {
 	ArcLengthDeg float64 // arc length between point 1 and point 2 [degrees]
 }
 
-// InverseGetAzimuthsArcLength returns the azimuth at point 1, the azimuth at point 2,
+// InverseCalcAzimuthsArcLength returns the azimuth at point 1, the azimuth at point 2,
 // and the arc length between the points. Takes inputs
 // - lat1_deg latitude of point 1 [degrees].
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseGetAzimuthsArcLength(
+func (g Geodesic) InverseCalcAzimuthsArcLength(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
 ) AzimuthsArcLength {
 	capabilities := AZIMUTH
@@ -1191,14 +1191,14 @@ type DistanceAzimuthsArcLength struct {
 	ArcLengthDeg float64 // arc length between point 1 and point 2 [degrees]
 }
 
-// InverseGetDistanceAzimuthsArcLength returns the distance from one point to the next,
+// InverseCalcDistanceAzimuthsArcLength returns the distance from one point to the next,
 // the azimuth at point 1, the azimuth at point 2, and the arc length between the points.
 // Takes inputs
 // - lat1_deg latitude of point 1 [degrees].
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseGetDistanceAzimuthsArcLength(
+func (g Geodesic) InverseCalcDistanceAzimuthsArcLength(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
 ) DistanceAzimuthsArcLength {
 	capabilities := DISTANCE | AZIMUTH
@@ -1207,4 +1207,16 @@ func (g Geodesic) InverseGetDistanceAzimuthsArcLength(
 	return DistanceAzimuthsArcLength{
 		DistanceM: s12, Azimuth1Deg: azi1, Azimuth2Deg: azi2, ArcLengthDeg: a12,
 	}
+}
+
+type DistanceAzimuthsArcLengthReducedLength struct {
+	DistanceM      float64 // distance between point 1 and point 2 [meters]
+	Azimuth1Deg    float64 // azimuth at point 1 [degrees]
+	Azimuth2Deg    float64 // (forward) azimuth at point 2 [degrees]
+	ArcLengthDeg   float64 // arc length between point 1 and point 2 [degrees]
+	ReducedLengthM float64 // reduced length of geodesic [meters]
+}
+
+func (g Geodesic) InverseCalcDistanceAzimuthsArcLengthReducedLength() {
+
 }
