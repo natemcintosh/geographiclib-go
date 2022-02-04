@@ -43,7 +43,9 @@
 // - DirectGetAll -> calculates all of the above plus Area under the geodesic and the
 // arc length between point 1 and point 2
 //
-//
+// =====================================================================================
+// =====================================================================================
+// =====================================================================================
 // Indirect:
 //
 // Measure the distance (and other values) between two points.
@@ -1159,4 +1161,50 @@ func (g Geodesic) InverseGetDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2
 	a12, s12, _, _, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
 
 	return DistanceArcLength{DistanceM: s12, ArcLengthDeg: a12}
+}
+
+type AzimuthsArcLength struct {
+	Azimuth1Deg  float64 // azimuth at point 1 [degrees]
+	Azimuth2Deg  float64 // (forward) azimuth at point 2 [degrees]
+	ArcLengthDeg float64 // arc length between point 1 and point 2 [degrees]
+}
+
+// InverseGetAzimuthsArcLength returns the azimuth at point 1, the azimuth at point 2,
+// and the arc length between the points. Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g Geodesic) InverseGetAzimuthsArcLength(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) AzimuthsArcLength {
+	capabilities := AZIMUTH
+	a12, _, azi1, azi2, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return AzimuthsArcLength{Azimuth1Deg: azi1, Azimuth2Deg: azi2, ArcLengthDeg: a12}
+}
+
+type DistanceAzimuthsArcLength struct {
+	DistanceM    float64 // distance between point 1 and point 2 [meters]
+	Azimuth1Deg  float64 // azimuth at point 1 [degrees]
+	Azimuth2Deg  float64 // (forward) azimuth at point 2 [degrees]
+	ArcLengthDeg float64 // arc length between point 1 and point 2 [degrees]
+}
+
+// InverseGetDistanceAzimuthsArcLength returns the distance from one point to the next,
+// the azimuth at point 1, the azimuth at point 2, and the arc length between the points.
+// Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g Geodesic) InverseGetDistanceAzimuthsArcLength(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) DistanceAzimuthsArcLength {
+	capabilities := DISTANCE | AZIMUTH
+	a12, s12, azi1, azi2, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return DistanceAzimuthsArcLength{
+		DistanceM: s12, Azimuth1Deg: azi1, Azimuth2Deg: azi2, ArcLengthDeg: a12,
+	}
 }
