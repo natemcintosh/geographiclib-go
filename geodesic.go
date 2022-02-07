@@ -1191,6 +1191,25 @@ func (g Geodesic) InverseCalcDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon
 	return DistanceArcLength{DistanceM: s12, ArcLengthDeg: a12}
 }
 
+type DistanceAzimuths struct {
+	DistanceM   float64 // distance between point 1 and point 2 [meters]
+	Azimuth1Deg float64 // azimuth at point 1 [degrees]
+	Azimuth2Deg float64 // (forward) azimuth at point 2 [degrees]
+}
+
+// InverseCalcDistanceAzimuths returns the distance from one point to the next, and the
+// azimuths. Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g Geodesic) InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuths {
+	capabilities := DISTANCE | AZIMUTH
+	_, s12, azi1, azi2, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return DistanceAzimuths{DistanceM: s12, Azimuth1Deg: azi1, Azimuth2Deg: azi2}
+}
+
 type AzimuthsArcLength struct {
 	Azimuth1Deg  float64 // azimuth at point 1 [degrees]
 	Azimuth2Deg  float64 // (forward) azimuth at point 2 [degrees]

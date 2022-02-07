@@ -2174,7 +2174,7 @@ func BenchmarkInverse20(b *testing.B) {
 			lat1, lon1 := tC[0], tC[1]
 			lat2, lon2 := tC[3], tC[4]
 
-			geod.InverseCalcAll(lat1, lon1, lat2, lon2)
+			geod.InverseCalcDistanceAzimuths(lat1, lon1, lat2, lon2)
 
 		}
 	}
