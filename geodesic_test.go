@@ -1869,68 +1869,90 @@ func TestDirectAll(t *testing.T) {
 }
 
 func TestInverseLength(t *testing.T) {
-	geod := Wgs84()
-
 	testCases := []struct {
-		desc       string
-		lat1, lon1 float64
-		lat2, lon2 float64
-		wants12    float64
+		desc             string
+		geod             Geodesic
+		lat1, lon1       float64
+		lat2, lon2       float64
+		wants12          float64
+		acceptable_delta float64
 	}{
 		{
-			desc:    "short line bug",
-			lat1:    36.493349428792,
-			lon1:    0.0,
-			lat2:    36.49334942879201,
-			lon2:    0.0000008,
-			wants12: 0.072,
+			desc:             "short line bug",
+			geod:             Wgs84(),
+			lat1:             36.493349428792,
+			lon1:             0.0,
+			lat2:             36.49334942879201,
+			lon2:             0.0000008,
+			wants12:          0.072,
+			acceptable_delta: 0.5e-3,
 		},
 		{
-			desc:    "volatile sbet12a bug test 1",
-			lat1:    88.202499451857,
-			lon1:    0.0,
-			lat2:    -88.202499451857,
-			lon2:    179.981022032992859592,
-			wants12: 20003898.214,
+			desc:             "volatile sbet12a bug test 1",
+			geod:             Wgs84(),
+			lat1:             88.202499451857,
+			lon1:             0.0,
+			lat2:             -88.202499451857,
+			lon2:             179.981022032992859592,
+			wants12:          20003898.214,
+			acceptable_delta: 0.5e-3,
 		},
 		{
-			desc:    "volatile sbet12a bug test 2",
-			lat1:    89.333123580033,
-			lon1:    0.0,
-			lat2:    -89.333123580032997687,
-			lon2:    179.99295812360148422,
-			wants12: 20003926.881,
+			desc:             "volatile sbet12a bug test 2",
+			geod:             Wgs84(),
+			lat1:             89.333123580033,
+			lon1:             0.0,
+			lat2:             -89.333123580032997687,
+			lon2:             179.99295812360148422,
+			wants12:          20003926.881,
+			acceptable_delta: 0.5e-3,
 		},
 		{
-			desc:    "volatile x bug",
-			lat1:    56.320923501171,
-			lon1:    0.0,
-			lat2:    -56.320923501171,
-			lon2:    179.664747671772880215,
-			wants12: 19993558.287,
+			desc:             "volatile x bug",
+			geod:             Wgs84(),
+			lat1:             56.320923501171,
+			lon1:             0.0,
+			lat2:             -56.320923501171,
+			lon2:             179.664747671772880215,
+			wants12:          19993558.287,
+			acceptable_delta: 0.5e-3,
 		},
 		{
-			desc:    "tol1_ bug",
-			lat1:    52.784459512564,
-			lon1:    0.0,
-			lat2:    -52.784459512563990912,
-			lon2:    179.634407464943777557,
-			wants12: 19991596.095,
+			desc:             "tol1_ bug",
+			geod:             Wgs84(),
+			lat1:             52.784459512564,
+			lon1:             0.0,
+			lat2:             -52.784459512563990912,
+			lon2:             179.634407464943777557,
+			wants12:          19991596.095,
+			acceptable_delta: 0.5e-3,
 		},
 		{
-			desc:    "bet2 = -bet1 bug",
-			lat1:    48.522876735459,
-			lon1:    0.0,
-			lat2:    -48.52287673545898293,
-			lon2:    179.599720456223079643,
-			wants12: 19989144.774,
+			desc:             "bet2 = -bet1 bug",
+			geod:             Wgs84(),
+			lat1:             48.522876735459,
+			lon1:             0.0,
+			lat2:             -48.52287673545898293,
+			lon2:             179.599720456223079643,
+			wants12:          19989144.774,
+			acceptable_delta: 0.5e-3,
+		},
+		{
+			desc:             "anitpodal prolate bug 1",
+			geod:             NewGeodesic(6.4e6, -1/150.0),
+			lat1:             0.07476,
+			lon1:             0,
+			lat2:             -0.07476,
+			lon2:             180,
+			wants12:          20106193,
+			acceptable_delta: 0.5,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			s12 := geod.InverseCalcDistance(tC.lat1, tC.lon1, tC.lat2, tC.lon2)
+			s12 := tC.geod.InverseCalcDistance(tC.lat1, tC.lon1, tC.lat2, tC.lon2)
 
-			if !almost_equal(tC.wants12, s12, 0.5e-3) {
+			if !almost_equal(tC.wants12, s12, tC.acceptable_delta) {
 				t.Errorf("InverseCalcDistance() s12 = %v; want %v", s12, tC.wants12)
 			}
 		})
@@ -1991,7 +2013,7 @@ func BenchmarkInverseLength(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				geod.DirectCalcLatLonAzi(bm.lat1, bm.lon1, bm.lat2, bm.lon2)
+				geod.InverseCalcDistance(bm.lat1, bm.lon1, bm.lat2, bm.lon2)
 			}
 		})
 	}
@@ -2189,7 +2211,7 @@ func TestDirect20(t *testing.T) {
 		s12, a12, m12 := tC[6], tC[7], tC[8]
 		M12, M21, S12 := tC[9], tC[10], tC[11]
 
-		inv := geod.DirectWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
+		inv := geod.DirectCalcWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
 
 		if !almost_equal(lat2, inv.LatDeg, 1e-13) {
 			t.Errorf("row %d -- Inverse() lat2 = %v; want %v", row, inv.LatDeg, lat2)
@@ -2232,7 +2254,7 @@ func BenchmarkDirect20(b *testing.B) {
 			lat1, lon1, azi1 := tC[0], tC[1], tC[2]
 			s12 := tC[6]
 
-			geod.DirectWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
+			geod.DirectCalcWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
 
 		}
 	}

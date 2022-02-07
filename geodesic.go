@@ -1133,7 +1133,7 @@ func (g Geodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) All
 	}
 }
 
-// DirectWithCapabilities allows the user to specify which capabilites they wish to use.
+// DirectCalcWithCapabilities allows the user to specify which capabilites they wish to use.
 // This function is useful if you want some other subset of capabilities than those offered
 // by the other DirectCalc...() methods.
 // Takes inputs
@@ -1142,7 +1142,7 @@ func (g Geodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) All
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - capabilities - One or more of the capabilities constant as defined in the file
 //     geodesiccapability.go. Usually, they are OR'd together, e.g. LATITUDE | LONGITUDE
-func (g Geodesic) DirectWithCapabilities(
+func (g Geodesic) DirectCalcWithCapabilities(
 	lat1_deg, lon1_deg, azi1_deg, s12_m float64,
 	capabilities uint64,
 ) AllDirectResults {
@@ -1346,6 +1346,36 @@ func (g Geodesic) InverseCalcAll(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
 ) AllInverseResults {
 	capabilities := DISTANCE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE | AREA
+	a12, s12, azi1, azi2, m12, M12, M21, S12 := g._gen_inverse_azi(
+		lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities,
+	)
+
+	return AllInverseResults{
+		DistanceM:      s12,
+		Azimuth1Deg:    azi1,
+		Azimuth2Deg:    azi2,
+		ArcLengthDeg:   a12,
+		ReducedLengthM: m12,
+		M12:            M12,
+		M21:            M21,
+		S12M2:          S12,
+	}
+}
+
+// InverseCalcWithCapabilities allows the user to specify which capabilites they wish to use.
+// This function is useful if you want some other subset of capabilities than those offered
+// by the other InverseCalc...() methods.
+// Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+// - capabilities - One or more of the capabilities constant as defined in the file
+//     geodesiccapability.go. Usually, they are OR'd together, e.g. LATITUDE | LONGITUDE
+func (g Geodesic) InverseCalcWithCapabilities(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+	capabilities uint64,
+) AllInverseResults {
 	a12, s12, azi1, azi2, m12, M12, M21, S12 := g._gen_inverse_azi(
 		lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities,
 	)
