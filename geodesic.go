@@ -1133,6 +1133,34 @@ func (g Geodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) All
 	}
 }
 
+// DirectWithCapabilities allows the user to specify which capabilites they wish to use.
+// This function is useful if you want some other subset of capabilities than those offered
+// by the other DirectCalc...() methods.
+// Takes inputs
+//   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
+//   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
+//   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
+//   - capabilities - One or more of the capabilities constant as defined in the file
+//     geodesiccapability.go. Usually, they are OR'd together, e.g. LATITUDE | LONGITUDE
+func (g Geodesic) DirectWithCapabilities(
+	lat1_deg, lon1_deg, azi1_deg, s12_m float64,
+	capabilities uint64,
+) AllDirectResults {
+	a12, lat2, lon2, azi2, _, m12, M12, M21, S12, _ := g._gen_direct(
+		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
+	)
+	return AllDirectResults{
+		LatDeg:         lat2,
+		LonDeg:         lon2,
+		AziDeg:         azi2,
+		ReducedLengthM: m12,
+		M12:            M12,
+		M21:            M21,
+		S12M2:          S12,
+		A12Deg:         a12,
+	}
+}
+
 // InverseCalcDistance returns the distance from point 1 to point 2 in meters. Takes inputs
 // - lat1_deg latitude of point 1 [degrees].
 // - lon1_deg longitude of point 1 [degrees].

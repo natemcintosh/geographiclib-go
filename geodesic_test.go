@@ -2126,12 +2126,12 @@ func TestInverse20(t *testing.T) {
 	geod := Wgs84()
 
 	for row, tC := range test_cases {
-		_, _, azi1 := tC[0], tC[1], tC[2]
-		_, _, azi2 := tC[3], tC[4], tC[5]
+		lat1, lon1, azi1 := tC[0], tC[1], tC[2]
+		lat2, lon2, azi2 := tC[3], tC[4], tC[5]
 		s12, a12, m12 := tC[6], tC[7], tC[8]
 		M12, M21, S12 := tC[9], tC[10], tC[11]
 
-		inv := geod.InverseCalcAll(tC[0], tC[1], tC[3], tC[4])
+		inv := geod.InverseCalcAll(lat1, lon1, lat2, lon2)
 
 		if !almost_equal(azi1, inv.Azimuth1Deg, 1e-13) {
 			t.Errorf("row %d -- Inverse() azi1 = %v; want %v", row, inv.Azimuth1Deg, azi1)
@@ -2163,6 +2163,77 @@ func TestInverse20(t *testing.T) {
 
 		if !almost_equal(S12, inv.S12M2, 0.1) {
 			t.Errorf("row %d -- Inverse() S12 = %v; want %v", row, inv.S12M2, S12)
+		}
+	}
+}
+
+func BenchmarkInverse20(b *testing.B) {
+	geod := Wgs84()
+	for i := 0; i < b.N; i++ {
+		for _, tC := range test_cases {
+			lat1, lon1 := tC[0], tC[1]
+			lat2, lon2 := tC[3], tC[4]
+
+			geod.InverseCalcAll(lat1, lon1, lat2, lon2)
+
+		}
+	}
+}
+
+func TestDirect20(t *testing.T) {
+	geod := Wgs84()
+
+	for row, tC := range test_cases {
+		lat1, lon1, azi1 := tC[0], tC[1], tC[2]
+		lat2, lon2, azi2 := tC[3], tC[4], tC[5]
+		s12, a12, m12 := tC[6], tC[7], tC[8]
+		M12, M21, S12 := tC[9], tC[10], tC[11]
+
+		inv := geod.DirectWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
+
+		if !almost_equal(lat2, inv.LatDeg, 1e-13) {
+			t.Errorf("row %d -- Inverse() lat2 = %v; want %v", row, inv.LatDeg, lat2)
+		}
+
+		if !almost_equal(lon2, inv.LonDeg, 1e-13) {
+			t.Errorf("row %d -- Inverse() lon2 = %v; want %v", row, inv.LonDeg, lon2)
+		}
+
+		if !almost_equal(azi2, inv.AziDeg, 1e-13) {
+			t.Errorf("row %d -- Inverse() azi2 = %v; want %v", row, inv.AziDeg, azi2)
+		}
+
+		if !almost_equal(a12, inv.A12Deg, 1e-13) {
+			t.Errorf("row %d -- Inverse() a12 = %v; want %v", row, inv.A12Deg, a12)
+		}
+
+		if !almost_equal(m12, inv.ReducedLengthM, 1e-8) {
+			t.Errorf("row %d -- Inverse() m12 = %v; want %v", row, inv.ReducedLengthM, m12)
+		}
+
+		if !almost_equal(M12, inv.M12, 1e-15) {
+			t.Errorf("row %d -- Inverse() M12 = %v; want %v", row, inv.M12, M12)
+		}
+
+		if !almost_equal(M21, inv.M21, 1e-15) {
+			t.Errorf("row %d -- Inverse() M21 = %v; want %v", row, inv.M21, M21)
+		}
+
+		if !almost_equal(S12, inv.S12M2, 0.1) {
+			t.Errorf("row %d -- Inverse() S12 = %v; want %v", row, inv.S12M2, S12)
+		}
+	}
+}
+
+func BenchmarkDirect20(b *testing.B) {
+	geod := Wgs84()
+	for i := 0; i < b.N; i++ {
+		for _, tC := range test_cases {
+			lat1, lon1, azi1 := tC[0], tC[1], tC[2]
+			s12 := tC[6]
+
+			geod.DirectWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
+
 		}
 	}
 }
