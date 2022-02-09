@@ -2502,3 +2502,74 @@ func TestGeodSolve15(t *testing.T) {
 		t.Errorf("S12 = %v; want %v", dir.S12M2, 23700.0)
 	}
 }
+
+func TestGeodSolve17(t *testing.T) {
+	// Check fix for LONG_UNROLL bug found on 2015-05-07
+	geod := Wgs84()
+	dir := geod.DirectCalcWithCapabilities(40, -75, -10, 2e7, STANDARD|LONG_UNROLL)
+	want_lat := -39.0
+	want_lon := -254.0
+	want_azi := -170.0
+
+	if !almost_equal(dir.LatDeg, want_lat, 1) {
+		t.Errorf("lat = %v; want %v", dir.LatDeg, want_lat)
+	}
+
+	if !almost_equal(dir.LonDeg, want_lon, 1) {
+		t.Errorf("lon = %v; want %v", dir.LonDeg, want_lon)
+	}
+
+	if !almost_equal(dir.AziDeg, want_azi, 1) {
+		t.Errorf("azi = %v; want %v", dir.AziDeg, want_azi)
+	}
+
+	line := NewGeodesicLine(geod, 40.0, -75.0, -10.0, math.NaN(), math.NaN())
+
+	dir2 := line.PositionWithCapabilities(2e7, STANDARD|LONG_UNROLL)
+	want_lat = -39.0
+	want_lon = -254.0
+	want_azi = -170.0
+	if !almost_equal(dir2.Lat2Deg, want_lat, 1) {
+		t.Errorf("lat = %v; want %v", dir2.Lat2Deg, want_lat)
+	}
+
+	if !almost_equal(dir2.Lon2Deg, want_lon, 1) {
+		t.Errorf("lon = %v; want %v", dir2.Lon2Deg, want_lon)
+	}
+
+	if !almost_equal(dir2.Azi2Deg, want_azi, 1) {
+		t.Errorf("azi = %v; want %v", dir2.Azi2Deg, want_azi)
+	}
+
+	dir3 := geod.DirectCalcLatLonAzi(40, -75, -10, 2e7)
+	want_lat = -39.0
+	want_lon = 105.0
+	want_azi = -170.0
+	if !almost_equal(dir3.LatDeg, want_lat, 1) {
+		t.Errorf("lat = %v; want %v", dir3.LatDeg, want_lat)
+	}
+
+	if !almost_equal(dir3.LonDeg, want_lon, 1) {
+		t.Errorf("lon = %v; want %v", dir3.LonDeg, want_lon)
+	}
+
+	if !almost_equal(dir3.AziDeg, want_azi, 1) {
+		t.Errorf("azi = %v; want %v", dir3.AziDeg, want_azi)
+	}
+
+	dir4 := line.PositionStandard(2e7)
+	want_lat = -39.0
+	want_lon = 105.0
+	want_azi = -170.0
+	if !almost_equal(dir4.Lat2Deg, want_lat, 1) {
+		t.Errorf("lat = %v; want %v", dir4.Lat2Deg, want_lat)
+	}
+
+	if !almost_equal(dir4.Lon2Deg, want_lon, 1) {
+		t.Errorf("lon = %v; want %v", dir4.Lon2Deg, want_lon)
+	}
+
+	if !almost_equal(dir4.Azi2Deg, want_azi, 1) {
+		t.Errorf("azi = %v; want %v", dir4.Azi2Deg, want_azi)
+	}
+}
