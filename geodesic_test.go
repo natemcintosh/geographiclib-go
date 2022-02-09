@@ -2259,3 +2259,246 @@ func BenchmarkDirect20(b *testing.B) {
 		}
 	}
 }
+
+func TestGeodSolve0(t *testing.T) {
+	geod := Wgs84()
+	inv := geod.InverseCalcDistanceAzimuths(40.6, -73.8, 49.01666667, 2.55)
+
+	if !almost_equal(inv.Azimuth1Deg, 53.47022, 0.5e-5) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, 53.47022)
+	}
+
+	if !almost_equal(inv.Azimuth2Deg, 111.59367, 0.5e-5) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, 111.59367)
+	}
+
+	if !almost_equal(inv.DistanceM, 5853226, 0.5) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, 5853226)
+	}
+}
+
+func TestGeodSolve1(t *testing.T) {
+	geod := Wgs84()
+	dir := geod.DirectCalcLatLonAzi(40.63972222, -73.77888889, 53.5, 5850e3)
+
+	if !almost_equal(dir.LatDeg, 49.01467, 0.5e-5) {
+		t.Errorf("lat2 = %v; want %v", dir.LatDeg, 49.01467)
+	}
+
+	if !almost_equal(dir.LonDeg, 2.56106, 0.5e-5) {
+		t.Errorf("lon2 = %v; want %v", dir.LonDeg, 2.56106)
+	}
+
+	if !almost_equal(dir.AziDeg, 111.62947, 0.5e-5) {
+		t.Errorf("azi1 = %v; want %v", dir.AziDeg, 111.62947)
+	}
+}
+
+func TestGeodSolve2(t *testing.T) {
+	// Check fix for antipodal prolate bug found 2010-09-04
+	geod := NewGeodesic(6.4e6, -1/150.0)
+
+	inv := geod.InverseCalcDistanceAzimuths(0.07476, 0, -0.07476, 180)
+	want_azi1 := 90.00078
+	want_azi2 := 90.00078
+	want_s12 := 20106193.0
+
+	if !almost_equal(inv.Azimuth1Deg, want_azi1, 0.5e-5) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(inv.Azimuth2Deg, want_azi2, 0.5e-5) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(inv.DistanceM, want_s12, 0.5) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, want_s12)
+	}
+
+	inv = geod.InverseCalcDistanceAzimuths(0.1, 0, -0.1, 180)
+	want_azi1 = 90.00105
+	want_azi2 = 90.00105
+	want_s12 = 20106193.0
+	if !almost_equal(inv.Azimuth1Deg, want_azi1, 0.5e-5) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(inv.Azimuth2Deg, want_azi2, 0.5e-5) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(inv.DistanceM, want_s12, 0.5) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, want_s12)
+	}
+}
+
+func TestGeodSolve4(t *testing.T) {
+	// Check fix for short line bug found 2010-05-21
+	geod := Wgs84()
+	s12 := geod.InverseCalcDistance(36.493349428792, 0, 36.49334942879201, 0.0000008)
+	want_s12 := 0.072
+
+	if !almost_equal(s12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", s12, want_s12)
+	}
+}
+
+func TestGeodSolve5(t *testing.T) {
+	// Check fix for point2=pole bug found 2010-05-03
+	geod := Wgs84()
+	dir := geod.DirectCalcLatLonAzi(0.01777745589997, 30, 0, 10e6)
+	want_lat := 90.0
+
+	if !almost_equal(dir.LatDeg, want_lat, 0.5e-5) {
+		t.Errorf("lat2 = %v; want %v", dir.LatDeg, want_lat)
+	}
+
+	if dir.LonDeg < 0 {
+		want_lon := -150.0
+		want_azi := 180.0
+
+		if !almost_equal(dir.LonDeg, want_lon, 0.5e-5) {
+			t.Errorf("lon2 = %v; want %v", dir.LonDeg, want_lon)
+		}
+
+		if !almost_equal(dir.AziDeg, want_azi, 0.5e-5) {
+			t.Errorf("azi1 = %v; want %v", dir.AziDeg, want_azi)
+		}
+	} else {
+		want_lon := 30.0
+		want_azi := 0.0
+		if !almost_equal(dir.LonDeg, want_lon, 0.5e-5) {
+			t.Errorf("lon2 = %v; want %v", dir.LonDeg, want_lon)
+		}
+
+		if !almost_equal(dir.AziDeg, want_azi, 0.5e-5) {
+			t.Errorf("azi1 = %v; want %v", dir.AziDeg, want_azi)
+		}
+	}
+}
+
+func TestGeodSolve6(t *testing.T) {
+	//Check fix for volatile sbet12a bug found 2011-06-25 (gcc 4.4.4
+	// x86 -O3).  Found again on 2012-03-27 with tdm-mingw32 (g++ 4.6.1).
+	geod := Wgs84()
+	s12 := geod.InverseCalcDistance(88.202499451857, 0, -88.202499451857, 179.981022032992859592)
+	want_s12 := 20003898.214
+	if !almost_equal(s12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", s12, want_s12)
+	}
+
+	s12 = geod.InverseCalcDistance(89.262080389218, 0, -89.262080389218, 179.992207982775375662)
+	want_s12 = 20003925.854
+	if !almost_equal(s12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", s12, want_s12)
+	}
+
+	s12 = geod.InverseCalcDistance(
+		89.333123580033,
+		0,
+		-89.333123580032997687,
+		179.99295812360148422,
+	)
+	want_s12 = 20003926.881
+	if !almost_equal(s12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", s12, want_s12)
+	}
+}
+
+func TestGeodSolve9(t *testing.T) {
+	// Check fix for volatile x bug found 2011-06-25 (gcc 4.4.4 x86 -O3)
+	geod := Wgs84()
+
+	s12 := geod.InverseCalcDistance(56.320923501171, 0, -56.320923501171, 179.664747671772880215)
+	want_s12 := 19993558.287
+	if !almost_equal(s12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", s12, want_s12)
+	}
+
+}
+
+func TestGeodSolve10(t *testing.T) {
+	// Check fix for adjust tol1_ bug found 2011-06-25 (Visual Studio
+	// 10 rel + debug)
+	geod := Wgs84()
+
+	s12 := geod.InverseCalcDistance(
+		52.784459512564,
+		0,
+		-52.784459512563990912,
+		179.634407464943777557,
+	)
+
+	want_s12 := 19991596.095
+	if !almost_equal(s12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", s12, want_s12)
+	}
+}
+
+func TestGeodSolve11(t *testing.T) {
+	// Check fix for bet2 = -bet1 bug found 2011-06-25 (Visual Studio
+	// 10 rel + debug)
+	geod := Wgs84()
+	s12 := geod.InverseCalcDistance(
+		48.522876735459, 0,
+		-48.52287673545898293,
+		179.599720456223079643,
+	)
+
+	want_s12 := 19989144.774
+	if !almost_equal(s12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", s12, want_s12)
+	}
+}
+
+func TestGeodSolve12(t *testing.T) {
+	// Check fix for inverse geodesics on extreme prolate/oblate
+	// ellipsoids Reported 2012-08-29 Stefan Guenther
+	// <stefan.gunther@embl.de>; fixed 2012-10-07
+	geod := NewGeodesic(89.8, -1.83)
+
+	inv := geod.InverseCalcDistanceAzimuths(0, 0, -10, 160)
+
+	want_azi1 := 120.27
+	want_azi2 := 105.15
+	want_s12 := 266.7
+
+	if !almost_equal(inv.Azimuth1Deg, want_azi1, 1e-2) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(inv.Azimuth2Deg, want_azi2, 1e-2) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(inv.DistanceM, want_s12, 1e-1) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, want_s12)
+	}
+}
+
+func TestGeodSolve14(t *testing.T) {
+	// Check fix for inverse ignoring lon12 = nan
+	geod := Wgs84()
+	inv := geod.InverseCalcDistanceAzimuths(0, 0, 1, math.NaN())
+
+	if !math.IsNaN(inv.Azimuth1Deg) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, math.NaN())
+	}
+	if !math.IsNaN(inv.Azimuth2Deg) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, math.NaN())
+	}
+	if !math.IsNaN(inv.DistanceM) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, math.NaN())
+	}
+
+}
+
+func TestGeodSolve15(t *testing.T) {
+	// Initial implementation of Math::eatanhe was wrong for e^2 < 0.  This
+	// checks that this is fixed.
+	geod := NewGeodesic(6.4e6, -1/150.0)
+	dir := geod.DirectCalcWithCapabilities(1, 2, 3, 4, AREA)
+	if !almost_equal(dir.S12M2, 23700.0, 0.5) {
+		t.Errorf("S12 = %v; want %v", dir.S12M2, 23700.0)
+	}
+}
