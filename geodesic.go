@@ -1391,3 +1391,23 @@ func (g Geodesic) InverseCalcWithCapabilities(
 		S12M2:          S12,
 	}
 }
+
+// InverseLineWithCapabilities: define a GeodesicLine struct in terms of the inverse geodesic
+// problem.
+// This function sets point 3 of the GeodesicLine to correspond to point 2 of the
+// inverse geodesic problem.
+func (g Geodesic) InverseLineWithCapabilities(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+	capabilities uint64,
+) GeodesicLine {
+	a12, _, salp1, calp1, _, _, _, _, _, _ := g._gen_inverse(lat1_deg, lon1_deg, lat2_deg, lon2_deg, 0)
+	azi1 := Atan2_deg(salp1, calp1)
+
+	if capabilities&(OUT_MASK&DISTANCE_IN) != 0 {
+		capabilities |= DISTANCE
+	}
+
+	line := NewGeodesicLineWithCaps(g, lat1_deg, lon1_deg, azi1, capabilities, salp1, calp1)
+	line.SetArc(a12)
+	return line
+}

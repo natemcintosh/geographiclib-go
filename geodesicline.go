@@ -404,14 +404,15 @@ type PositionResult struct {
 // PositionWithCapabilities finds the position on the line given s12_m [meters]. It uses
 // whatever capabilities are handed in. Any results not asked for with the capabilities
 // will be math.NaN()
-func (g GeodesicLine) PositionWithCapabilities(s12_m float64, outmask uint64) PositionResult {
-	a12, lat2, lon2, azi2, s12, m12, M12, M21, S12 := g._gen_position(false, s12_m, outmask)
+func (g GeodesicLine) PositionWithCapabilities(s12_m float64, capabilities uint64) PositionResult {
+	a12, lat2, lon2, azi2, s12, m12, M12, M21, S12 := g._gen_position(false, s12_m, capabilities)
 
 	var outlon1 float64
-	if outmask&LONG_UNROLL != 0 {
-		outlon1 = g.lon1
-	} else {
+	if capabilities&LONG_UNROLL != 0 {
 		outlon1 = Ang_normalize(g.lon1)
+		// lon2 = Ang_normalize(lon2)
+	} else {
+		outlon1 = g.lon1
 	}
 
 	return PositionResult{
@@ -428,4 +429,11 @@ func (g GeodesicLine) PositionWithCapabilities(s12_m float64, outmask uint64) Po
 		M21:            M21,
 		S12M2:          S12,
 	}
+}
+
+// SetArc: specify the position of point 3 in terms of arc length `a13`, the spherical
+// arc length from point 1 to point 3 in degrees
+func (g GeodesicLine) SetArc(a13 float64) {
+	g.a13 = a13
+	g._gen_position(true, g.a13, DISTANCE)
 }
