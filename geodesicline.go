@@ -208,7 +208,7 @@ func (g GeodesicLine) _gen_position(arcmode bool, s12_a12 float64, outmask uint6
 	M21 := math.NaN()
 	S12 := math.NaN()
 
-	outmask = outmask & (g.caps & OUT_MASK)
+	outmask &= g.caps & OUT_MASK
 	if !(arcmode || (g.caps&(OUT_MASK&DISTANCE_IN) != 0)) {
 		return a12, lat2, lon2, azi2, s12, m12, M12, M21, S12
 	}
@@ -357,4 +357,75 @@ func (g GeodesicLine) _gen_position(arcmode bool, s12_a12 float64, outmask uint6
 		a12 = sig12 * RAD2DEG
 	}
 	return a12, lat2, lon2, azi2, s12, m12, M12, M21, S12
+}
+
+type PositionResultStandard struct {
+	Lat1Deg   float64 // Latitude of point 1 [degrees]
+	Lon1Deg   float64 // Longitude of point 1 [degrees]
+	Azi1Deg   float64 // Azimuth of point 1 [degrees]
+	Lat2Deg   float64 // Latitude of point 2 [degrees]
+	Lon2Deg   float64 // Longitude of point 2 [degrees]
+	Azi2Deg   float64 // Azimuth of point 2 [degrees]
+	DistanceM float64 // Distance from point 1 to point 2 [meters]
+}
+
+// PositionStandard finds the position on the line given s12_m [meters]. It uses the
+// STANDARD capabilities, and returns a PositionResultStandard struct
+func (g GeodesicLine) PositionStandard(s12_m float64) PositionResultStandard {
+	outmask := STANDARD
+	_, lat2, lon2, azi2, _, _, _, _, _ := g._gen_position(false, s12_m, outmask)
+
+	return PositionResultStandard{
+		Lat1Deg:   g.lat1,
+		Lon1Deg:   g.lon1,
+		Azi1Deg:   g.azi1,
+		Lat2Deg:   lat2,
+		Lon2Deg:   lon2,
+		Azi2Deg:   azi2,
+		DistanceM: s12_m,
+	}
+}
+
+type PositionResult struct {
+	Lat1Deg        float64 // Latitude of point 1 [degrees]
+	Lon1Deg        float64 // Longitude of point 1 [degrees]
+	Azi1Deg        float64 // Azimuth of point 1 [degrees]
+	Lat2Deg        float64 // Latitude of point 2 [degrees]
+	Lon2Deg        float64 // Longitude of point 2 [degrees]
+	Azi2Deg        float64 // Azimuth of point 2 [degrees]
+	DistanceM      float64 // Distance from point 1 to point 2 [meters]
+	ArcLengthDeg   float64 // Arc length between point 1 and point 2 [degrees]
+	ReducedLengthM float64 // Reduced length of the geodesic [meters]
+	M12            float64 // Geodesic scale of point 2 relative to point 1 [dimensionless]
+	M21            float64 // Geodesic scale of point 1 relative to point 2 [dimensionless]
+	S12M2          float64 // Area under the geodesic [meters^2]
+}
+
+// PositionWithCapabilities finds the position on the line given s12_m [meters]. It uses
+// whatever capabilities are handed in. Any results not asked for with the capabilities
+// will be math.NaN()
+func (g GeodesicLine) PositionWithCapabilities(s12_m float64, outmask uint64) PositionResult {
+	a12, lat2, lon2, azi2, s12, m12, M12, M21, S12 := g._gen_position(false, s12_m, outmask)
+
+	var outlon1 float64
+	if outmask&LONG_UNROLL != 0 {
+		outlon1 = g.lon1
+	} else {
+		outlon1 = Ang_normalize(g.lon1)
+	}
+
+	return PositionResult{
+		Lat1Deg:        g.lat1,
+		Lon1Deg:        outlon1,
+		Azi1Deg:        g.azi1,
+		Lat2Deg:        lat2,
+		Lon2Deg:        lon2,
+		Azi2Deg:        azi2,
+		DistanceM:      s12,
+		ArcLengthDeg:   a12,
+		ReducedLengthM: m12,
+		M12:            M12,
+		M21:            M21,
+		S12M2:          S12,
+	}
 }
