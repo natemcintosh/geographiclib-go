@@ -2870,116 +2870,116 @@ func TestGeodSolve61(t *testing.T) {
 	}
 }
 
-// func TestGeodSolve65(t *testing.T) {
-// 	// Check for bug in east-going check in GeodesicLine (needed to check for
-// 	// sign of 0) and sign error in area calculation due to a bogus override
-// 	// of the code for alp12.  Found/fixed on 2015-12-19.
-// 	geod := Wgs84()
-// 	line := geod.InverseLineWithCapabilities(30, -0.000000000000000001, -31, 180, ALL)
-// 	testCases := []struct {
-// 		desc         string
-// 		s12          float64
-// 		capabilities uint64
-// 		want_lat1    float64
-// 		want_lon1    float64
-// 		want_azi1    float64
-// 		want_lat2    float64
-// 		want_lon2    float64
-// 		want_azi2    float64
-// 		want_s12     float64
-// 		want_a12     float64
-// 		want_m12     float64
-// 		want_M12     float64
-// 		want_M21     float64
-// 		want_S12     float64
-// 	}{
-// 		{
-// 			desc:         "10M meters",
-// 			s12:          1e7,
-// 			capabilities: ALL | LONG_UNROLL,
-// 			want_lat1:    30,
-// 			want_lon1:    -0,
-// 			want_azi1:    -180,
-// 			want_lat2:    -60.23169,
-// 			want_lon2:    -0,
-// 			want_azi2:    -180,
-// 			want_s12:     10000000,
-// 			want_a12:     90.06544,
-// 			want_m12:     6363636,
-// 			want_M12:     -0.0012834,
-// 			want_M21:     0.0013749,
-// 			want_S12:     0,
-// 		},
-// 		{
-// 			desc:         "20M meters",
-// 			s12:          2e7,
-// 			capabilities: ALL | LONG_UNROLL,
-// 			want_lat1:    30,
-// 			want_lon1:    -0,
-// 			want_azi1:    -180,
-// 			want_lat2:    -30.03547,
-// 			want_lon2:    -180,
-// 			want_azi2:    -0,
-// 			want_s12:     20000000,
-// 			want_a12:     179.96459,
-// 			want_m12:     54342,
-// 			want_M12:     -1.0045592,
-// 			want_M21:     -0.9954339,
-// 			want_S12:     127516405431022.0,
-// 		},
-// 	}
-// 	for _, tC := range testCases {
-// 		t.Run(tC.desc, func(t *testing.T) {
-// 			got := line.PositionWithCapabilities(tC.s12, tC.capabilities)
+func TestGeodSolve65(t *testing.T) {
+	// Check for bug in east-going check in GeodesicLine (needed to check for
+	// sign of 0) and sign error in area calculation due to a bogus override
+	// of the code for alp12.  Found/fixed on 2015-12-19.
+	geod := Wgs84()
+	line := geod.InverseLineWithCapabilities(30, -0.000000000000000001, -31, 180, ALL)
+	testCases := []struct {
+		desc         string
+		s12          float64
+		capabilities uint64
+		want_lat1    float64
+		want_lon1    float64
+		want_azi1    float64
+		want_lat2    float64
+		want_lon2    float64
+		want_azi2    float64
+		want_s12     float64
+		want_a12     float64
+		want_m12     float64
+		want_M12     float64
+		want_M21     float64
+		want_S12     float64
+	}{
+		{
+			desc:         "10M meters",
+			s12:          1e7,
+			capabilities: ALL | LONG_UNROLL,
+			want_lat1:    30,
+			want_lon1:    -0,
+			want_azi1:    -180,
+			want_lat2:    -60.23169,
+			want_lon2:    -0,
+			want_azi2:    -180,
+			want_s12:     10000000,
+			want_a12:     90.06544,
+			want_m12:     6363636,
+			want_M12:     -0.0012834,
+			want_M21:     0.0013749,
+			want_S12:     0,
+		},
+		{
+			desc:         "20M meters",
+			s12:          2e7,
+			capabilities: ALL | LONG_UNROLL,
+			want_lat1:    30,
+			want_lon1:    -0,
+			want_azi1:    -180,
+			want_lat2:    -30.03547,
+			want_lon2:    -180,
+			want_azi2:    -0,
+			want_s12:     20000000,
+			want_a12:     179.96459,
+			want_m12:     54342,
+			want_M12:     -1.0045592,
+			want_M21:     -0.9954339,
+			want_S12:     127516405431022.0,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got := line.PositionWithCapabilities(tC.s12, tC.capabilities)
 
-// 			if !almost_equal(got.Lat1Deg, tC.want_lat1, 0.5e-5) {
-// 				t.Errorf("lat1 = %v; want %v", got.Lat1Deg, tC.want_lat1)
-// 			}
+			if !almost_equal(got.Lat1Deg, tC.want_lat1, 0.5e-5) {
+				t.Errorf("lat1 = %v; want %v", got.Lat1Deg, tC.want_lat1)
+			}
 
-// 			if !almost_equal(got.Lon1Deg, tC.want_lon1, 0.5e-5) {
-// 				t.Errorf("lon1 = %v; want %v", got.Lon1Deg, tC.want_lon1)
-// 			}
+			if !almost_equal(got.Lon1Deg, tC.want_lon1, 0.5e-5) {
+				t.Errorf("lon1 = %v; want %v", got.Lon1Deg, tC.want_lon1)
+			}
 
-// 			if !almost_equal(got.Azi1Deg, tC.want_azi1, 0.5e-5) {
-// 				t.Errorf("azi1 = %v; want %v", got.Azi1Deg, tC.want_azi1)
-// 			}
+			if !almost_equal(got.Azi1Deg, tC.want_azi1, 0.5e-5) {
+				t.Errorf("azi1 = %v; want %v", got.Azi1Deg, tC.want_azi1)
+			}
 
-// 			if !almost_equal(got.Lat2Deg, tC.want_lat2, 0.5e-5) {
-// 				t.Errorf("lat2 = %v; want %v", got.Lat2Deg, tC.want_lat2)
-// 			}
+			if !almost_equal(got.Lat2Deg, tC.want_lat2, 0.5e-5) {
+				t.Errorf("lat2 = %v; want %v", got.Lat2Deg, tC.want_lat2)
+			}
 
-// 			if !almost_equal(got.Lon2Deg, tC.want_lon2, 0.5e-5) {
-// 				t.Errorf("lon2 = %v; want %v", got.Lon2Deg, tC.want_lon2)
-// 			}
+			if !almost_equal(got.Lon2Deg, tC.want_lon2, 0.5e-5) {
+				t.Errorf("lon2 = %v; want %v", got.Lon2Deg, tC.want_lon2)
+			}
 
-// 			if !almost_equal(got.Azi2Deg, tC.want_azi2, 0.5e-5) {
-// 				t.Errorf("azi2 = %v; want %v", got.Azi2Deg, tC.want_azi2)
-// 			}
+			if !almost_equal(got.Azi2Deg, tC.want_azi2, 0.5e-5) {
+				t.Errorf("azi2 = %v; want %v", got.Azi2Deg, tC.want_azi2)
+			}
 
-// 			if !almost_equal(got.DistanceM, tC.want_s12, 0.5) {
-// 				t.Errorf("s12 = %v; want %v", got.DistanceM, tC.want_s12)
-// 			}
+			if !almost_equal(got.DistanceM, tC.want_s12, 0.5) {
+				t.Errorf("s12 = %v; want %v", got.DistanceM, tC.want_s12)
+			}
 
-// 			if !almost_equal(got.ArcLengthDeg, tC.want_a12, 0.5e-5) {
-// 				t.Errorf("a12 = %v; want %v", got.ArcLengthDeg, tC.want_a12)
-// 			}
+			if !almost_equal(got.ArcLengthDeg, tC.want_a12, 0.5e-5) {
+				t.Errorf("a12 = %v; want %v", got.ArcLengthDeg, tC.want_a12)
+			}
 
-// 			if !almost_equal(got.ReducedLengthM, tC.want_m12, 0.5) {
-// 				t.Errorf("m12 = %v; want %v", got.ReducedLengthM, tC.want_m12)
-// 			}
+			if !almost_equal(got.ReducedLengthM, tC.want_m12, 0.5) {
+				t.Errorf("m12 = %v; want %v", got.ReducedLengthM, tC.want_m12)
+			}
 
-// 			if !almost_equal(got.M12, tC.want_M12, 0.5e7) {
-// 				t.Errorf("M12 = %v; want %v", got.M12, tC.want_M12)
-// 			}
+			if !almost_equal(got.M12, tC.want_M12, 0.5e7) {
+				t.Errorf("M12 = %v; want %v", got.M12, tC.want_M12)
+			}
 
-// 			if !almost_equal(got.M21, tC.want_M21, 0.5e-7) {
-// 				t.Errorf("M21 = %v; want %v", got.M21, tC.want_M21)
-// 			}
+			if !almost_equal(got.M21, tC.want_M21, 0.5e-7) {
+				t.Errorf("M21 = %v; want %v", got.M21, tC.want_M21)
+			}
 
-// 			if !almost_equal(got.S12M2, tC.want_S12, 0.5) {
-// 				t.Errorf("S12 = %v; want %v", got.S12M2, tC.want_S12)
-// 			}
+			if !almost_equal(got.S12M2, tC.want_S12, 0.5) {
+				t.Errorf("S12 = %v; want %v", got.S12M2, tC.want_S12)
+			}
 
-// 		})
-// 	}
-// }
+		})
+	}
+}

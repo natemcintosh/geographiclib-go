@@ -283,12 +283,7 @@ func (g GeodesicLine) _gen_position(arcmode bool, s12_a12 float64, outmask uint6
 		somg2 := g._salp0 * ssig2
 		comg2 := csig2
 
-		var E float64
-		if g._salp0 < 0.0 {
-			E = -1.0
-		} else {
-			E = 1.0
-		}
+		E := math.Copysign(1, g._salp0)
 
 		var omg12 float64
 		if outmask&LONG_UNROLL != 0 {
