@@ -1411,3 +1411,41 @@ func (g Geodesic) InverseLineWithCapabilities(
 	line.SetArc(a12)
 	return line
 }
+
+func (g Geodesic) _gen_direct_line(
+	lat1_deg, lon1_deg, azi1_deg float64,
+	arcmode bool,
+	s12_a12_m float64,
+	capabilities uint64,
+) GeodesicLine {
+	// Automatically supply DISTANCE_IN if necessary
+	if !arcmode {
+		capabilities |= DISTANCE_IN
+	}
+	line := NewGeodesicLineWithCaps(
+		g,
+		lat1_deg,
+		lon1_deg,
+		azi1_deg,
+		capabilities,
+		math.NaN(),
+		math.NaN(),
+	)
+	if arcmode {
+		line.SetArc(s12_a12_m)
+	} else {
+		line.SetDistance(s12_a12_m)
+	}
+	return line
+}
+
+// DirectLineWithCapabilities defines a GeodesicLine struct in terms of the the direct
+// geodesic problem specified in terms of spherical arc length.
+// This function sets point 3 of the GeodesicLine to correspond to point 2 of the
+// direct geodesic problem
+func (g Geodesic) DirectLineWithCapabilities(
+	lat1_deg, lon1_deg, azi1_deg, s12_m float64,
+	capabilities uint64,
+) GeodesicLine {
+	return g._gen_direct_line(lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities)
+}

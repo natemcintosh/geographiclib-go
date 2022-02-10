@@ -2985,6 +2985,8 @@ func TestGeodSolve65(t *testing.T) {
 }
 
 func TestGeodSolve66(t *testing.T) {
+	// Check for InverseLine if line is slightly west of S and that s13 is
+	// correctly set.
 	geod := Wgs84()
 	line := geod.InverseLineWithCapabilities(-5, -0.000000000000002, -10, 180, STANDARD|DISTANCE_IN)
 	testCases := []struct {
@@ -3028,5 +3030,28 @@ func TestGeodSolve66(t *testing.T) {
 				t.Errorf("azi2 = %v; want %v", got.Azi2Deg, tC.want_azi)
 			}
 		})
+	}
+}
+
+func TestGeodSolve71(t *testing.T) {
+	// Check that DirectLine sets s13.
+	geod := Wgs84()
+	line := geod.DirectLineWithCapabilities(1, 2, 45, 1e7, STANDARD|DISTANCE_IN)
+	dir := line.PositionWithCapabilities(0.5*line.s13, STANDARD|LONG_UNROLL)
+
+	want_lat := 30.92625
+	want_lon := 37.54640
+	want_azi := 55.43104
+
+	if !almost_equal(dir.Lat2Deg, want_lat, 0.5e-5) {
+		t.Errorf("lat = %v; want %v", dir.Lat2Deg, want_lat)
+	}
+
+	if !almost_equal(dir.Lon2Deg, want_lon, 0.5e-5) {
+		t.Errorf("lon = %v; want %v", dir.Lon2Deg, want_lon)
+	}
+
+	if !almost_equal(dir.Azi2Deg, want_azi, 0.5e-5) {
+		t.Errorf("azi = %v; want %v", dir.Azi2Deg, want_azi)
 	}
 }

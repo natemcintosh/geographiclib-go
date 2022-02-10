@@ -429,6 +429,11 @@ func (g GeodesicLine) PositionWithCapabilities(s12_m float64, capabilities uint6
 // arc length from point 1 to point 3 in degrees
 func (g *GeodesicLine) SetArc(a13 float64) {
 	g.a13 = a13
-	_, _, _, _, s13, _, _, _, _ := g._gen_position(true, g.a13, DISTANCE)
-	g.s13 = s13
+	_, _, _, _, g.s13, _, _, _, _ = g._gen_position(true, g.a13, DISTANCE)
+}
+
+// SetDistance specifies the position of point 3 in terms of distance
+func (g *GeodesicLine) SetDistance(s13_m float64) {
+	g.s13 = s13_m
+	g.a13, _, _, _, _, _, _, _, _ = g._gen_position(false, g.s13, 0)
 }
