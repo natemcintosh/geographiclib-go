@@ -2983,3 +2983,50 @@ func TestGeodSolve65(t *testing.T) {
 		})
 	}
 }
+
+func TestGeodSolve66(t *testing.T) {
+	geod := Wgs84()
+	line := geod.InverseLineWithCapabilities(-5, -0.000000000000002, -10, 180, STANDARD|DISTANCE_IN)
+	testCases := []struct {
+		desc         string
+		s12          float64
+		capabilities uint64
+		want_lat     float64
+		want_lon     float64
+		want_azi     float64
+	}{
+		{
+			desc:         "20M meters",
+			s12:          2e7,
+			capabilities: STANDARD | LONG_UNROLL,
+			want_lat:     4.96445,
+			want_lon:     -180.00000,
+			want_azi:     -0.00000,
+		},
+		{
+			desc:         "other distance",
+			s12:          0.5 * line.s13,
+			capabilities: STANDARD | LONG_UNROLL,
+			want_lat:     -87.52461,
+			want_lon:     -0.00000,
+			want_azi:     -180.00000,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got := line.PositionWithCapabilities(tC.s12, tC.capabilities)
+
+			if !almost_equal(got.Lat2Deg, tC.want_lat, 0.5e-5) {
+				t.Errorf("lat2 = %v; want %v", got.Lat2Deg, tC.want_lat)
+			}
+
+			if !almost_equal(got.Lon2Deg, tC.want_lon, 0.5e-5) {
+				t.Errorf("lon2 = %v; want %v", got.Lon2Deg, tC.want_lon)
+			}
+
+			if !almost_equal(got.Azi2Deg, tC.want_azi, 0.5e-5) {
+				t.Errorf("azi2 = %v; want %v", got.Azi2Deg, tC.want_azi)
+			}
+		})
+	}
+}
