@@ -3306,3 +3306,28 @@ func TestGeodSolve80(t *testing.T) {
 		t.Errorf("a12 = %v; want NaN", dir.ArcLengthDeg)
 	}
 }
+
+func TestGeodSolve92(t *testing.T) {
+	// Check fix for inaccurate hypot with python 3.[89].  Problem reported
+	// by agdhruv https://github.com/geopy/geopy/issues/466 ; see
+	// https://bugs.python.org/issue43088
+	geod := Wgs84()
+	inv := geod.InverseCalcDistanceAzimuths(
+		37.757540000000006, -122.47018, 37.75754, -122.470177,
+	)
+	want_azi1 := 89.99999923
+	want_azi2 := 90.00000106
+	want_s12 := 0.264
+
+	if !almost_equal(inv.Azimuth1Deg, want_azi1, 1e-7) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(inv.Azimuth2Deg, want_azi2, 1e-7) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(inv.DistanceM, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, want_s12)
+	}
+}
