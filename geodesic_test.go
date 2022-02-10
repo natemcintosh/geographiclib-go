@@ -3055,3 +3055,125 @@ func TestGeodSolve71(t *testing.T) {
 		t.Errorf("azi = %v; want %v", dir.Azi2Deg, want_azi)
 	}
 }
+
+func TestGeodSolve73(t *testing.T) {
+	// Check for backwards from the pole bug reported by Anon on 2016-02-13.
+	// This only affected the Java implementation.  It was introduced in Java
+	// version 1.44 and fixed in 1.46-SNAPSHOT on 2016-01-17.
+	// Also the + sign on azi2 is a check on the normalizing of azimuths
+	// (converting -0.0 to +0.0).
+	geod := Wgs84()
+	dir := geod.DirectCalcLatLonAzi(90, 10, 180, -1e6)
+
+	want_lat := 81.04623
+	want_lon := -170.0
+	want_azi := 0.0
+
+	if !almost_equal(dir.LatDeg, want_lat, 0.5e-5) {
+		t.Errorf("lat = %v; want %v", dir.LatDeg, want_lat)
+	}
+
+	if !almost_equal(dir.LonDeg, want_lon, 0.5e-5) {
+		t.Errorf("lon = %v; want %v", dir.LonDeg, want_lon)
+	}
+
+	if !almost_equal(dir.AziDeg, want_azi, 0.5e-5) {
+		t.Errorf("azi = %v; want %v", dir.AziDeg, want_azi)
+	}
+
+	if !(math.Copysign(1, dir.AziDeg) > 0) {
+		t.Errorf("sign(azi) <= 0; want > 0")
+	}
+}
+
+func TestGeodSolve74(t *testing.T) {
+	// Check fix for inaccurate areas, bug introduced in v1.46, fixed
+	// 2015-10-16.
+	geod := Wgs84()
+	inv := geod.InverseCalcWithCapabilities(54.1589, 15.3872, 54.1591, 15.3877, ALL)
+	want_azi1 := 55.723110355
+	want_azi2 := 55.723515675
+	want_s12 := 39.527686385
+	want_a12 := 0.000355495
+	want_m12 := 39.527686385
+	want_M12 := 0.999999995
+	want_M21 := 0.999999995
+	want_S12 := 286698586.30197
+
+	if !almost_equal(inv.Azimuth1Deg, want_azi1, 5e-9) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(inv.Azimuth2Deg, want_azi2, 5e-9) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(inv.DistanceM, want_s12, 5e-9) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, want_s12)
+	}
+
+	if !almost_equal(inv.ArcLengthDeg, want_a12, 5e-9) {
+		t.Errorf("a12 = %v; want %v", inv.ArcLengthDeg, want_a12)
+	}
+
+	if !almost_equal(inv.ReducedLengthM, want_m12, 5e-9) {
+		t.Errorf("m12 = %v; want %v", inv.ReducedLengthM, want_m12)
+	}
+
+	if !almost_equal(inv.M12, want_M12, 5e-9) {
+		t.Errorf("M12 = %v; want %v", inv.M12, want_M12)
+	}
+
+	if !almost_equal(inv.M21, want_M21, 5e-9) {
+		t.Errorf("M21 = %v; want %v", inv.M21, want_M21)
+	}
+
+	if !almost_equal(inv.S12M2, want_S12, 5e-4) {
+		t.Errorf("S12 = %v; want %v", inv.S12M2, want_S12)
+	}
+}
+
+func TestGeodSolve76(t *testing.T) {
+	// The distance from Wellington and Salamanca (a classic failure of
+	// Vincenty)
+	geod := Wgs84()
+	inv := geod.InverseCalcDistanceAzimuths(
+		-(41 + 19/60.0), 174+49/60.0, 40+58/60.0, -(5 + 30/60.0),
+	)
+	want_azi1 := 160.39137649664
+	want_azi2 := 19.50042925176
+	want_s12 := 19960543.857179
+
+	if !almost_equal(inv.Azimuth1Deg, want_azi1, 0.5e-11) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(inv.Azimuth2Deg, want_azi2, 0.5e-11) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(inv.DistanceM, want_s12, 0.5e-6) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, want_s12)
+	}
+}
+
+func TestGeodSolve78(t *testing.T) {
+	// An example where the NGS calculator fails to converge
+	geod := Wgs84()
+	inv := geod.InverseCalcDistanceAzimuths(27.2, 0.0, -27.1, 179.5)
+	want_azi1 := 45.82468716758
+	want_azi2 := 134.22776532670
+	want_s12 := 19974354.765767
+
+	if !almost_equal(inv.Azimuth1Deg, want_azi1, 0.5e-11) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(inv.Azimuth2Deg, want_azi2, 0.5e-11) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(inv.DistanceM, want_s12, 0.5e-6) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, want_s12)
+	}
+}
