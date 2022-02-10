@@ -1449,3 +1449,20 @@ func (g Geodesic) DirectLineWithCapabilities(
 ) GeodesicLine {
 	return g._gen_direct_line(lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities)
 }
+
+// Line returns a GeodesicLine. This allows points along a geodesic starting at
+// lat1_deg, lon1_deg with azimuth azi1_deg to be found.
+func (g Geodesic) LineWithCapabilities(
+	lat1_deg, lon1_deg, azi1_deg float64,
+	capabilities uint64,
+) GeodesicLine {
+	return NewGeodesicLineWithCaps(
+		g,
+		lat1_deg,
+		lon1_deg,
+		azi1_deg,
+		capabilities,
+		math.NaN(),
+		math.NaN(),
+	)
+}

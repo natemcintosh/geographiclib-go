@@ -3177,3 +3177,132 @@ func TestGeodSolve78(t *testing.T) {
 		t.Errorf("s12 = %v; want %v", inv.DistanceM, want_s12)
 	}
 }
+
+func TestGeodSolve80(t *testing.T) {
+	// Some tests to add code coverage: computing scale in special cases + zero
+	// length geodesic (includes GeodSolve80 - GeodSolve83) + using an incapable
+	// line.
+	geod := Wgs84()
+	inv := geod.InverseCalcWithCapabilities(0, 0, 0, 90, GEODESICSCALE)
+	want_M12 := -0.00528427534
+	want_M21 := -0.00528427534
+	if !almost_equal(inv.M12, want_M12, 0.5e-10) {
+		t.Errorf("M12 = %v; want %v", inv.M12, want_M12)
+	}
+	if !almost_equal(inv.M21, want_M21, 0.5e-10) {
+		t.Errorf("M12 = %v; want %v", inv.M21, want_M21)
+	}
+
+	inv = geod.InverseCalcWithCapabilities(0, 0, 1e-6, 1e-6, GEODESICSCALE)
+	want_M12 = 1.0
+	want_M21 = 1.0
+	if !almost_equal(inv.M12, want_M12, 0.5e-10) {
+		t.Errorf("M12 = %v; want %v", inv.M12, want_M12)
+	}
+	if !almost_equal(inv.M21, want_M21, 0.5e-10) {
+		t.Errorf("M12 = %v; want %v", inv.M21, want_M21)
+	}
+
+	inv = geod.InverseCalcWithCapabilities(20.001, 0, 20.001, 0, ALL)
+	want_a12 := 0.0
+	want_s12 := 0.0
+	want_azi1 := 180.0
+	want_azi2 := 180.0
+	want_m12 := 0.0
+	want_M12 = 1.0
+	want_M21 = 1.0
+	want_S12 := 0.0
+
+	if !almost_equal(inv.Azimuth1Deg, want_azi1, 1e-13) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(inv.Azimuth2Deg, want_azi2, 1e-8) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(inv.DistanceM, want_s12, 1e-13) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, want_s12)
+	}
+
+	if !almost_equal(inv.ArcLengthDeg, want_a12, 1e-13) {
+		t.Errorf("a12 = %v; want %v", inv.ArcLengthDeg, want_a12)
+	}
+
+	if !almost_equal(inv.ReducedLengthM, want_m12, 1e-8) {
+		t.Errorf("m12 = %v; want %v", inv.ReducedLengthM, want_m12)
+	}
+
+	if !almost_equal(inv.M12, want_M12, 1e-15) {
+		t.Errorf("M12 = %v; want %v", inv.M12, want_M12)
+	}
+
+	if !almost_equal(inv.M21, want_M21, 1e-15) {
+		t.Errorf("M21 = %v; want %v", inv.M21, want_M21)
+	}
+
+	if !almost_equal(inv.S12M2, want_S12, 1e-10) {
+		t.Errorf("S12 = %v; want %v", inv.S12M2, want_S12)
+	}
+
+	if !(math.Copysign(1, inv.ArcLengthDeg) > 0) {
+		t.Errorf("sign(a12) <= 0; want > 0")
+	}
+
+	if !(math.Copysign(1, inv.DistanceM) > 0) {
+		t.Errorf("sign(s12) <= 0; want > 0")
+	}
+
+	if !(math.Copysign(1, inv.ReducedLengthM) > 0) {
+		t.Errorf("sign(m12) <= 0; want > 0")
+	}
+
+	inv = geod.InverseCalcWithCapabilities(90, 0, 90, 180, ALL)
+	want_a12 = 0.0
+	want_s12 = 0.0
+	want_azi1 = 0.0
+	want_azi2 = 180.0
+	want_m12 = 0.0
+	want_M12 = 1.0
+	want_M21 = 1.0
+	want_S12 = 127516405431022.0
+
+	if !almost_equal(inv.Azimuth1Deg, want_azi1, 1e-13) {
+		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(inv.Azimuth2Deg, want_azi2, 1e-8) {
+		t.Errorf("azi2 = %v; want %v", inv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(inv.DistanceM, want_s12, 1e-13) {
+		t.Errorf("s12 = %v; want %v", inv.DistanceM, want_s12)
+	}
+
+	if !almost_equal(inv.ArcLengthDeg, want_a12, 1e-13) {
+		t.Errorf("a12 = %v; want %v", inv.ArcLengthDeg, want_a12)
+	}
+
+	if !almost_equal(inv.ReducedLengthM, want_m12, 1e-8) {
+		t.Errorf("m12 = %v; want %v", inv.ReducedLengthM, want_m12)
+	}
+
+	if !almost_equal(inv.M12, want_M12, 1e-15) {
+		t.Errorf("M12 = %v; want %v", inv.M12, want_M12)
+	}
+
+	if !almost_equal(inv.M21, want_M21, 1e-15) {
+		t.Errorf("M21 = %v; want %v", inv.M21, want_M21)
+	}
+
+	if !almost_equal(inv.S12M2, want_S12, 0.5) {
+		t.Errorf("S12 = %v; want %v", inv.S12M2, want_S12)
+	}
+
+	// An incapable line which can't take distance as input
+	line := geod.LineWithCapabilities(1, 2, 90, LATITUDE)
+	dir := line.PositionWithCapabilities(1000, EMPTY)
+	if !math.IsNaN(dir.ArcLengthDeg) {
+		t.Errorf("a12 = %v; want NaN", dir.ArcLengthDeg)
+	}
+}
