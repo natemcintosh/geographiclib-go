@@ -409,3 +409,62 @@ func (p *PolygonArea) TestPoint(
 	area := p.area_reduce_B(tempsum, p.Area0_M2, crossings, reverse, sign)
 	return PolygonResult{Num: num, Perimeter: perimeter, Area: area}
 }
+
+// TestEdge returns the results assuming a tentative final test point is added via an
+// azimuth and distance; however, the data for the test point is not saved.
+// This lets you report a running result for the perimeter and area as the
+// user moves the mouse cursor. Ordinary floating point arithmetic is used
+// to accumulate the data for the test point; thus the area and perimeter
+// returned are less accurate than if AddPoint and Compute are used.
+//
+// INPUTS:
+//
+// - azi_deg: azimuth at the current point [degrees]
+//
+// - s_m: distance from the current point to the final test point [meters]
+//
+// - reverse: if true then clockwise (instead of counter-clockwise) traversal counts as
+// a positive area
+//
+// - sign: if true then return a signed result for the area if
+// the polygon is traversed in the "wrong" direction instead of returning
+// the area for the rest of the earth
+func (p *PolygonArea) TestEdge(
+	azi_deg float64,
+	s_m float64,
+	reverse bool,
+	sign bool,
+) PolygonResult {
+	// We don't have a starting point
+	if p.Num == 0 {
+		return PolygonResult{Num: 0, Perimeter: math.NaN(), Area: math.NaN()}
+	}
+
+	num := p.Num + 1
+	perimeter := p._perimetersum.Sum(0.0) + s_m
+
+	if p.Polyline {
+		return PolygonResult{Num: num, Perimeter: perimeter, Area: math.NaN()}
+	}
+
+	tempsum := p._areasum.Sum(0.0)
+	crossings := p._crossings
+
+	_, lat, lon, _, _, _, _, _, S12, _ := p.Earth._gen_direct(
+		p.Lat1_Deg, p.Lon1_Deg, azi_deg, false, s_m, p._mask,
+	)
+
+	tempsum += S12
+	crossings += p.transit_direct(p.Lon1_Deg, lon)
+
+	_, s12, _, _, _, _, _, _, _, S12 := p.Earth._gen_inverse(
+		lat, lon, p._lat0_deg, p._lon0_deg, p._mask,
+	)
+	perimeter += s12
+	tempsum += S12
+	crossings += p.transit(lon, p._lon0_deg)
+
+	area := p.area_reduce_B(tempsum, p.Area0_M2, crossings, reverse, sign)
+	return PolygonResult{Num: num, Perimeter: perimeter, Area: area}
+
+}
