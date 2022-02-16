@@ -206,3 +206,151 @@ func BenchmarkPlanimeter13(b *testing.B) {
 		planimeter(points)
 	}
 }
+
+func TestPlanimeter15(t *testing.T) {
+	// Coverage tests, includes Planimeter15 - Planimeter18 (combinations of
+	// reverse and sign) + calls to testpoint, testedge.
+	lat := []float64{2, 1, 3}
+	lon := []float64{1, 2, 3}
+	r := 18454562325.45119
+	a0 := 510065621724088.5093 // ellipsoid area
+
+	polygon := NewPolygonArea(Wgs84(), false)
+	polygon.AddPoint(lat[0], lon[0])
+	polygon.AddPoint(lat[1], lon[1])
+	got := polygon.TestPoint(lat[2], lon[2], false, true)
+	if !almost_equal(got.Area, r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	got = polygon.TestPoint(lat[2], lon[2], false, false)
+	if !almost_equal(got.Area, r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	got = polygon.TestPoint(lat[2], lon[2], true, true)
+	if !almost_equal(got.Area, -r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	got = polygon.TestPoint(lat[2], lon[2], true, false)
+	if !almost_equal(got.Area, a0-r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	inv := Wgs84().InverseCalcAll(lat[1], lon[1], lat[2], lat[2])
+	azi1 := inv.Azimuth1Deg
+	s12 := inv.DistanceM
+	got = polygon.TestEdge(azi1, s12, false, true)
+	if !almost_equal(got.Area, r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	got = polygon.TestEdge(azi1, s12, false, false)
+	if !almost_equal(got.Area, r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	got = polygon.TestEdge(azi1, s12, true, true)
+	if !almost_equal(got.Area, -r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	got = polygon.TestEdge(azi1, s12, true, false)
+	if !almost_equal(got.Area, a0-r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	polygon.AddPoint(lat[2], lon[2])
+	got = polygon.Compute(false, true)
+	if !almost_equal(got.Area, r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	got = polygon.Compute(false, false)
+	if !almost_equal(got.Area, r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	got = polygon.Compute(true, true)
+	if !almost_equal(got.Area, -r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+
+	got = polygon.Compute(true, false)
+	if !almost_equal(got.Area, a0-r, 0.5) {
+		t.Errorf("area = %v; want %v", got.Area, r)
+	}
+}
+
+func TestPlanimeter19(t *testing.T) {
+	// Coverage tests, includes Planimeter19 - Planimeter20 (degenerate
+	// polygons) + extra cases.
+	polygon := NewPolygonArea(Wgs84(), false)
+	got := polygon.Compute(false, true)
+	if got.Area != 0.0 {
+		t.Errorf("area = %v; want 0", got.Area)
+	}
+	if got.Perimeter != 0.0 {
+		t.Errorf("perimeter = %v; want 0", got.Perimeter)
+	}
+
+	polygon.TestPoint(1, 1, false, true)
+	if got.Area != 0.0 {
+		t.Errorf("area = %v; want 0", got.Area)
+	}
+	if got.Perimeter != 0.0 {
+		t.Errorf("perimeter = %v; want 0", got.Perimeter)
+	}
+
+	got = polygon.TestEdge(90, 1000, false, true)
+	if !math.IsNaN(got.Area) {
+		t.Errorf("area = %v; want NaN", got.Area)
+	}
+	if !math.IsNaN(got.Perimeter) {
+		t.Errorf("perimeter = %v; want NaN", got.Perimeter)
+	}
+
+	polygon.AddPoint(1, 1)
+	got = polygon.Compute(false, true)
+	if got.Area != 0.0 {
+		t.Errorf("area = %v; want 0", got.Area)
+	}
+	if got.Perimeter != 0.0 {
+		t.Errorf("perimeter = %v; want 0", got.Perimeter)
+	}
+
+	polyline := NewPolygonArea(Wgs84(), true)
+	got = polyline.Compute(false, true)
+	if got.Perimeter != 0.0 {
+		t.Errorf("perimeter = %v; want 0", got.Perimeter)
+	}
+
+	got = polyline.TestPoint(1, 1, false, true)
+	if got.Perimeter != 0.0 {
+		t.Errorf("perimeter = %v; want 0", got.Perimeter)
+	}
+
+	got = polyline.TestEdge(90, 1000, false, true)
+	if !math.IsNaN(got.Perimeter) {
+		t.Errorf("perimeter = %v; want NaN", got.Perimeter)
+	}
+
+	polyline.AddPoint(1, 1)
+	got = polyline.Compute(false, true)
+	if got.Perimeter != 0.0 {
+		t.Errorf("perimeter = %v; want 0", got.Perimeter)
+	}
+
+	polygon.AddPoint(1, 1)
+	got = polyline.TestEdge(90, 1000, false, true)
+	if !almost_equal(got.Perimeter, 1000, 1e-10) {
+		t.Errorf("perimeter = %v; want %v", got.Perimeter, 1000)
+	}
+
+	got = polyline.TestPoint(2, 2, false, true)
+	want_perimeter := 156876.149
+	if !almost_equal(got.Perimeter, want_perimeter, 0.5e-3) {
+		t.Errorf("perimeter = %v; want %v", got.Perimeter, want_perimeter)
+	}
+}
