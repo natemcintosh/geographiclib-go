@@ -354,3 +354,111 @@ func TestPlanimeter19(t *testing.T) {
 		t.Errorf("perimeter = %v; want %v", got.Perimeter, want_perimeter)
 	}
 }
+
+func TestPlanimeter21(t *testing.T) {
+	// Some test to add code coverage: multiple circlings of pole (includes
+	// Planimeter21 - Planimeter28) + invocations via testpoint and testedge.
+	var a PolygonResult
+	lat := 45.0
+	azi := 39.2144607176828184218
+	s := 8420705.40957178156285
+	r := 39433884866571.4277   // Area for one circuit
+	a0 := 510065621724088.5093 // Ellipsoid area
+
+	polygon := NewPolygonArea(Wgs84(), false)
+	polygon.AddPoint(lat, 60)
+	polygon.AddPoint(lat, 180)
+	polygon.AddPoint(lat, -60)
+	polygon.AddPoint(lat, 60)
+	polygon.AddPoint(lat, 180)
+	polygon.AddPoint(lat, -60)
+
+	ivals := [2]int{3, 4}
+	for _, i := range ivals {
+		polygon.AddPoint(lat, 60)
+		polygon.AddPoint(lat, 180)
+		a = polygon.TestPoint(lat, -60, false, true)
+		if !almost_equal(a.Area, float64(i)*r, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		a = polygon.TestPoint(lat, -60, false, false)
+		if !almost_equal(a.Area, float64(i)*r, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		a = polygon.TestPoint(lat, -60, true, true)
+		if !almost_equal(a.Area, -float64(i)*r, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		a = polygon.TestPoint(lat, -60, true, false)
+		if !almost_equal(a.Area, -float64(i)*r+a0, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		a = polygon.TestEdge(azi, s, false, true)
+
+		if !almost_equal(a.Area, float64(i)*r, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		a = polygon.TestEdge(azi, s, false, false)
+		if !almost_equal(a.Area, float64(i)*r, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		a = polygon.TestEdge(azi, s, true, true)
+		if !almost_equal(a.Area, -float64(i)*r, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		a = polygon.TestEdge(azi, s, true, false)
+		if !almost_equal(a.Area, -float64(i)*r+a0, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		polygon.AddPoint(lat, -60)
+		a = polygon.Compute(false, true)
+
+		if !almost_equal(a.Area, float64(i)*r, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		a = polygon.Compute(false, false)
+
+		if !almost_equal(a.Area, float64(i)*r, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		a = polygon.Compute(true, true)
+		if !almost_equal(a.Area, -float64(i)*r, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+
+		a = polygon.Compute(true, false)
+		if !almost_equal(a.Area, -float64(i)*r+a0, 0.5) {
+			t.Errorf("i=%v; area = %v; want %v", i, a.Area, float64(i)*r)
+		}
+	}
+}
+
+func TestPlanimeter29(t *testing.T) {
+	// Check fix to transitdirect vs transit zero handling inconsistency
+
+	var a PolygonResult
+
+	polygon := NewPolygonArea(Wgs84(), false)
+	polygon.Clear()
+	polygon.AddPoint(0, 0)
+	polygon.AddEdge(90, 1000)
+	polygon.AddEdge(0, 1000)
+	polygon.AddEdge(-90, 1000)
+	a = polygon.Compute(false, true)
+	// The area should be 1e6.  Prior to the fix it was 1e6 - A/2, where
+	// A = ellipsoid area.
+	want_area := 1000000.0
+	if !almost_equal(a.Area, want_area, 0.01) {
+		t.Errorf("area = %v; want %v", a.Area, want_area)
+	}
+}
