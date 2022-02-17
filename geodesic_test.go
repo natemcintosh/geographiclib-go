@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"errors"
 	"io"
-	"log"
 	"math"
 	"os"
 	"strconv"
@@ -37,31 +36,31 @@ func TestGeodesicInit(t *testing.T) {
 		t.Errorf("Wgs84() failed: f = %v, exptected %v", geod.f, 0.0033528106647474805)
 	}
 
-	if !almost_equal(geod._f1, 0.9966471893352525, float64EqualityThreshold) {
-		t.Errorf("Wgs84() failed: _f1 = %v, exptected %v", geod._f1, 0.9966471893352525)
+	if !almost_equal(geod.f1, 0.9966471893352525, float64EqualityThreshold) {
+		t.Errorf("Wgs84() failed: _f1 = %v, exptected %v", geod.f1, 0.9966471893352525)
 	}
-	if !almost_equal(geod._e2, 0.0066943799901413165, float64EqualityThreshold) {
-		t.Errorf("Wgs84() failed: _e2 = %v, exptected %v", geod._e2, 0.0066943799901413165)
-	}
-
-	if !almost_equal(geod._ep2, 0.006739496742276434, float64EqualityThreshold) {
-		t.Errorf("Wgs84() failed: _ep2 = %v, exptected %v", geod._ep2, 0.006739496742276434)
+	if !almost_equal(geod.e2, 0.0066943799901413165, float64EqualityThreshold) {
+		t.Errorf("Wgs84() failed: _e2 = %v, exptected %v", geod.e2, 0.0066943799901413165)
 	}
 
-	if !almost_equal(geod._n, 0.0016792203863837047, float64EqualityThreshold) {
-		t.Errorf("Wgs84() failed: _n = %v, exptected %v", geod._n, 0.0016792203863837047)
+	if !almost_equal(geod.ep2, 0.006739496742276434, float64EqualityThreshold) {
+		t.Errorf("Wgs84() failed: _ep2 = %v, exptected %v", geod.ep2, 0.006739496742276434)
 	}
 
-	if !almost_equal(geod._b, 6356752.314245179, float64EqualityThreshold) {
-		t.Errorf("Wgs84() failed: _b = %v, exptected %v", geod._b, 6356752.314245179)
+	if !almost_equal(geod.n, 0.0016792203863837047, float64EqualityThreshold) {
+		t.Errorf("Wgs84() failed: _n = %v, exptected %v", geod.n, 0.0016792203863837047)
 	}
 
-	if !almost_equal(geod._c2, 40589732499314.76, float64EqualityThreshold) {
-		t.Errorf("Wgs84() failed: _c2 = %v, exptected %v", geod._c2, 40589732499314.76)
+	if !almost_equal(geod.b, 6356752.314245179, float64EqualityThreshold) {
+		t.Errorf("Wgs84() failed: _b = %v, exptected %v", geod.b, 6356752.314245179)
 	}
 
-	if !almost_equal(geod._etol2, 3.6424611488788524e-08, float64EqualityThreshold) {
-		t.Errorf("Wgs84() failed: _etol2 = %v, exptected %v", geod._etol2, 3.6424611488788524e-08)
+	if !almost_equal(geod.c2, 40589732499314.76, float64EqualityThreshold) {
+		t.Errorf("Wgs84() failed: _c2 = %v, exptected %v", geod.c2, 40589732499314.76)
+	}
+
+	if !almost_equal(geod.etol2, 3.6424611488788524e-08, float64EqualityThreshold) {
+		t.Errorf("Wgs84() failed: _etol2 = %v, exptected %v", geod.etol2, 3.6424611488788524e-08)
 	}
 
 	// Compare all the elements of geod._A3x
@@ -1719,11 +1718,11 @@ func parse_dat_struct(record []string) (dat_struct, error) {
 
 }
 
-func read_dot_dat(filename string) []dat_struct {
+func read_dot_dat(filename string) ([]dat_struct, error) {
 	// Open the file
 	file, err := os.Open(filename)
 	if err != nil {
-		log.Fatalf("Could not open file %s", filename)
+		return nil, err
 	}
 	defer file.Close()
 
@@ -1745,20 +1744,20 @@ func read_dot_dat(filename string) []dat_struct {
 
 		// Check for error
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 
 		// Parse everything to floats
 		test_case, err := parse_dat_struct(record)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 
 		data = append(data, test_case)
 
 	}
 
-	return data
+	return data, nil
 }
 
 func TestDirect100(t *testing.T) {
@@ -1769,7 +1768,10 @@ func TestDirect100(t *testing.T) {
 	filename := "test_fixtures/GeodTest-100.dat"
 
 	// Read in the file
-	test_cases := read_dot_dat(filename)
+	test_cases, err := read_dot_dat(filename)
+	if err != nil {
+		t.Errorf("Could not read file %v", filename)
+	}
 
 	// For each test case, run the direct computation, and compare the results
 	for row_num, tc := range test_cases {
@@ -1811,7 +1813,10 @@ func BenchmarkDirect100(b *testing.B) {
 	filename := "test_fixtures/GeodTest-100.dat"
 
 	// Read in the file
-	test_cases := read_dot_dat(filename)
+	test_cases, err := read_dot_dat(filename)
+	if err != nil {
+		b.Errorf("Could not read file %v", filename)
+	}
 
 	for i := 0; i < b.N; i++ {
 		for _, tc := range test_cases {
@@ -2378,7 +2383,7 @@ func TestGeodSolve5(t *testing.T) {
 }
 
 func TestGeodSolve6(t *testing.T) {
-	//Check fix for volatile sbet12a bug found 2011-06-25 (gcc 4.4.4
+	// Check fix for volatile sbet12a bug found 2011-06-25 (gcc 4.4.4
 	// x86 -O3).  Found again on 2012-03-27 with tdm-mingw32 (g++ 4.6.1).
 	geod := Wgs84()
 	s12 := geod.InverseCalcDistance(88.202499451857, 0, -88.202499451857, 179.981022032992859592)

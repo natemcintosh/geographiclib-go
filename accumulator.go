@@ -35,8 +35,8 @@ func (p *Accumulator) SetST(s, t float64) {
 func (p *Accumulator) Add(y float64) {
 	// Here's Shewchuk's solution...
 	// hold exact sum as [s, t, u]
-	y, u := Sum(y, p.t)    // Accumulate starting at
-	p.s, p.t = Sum(y, p.s) // least significant end
+	y, u := sum(y, p.t)    // Accumulate starting at
+	p.s, p.t = sum(y, p.s) // least significant end
 
 	// Start is _s, _t decreasing and non-adjacent.  Sum is now (s + t + u)
 	// exactly with s, t, u non-adjacent and in decreasing order (except

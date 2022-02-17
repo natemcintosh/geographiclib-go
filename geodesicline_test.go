@@ -64,8 +64,8 @@ func TestNewGeodesicLine(t *testing.T) {
 	if !f64_equals(gl._comg1, 1.0) {
 		t.Errorf("_comg1 = %v; want %v", gl._comg1, 1.0)
 	}
-	if !f64_equals(gl._k2, geod._ep2) {
-		t.Errorf("_k2 = %v; want %v", gl._k2, geod._ep2)
+	if !f64_equals(gl._k2, geod.ep2) {
+		t.Errorf("_k2 = %v; want %v", gl._k2, geod.ep2)
 	}
 	if !f64_equals(gl.s13, math.NaN()) {
 		t.Errorf("s13 = %v; want %v", gl.s13, math.NaN())

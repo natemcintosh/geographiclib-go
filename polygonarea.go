@@ -5,23 +5,23 @@ import (
 )
 
 type PolygonArea struct {
-	Earth         Geodesic
-	Polyline      bool
-	Area0_M2      float64
-	_mask         uint64
-	_areasum      Accumulator
-	_perimetersum Accumulator
-	Num           int
-	Lat1_Deg      float64
-	_lat0_deg     float64
-	Lon1_Deg      float64
-	_lon0_deg     float64
-	_crossings    int
+	Earth        Geodesic
+	Polyline     bool
+	Area0_M2     float64
+	mask         uint64
+	areasum      Accumulator
+	perimetersum Accumulator
+	Num          int
+	Lat1_Deg     float64
+	lat0_deg     float64
+	Lon1_Deg     float64
+	lon0_deg     float64
+	crossings    int
 }
 
 func NewPolygonArea(earth Geodesic, is_polyline bool) PolygonArea {
 	// The total area of the ellipsoid in meter^2 (readonly)
-	area0 := 4 * math.Pi * earth._c2
+	area0 := 4 * math.Pi * earth.c2
 
 	var ternary_opt uint64
 	if is_polyline {
@@ -45,18 +45,18 @@ func NewPolygonArea(earth Geodesic, is_polyline bool) PolygonArea {
 	Lon1_Deg := math.NaN()
 
 	p := PolygonArea{
-		Earth:         earth,
-		Polyline:      is_polyline,
-		Area0_M2:      area0,
-		_mask:         mask,
-		_areasum:      areasum,
-		_perimetersum: perimetersum,
-		Num:           Num,
-		Lat1_Deg:      Lat1_Deg,
-		_lat0_deg:     Lat1_Deg,
-		Lon1_Deg:      Lon1_Deg,
-		_lon0_deg:     Lon1_Deg,
-		_crossings:    0,
+		Earth:        earth,
+		Polyline:     is_polyline,
+		Area0_M2:     area0,
+		mask:         mask,
+		areasum:      areasum,
+		perimetersum: perimetersum,
+		Num:          Num,
+		Lat1_Deg:     Lat1_Deg,
+		lat0_deg:     Lat1_Deg,
+		Lon1_Deg:     Lon1_Deg,
+		lon0_deg:     Lon1_Deg,
+		crossings:    0,
 	}
 
 	p.Clear()
@@ -67,13 +67,13 @@ func NewPolygonArea(earth Geodesic, is_polyline bool) PolygonArea {
 // Clear resets to an empty polygon
 func (p *PolygonArea) Clear() {
 	p.Num = 0
-	p._crossings = 0
+	p.crossings = 0
 	if !p.Polyline {
-		p._areasum.SetS(0)
+		p.areasum.SetS(0)
 	}
-	p._perimetersum.SetS(0)
-	p._lat0_deg = math.NaN()
-	p._lon0_deg = math.NaN()
+	p.perimetersum.SetS(0)
+	p.lat0_deg = math.NaN()
+	p.lon0_deg = math.NaN()
 	p.Lat1_Deg = math.NaN()
 	p.Lon1_Deg = math.NaN()
 }
@@ -83,9 +83,9 @@ func (p *PolygonArea) transit(lon1_deg, lon2_deg float64) int {
 	// Return 1 or -1 if crossing prime meridian in east or west direction.
 	// Otherwise return zero.
 	// Compute lon12 the same way as Geodesic::Inverse.
-	lon1 := Ang_normalize(lon1_deg)
-	lon2 := Ang_normalize(lon2_deg)
-	lon12, _ := Ang_diff(lon1, lon2)
+	lon1 := ang_normalize(lon1_deg)
+	lon2 := ang_normalize(lon2_deg)
+	lon12, _ := ang_diff(lon1, lon2)
 
 	if (lon1 <= 0) && (lon2 > 0) && (lon12 > 0) {
 		return 1
@@ -102,20 +102,20 @@ func (p *PolygonArea) transit(lon1_deg, lon2_deg float64) int {
 // vertex to the new vertex
 func (p *PolygonArea) AddPoint(lat_deg, lon_deg float64) {
 	if p.Num == 0 {
-		p._lat0_deg = lat_deg
+		p.lat0_deg = lat_deg
 		p.Lat1_Deg = lat_deg
 
-		p._lon0_deg = lon_deg
+		p.lon0_deg = lon_deg
 		p.Lon1_Deg = lon_deg
 	} else {
 		_, s12, _, _, _, _, _, _, _, S12 := p.Earth._gen_inverse(
-			p.Lat1_Deg, p.Lon1_Deg, lat_deg, lon_deg, p._mask,
+			p.Lat1_Deg, p.Lon1_Deg, lat_deg, lon_deg, p.mask,
 		)
-		p._perimetersum.Add(s12)
+		p.perimetersum.Add(s12)
 
 		if !p.Polyline {
-			p._areasum.Add(S12)
-			p._crossings += p.transit(p.Lon1_Deg, lon_deg)
+			p.areasum.Add(S12)
+			p.crossings += p.transit(p.Lon1_Deg, lon_deg)
 		}
 		p.Lat1_Deg = lat_deg
 		p.Lon1_Deg = lon_deg
@@ -153,13 +153,13 @@ func (p *PolygonArea) transit_direct(lon1_deg, lon2_deg float64) int {
 func (p *PolygonArea) AddEdge(azi_deg, s_m float64) {
 	if p.Num != 0 {
 		_, lat, lon, _, _, _, _, _, S12, _ := p.Earth._gen_direct(
-			p.Lat1_Deg, p.Lon1_Deg, azi_deg, false, s_m, p._mask,
+			p.Lat1_Deg, p.Lon1_Deg, azi_deg, false, s_m, p.mask,
 		)
-		p._perimetersum.Add(s_m)
+		p.perimetersum.Add(s_m)
 
 		if !p.Polyline {
-			p._areasum.Add(S12)
-			p._crossings += p.transit_direct(p.Lon1_Deg, lon)
+			p.areasum.Add(S12)
+			p.crossings += p.transit_direct(p.Lon1_Deg, lon)
 		}
 
 		p.Lat1_Deg = lat
@@ -292,23 +292,23 @@ func (p *PolygonArea) Compute(reverse, sign bool) PolygonResult {
 	}
 
 	if p.Polyline {
-		return PolygonResult{Num: p.Num, Perimeter: p._perimetersum.Sum(0.0), Area: math.NaN()}
+		return PolygonResult{Num: p.Num, Perimeter: p.perimetersum.Sum(0.0), Area: math.NaN()}
 	}
 
 	_, s12, _, _, _, _, _, _, _, S12 := p.Earth._gen_inverse(
 		p.Lat1_Deg,
 		p.Lon1_Deg,
-		p._lat0_deg,
-		p._lon0_deg,
-		p._mask,
+		p.lat0_deg,
+		p.lon0_deg,
+		p.mask,
 	)
 
-	perimeter := p._perimetersum.Sum(s12)
+	perimeter := p.perimetersum.Sum(s12)
 
-	tempsum := p._areasum
+	tempsum := p.areasum
 	tempsum.Add(S12)
 
-	crossings := p._crossings + p.transit(p.Lon1_Deg, p._lon0_deg)
+	crossings := p.crossings + p.transit(p.Lon1_Deg, p.lon0_deg)
 	area := p.area_reduce_A(tempsum, p.Area0_M2, crossings, reverse, sign)
 
 	return PolygonResult{Num: p.Num, Perimeter: perimeter, Area: area}
@@ -350,14 +350,14 @@ func (p *PolygonArea) TestPoint(
 		return PolygonResult{Num: 1, Perimeter: 0, Area: area}
 	}
 
-	perimeter := p._perimetersum.Sum(0.0)
+	perimeter := p.perimetersum.Sum(0.0)
 	var tempsum float64
 	if p.Polyline {
 		tempsum = 0
 	} else {
-		tempsum = p._areasum.Sum(0.0)
+		tempsum = p.areasum.Sum(0.0)
 	}
-	crossings := p._crossings
+	crossings := p.crossings
 	num := p.Num + 1
 
 	var end_point int
@@ -380,11 +380,11 @@ func (p *PolygonArea) TestPoint(
 		} else {
 			this_lat1 = lat_deg
 			this_lon1 = lon_deg
-			this_lat0 = p._lat0_deg
-			this_lon0 = p._lon0_deg
+			this_lat0 = p.lat0_deg
+			this_lon0 = p.lon0_deg
 		}
 		_, s12, _, _, _, _, _, _, _, S12 := p.Earth._gen_inverse(
-			this_lat1, this_lon1, this_lat0, this_lon0, p._mask,
+			this_lat1, this_lon1, this_lat0, this_lon0, p.mask,
 		)
 		perimeter += s12
 		if !p.Polyline {
@@ -396,7 +396,7 @@ func (p *PolygonArea) TestPoint(
 				arg2 = lon_deg
 			} else {
 				arg1 = lon_deg
-				arg2 = p._lon0_deg
+				arg2 = p.lon0_deg
 			}
 			crossings += p.transit(arg1, arg2)
 		}
@@ -441,28 +441,28 @@ func (p *PolygonArea) TestEdge(
 	}
 
 	num := p.Num + 1
-	perimeter := p._perimetersum.Sum(0.0) + s_m
+	perimeter := p.perimetersum.Sum(0.0) + s_m
 
 	if p.Polyline {
 		return PolygonResult{Num: num, Perimeter: perimeter, Area: math.NaN()}
 	}
 
-	tempsum := p._areasum.Sum(0.0)
-	crossings := p._crossings
+	tempsum := p.areasum.Sum(0.0)
+	crossings := p.crossings
 
 	_, lat, lon, _, _, _, _, _, S12, _ := p.Earth._gen_direct(
-		p.Lat1_Deg, p.Lon1_Deg, azi_deg, false, s_m, p._mask,
+		p.Lat1_Deg, p.Lon1_Deg, azi_deg, false, s_m, p.mask,
 	)
 
 	tempsum += S12
 	crossings += p.transit_direct(p.Lon1_Deg, lon)
 
 	_, s12, _, _, _, _, _, _, _, S12 := p.Earth._gen_inverse(
-		lat, lon, p._lat0_deg, p._lon0_deg, p._mask,
+		lat, lon, p.lat0_deg, p.lon0_deg, p.mask,
 	)
 	perimeter += s12
 	tempsum += S12
-	crossings += p.transit(lon, p._lon0_deg)
+	crossings += p.transit(lon, p.lon0_deg)
 
 	area := p.area_reduce_B(tempsum, p.Area0_M2, crossings, reverse, sign)
 	return PolygonResult{Num: num, Perimeter: perimeter, Area: area}

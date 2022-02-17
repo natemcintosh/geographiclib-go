@@ -102,14 +102,14 @@ const GEODESIC_ORDER int64 = 6
 const nC3x_ int64 = 15
 const nC4x_ int64 = 21
 
-func COEFF_A3() [18]float64 {
+func coeff_A3() [18]float64 {
 	return [18]float64{
 		-3.0, 128.0, -2.0, -3.0, 64.0, -1.0, -3.0, -1.0, 16.0, 3.0, -1.0, -2.0, 8.0, 1.0, -1.0, 2.0,
 		1.0, 1.0,
 	}
 }
 
-func COEFF_C3() [45]float64 {
+func coeff_C3() [45]float64 {
 	return [45]float64{
 		3.0, 128.0, 2.0, 5.0, 128.0, -1.0, 3.0, 3.0, 64.0, -1.0, 0.0, 1.0, 8.0, -1.0, 1.0, 4.0, 5.0,
 		256.0, 1.0, 3.0, 128.0, -3.0, -2.0, 3.0, 64.0, 1.0, -3.0, 2.0, 32.0, 7.0, 512.0, -10.0, 9.0,
@@ -117,7 +117,7 @@ func COEFF_C3() [45]float64 {
 	}
 }
 
-func COEFF_C4() [77]float64 {
+func coeff_C4() [77]float64 {
 	return [77]float64{
 		97.0, 15015.0, 1088.0, 156.0, 45045.0, -224.0, -4784.0, 1573.0, 45045.0, -10656.0, 14144.0,
 		-4576.0, -858.0, 45045.0, 64.0, 624.0, -4576.0, 6864.0, -3003.0, 15015.0, 100.0, 208.0, 572.0,
@@ -130,15 +130,15 @@ func COEFF_C4() [77]float64 {
 }
 
 type Geodesic struct {
-	a      float64
-	f      float64
-	_f1    float64
-	_e2    float64
-	_ep2   float64
-	_n     float64
-	_b     float64
-	_c2    float64
-	_etol2 float64
+	a     float64
+	f     float64
+	f1    float64
+	e2    float64
+	ep2   float64
+	n     float64
+	b     float64
+	c2    float64
+	etol2 float64
 
 	GEODESIC_ORDER int64
 	nC3x_          int64
@@ -161,8 +161,8 @@ type Geodesic struct {
 func NewGeodesic(a, f float64) Geodesic {
 	var maxit1_ uint64 = 20
 	maxit2_ := maxit1_ + DIGITS + 10
-	tiny_ := math.Sqrt(Get_min_val())
-	tol0_ := Get_epsilon()
+	tiny_ := math.Sqrt(get_min_val())
+	tol0_ := get_epsilon()
 	tol1_ := 200.0 * tol0_
 	tol2_ := math.Sqrt(tol0_)
 	tolb_ := tol0_ * tol2_
@@ -170,7 +170,7 @@ func NewGeodesic(a, f float64) Geodesic {
 
 	_f1 := 1.0 - f
 	_e2 := f * (2.0 - f)
-	_ep2 := _e2 / Sq(_f1)
+	_ep2 := _e2 / sq(_f1)
 	_n := f / (2.0 - f)
 	_b := a * _f1
 
@@ -181,11 +181,11 @@ func NewGeodesic(a, f float64) Geodesic {
 		is_f_neg = 1.0
 	}
 
-	to_mul := Eatanhe(1.0, is_f_neg*math.Sqrt(math.Abs(_e2))) / _e2
+	to_mul := eatanhe(1.0, is_f_neg*math.Sqrt(math.Abs(_e2))) / _e2
 	if _e2 == 0.0 {
 		to_mul = 1.0
 	}
-	_c2 := (Sq(a) + Sq(_b)*to_mul) / 2.0
+	_c2 := (sq(a) + sq(_b)*to_mul) / 2.0
 	_etol2 := 0.1 * tol2_ / math.Sqrt(math.Max(math.Abs(f), 0.001)*math.Min((1.0-f/2.0), 1.0)/2.0)
 
 	_A3x := [GEODESIC_ORDER]float64{}
@@ -196,10 +196,10 @@ func NewGeodesic(a, f float64) Geodesic {
 	var o int64 = 0
 	k := 0
 
-	coefa3 := COEFF_A3()
+	coefa3 := coeff_A3()
 	for j := GEODESIC_ORDER - 1; j >= 0; j-- {
 		m := int64(math.Min(float64(j), float64(GEODESIC_ORDER-j-1)))
-		_A3x[k] = Polyval(m, coefa3[o:], _n) / coefa3[o+m+1]
+		_A3x[k] = polyval(m, coefa3[o:], _n) / coefa3[o+m+1]
 		k += 1
 		o += m + 2
 	}
@@ -208,11 +208,11 @@ func NewGeodesic(a, f float64) Geodesic {
 	o = 0
 	k = 0
 
-	coefc3 := COEFF_C3()
+	coefc3 := coeff_C3()
 	for l := 1; l < int(GEODESIC_ORDER); l++ {
 		for j := int(GEODESIC_ORDER) - 1; j >= l; j-- {
 			m := int64(math.Min(float64(j), float64(int(GEODESIC_ORDER)-j-1)))
-			_C3x[k] = Polyval(m, coefc3[o:], _n) / coefc3[o+m+1]
+			_C3x[k] = polyval(m, coefc3[o:], _n) / coefc3[o+m+1]
 			k += 1
 			o += m + 2
 		}
@@ -223,11 +223,11 @@ func NewGeodesic(a, f float64) Geodesic {
 	o = 0
 	k = 0
 
-	coefc4 := COEFF_C4()
+	coefc4 := coeff_C4()
 	for l := 0; l < int(GEODESIC_ORDER); l++ {
 		for j := int(GEODESIC_ORDER) - 1; j >= l; j-- {
 			m := int64(int(GEODESIC_ORDER) - j - 1)
-			_C4x[k] = Polyval(m, coefc4[o:], _n) / coefc4[(o+m+1)]
+			_C4x[k] = polyval(m, coefc4[o:], _n) / coefc4[(o+m+1)]
 			k += 1
 			o += m + 2
 		}
@@ -276,7 +276,7 @@ func (g Geodesic) Flattening() float64 {
 }
 
 func (g Geodesic) _A3f(eps float64) float64 {
-	return Polyval(int64(GEODESIC_ORDER-1), g._A3x[:], eps)
+	return polyval(int64(GEODESIC_ORDER-1), g._A3x[:], eps)
 }
 
 func (g Geodesic) _C3f(eps float64, c []float64) {
@@ -285,7 +285,7 @@ func (g Geodesic) _C3f(eps float64, c []float64) {
 	for l := 1; l < int(GEODESIC_ORDER); l++ {
 		m := int(GEODESIC_ORDER) - l - 1
 		mult *= eps
-		c[l] = mult * Polyval(int64(m), g._C3x[o:], eps)
+		c[l] = mult * polyval(int64(m), g._C3x[o:], eps)
 		o += m + 1
 	}
 }
@@ -295,7 +295,7 @@ func (g Geodesic) _C4f(eps float64, c []float64) {
 	o := 0
 	for l := 0; l < int(GEODESIC_ORDER); l++ {
 		m := int(GEODESIC_ORDER) - l - 1
-		c[l] = mult * Polyval(int64(m), g._C4x[o:], eps)
+		c[l] = mult * polyval(int64(m), g._C4x[o:], eps)
 		o += m + 1
 		mult *= eps
 	}
@@ -304,8 +304,8 @@ func (g Geodesic) _C4f(eps float64, c []float64) {
 func (g Geodesic) _Lengths(
 	eps, sig12, ssig1, csig1, dn1, ssig2, csig2, dn2, cbet1, cbet2 float64,
 	outmask uint64,
-	C1a []float64,
-	C2a []float64,
+	c1a []float64,
+	c2a []float64,
 ) (float64, float64, float64, float64, float64) {
 	outmask &= OUT_MASK
 	s12b := math.NaN()
@@ -320,11 +320,11 @@ func (g Geodesic) _Lengths(
 	J12 := 0.0
 
 	if outmask&(DISTANCE|REDUCEDLENGTH|GEODESICSCALE) != 0 {
-		A1 = _A1m1f(eps, GEODESIC_ORDER)
-		_C1f(eps, C1a, int(GEODESIC_ORDER))
+		A1 = a1m1f(eps, GEODESIC_ORDER)
+		c1f(eps, c1a, int(GEODESIC_ORDER))
 		if outmask&(REDUCEDLENGTH|GEODESICSCALE) != 0 {
-			A2 = _A2m1f(eps, GEODESIC_ORDER)
-			_C2f(eps, C2a, int(GEODESIC_ORDER))
+			A2 = a2m1f(eps, GEODESIC_ORDER)
+			c2f(eps, c2a, int(GEODESIC_ORDER))
 			m0x = A1 - A2
 			A2 = 1.0 + A2
 		}
@@ -332,17 +332,17 @@ func (g Geodesic) _Lengths(
 	}
 
 	if outmask&DISTANCE != 0 {
-		B1 := Sin_cos_series(true, ssig2, csig2, C1a) - Sin_cos_series(true, ssig1, csig1, C1a)
+		B1 := sin_cos_series(true, ssig2, csig2, c1a) - sin_cos_series(true, ssig1, csig1, c1a)
 		s12b = A1 * (sig12 + B1)
 		if outmask&(REDUCEDLENGTH|GEODESICSCALE) != 0 {
-			B2 := Sin_cos_series(true, ssig2, csig2, C2a) - Sin_cos_series(true, ssig1, csig1, C2a)
+			B2 := sin_cos_series(true, ssig2, csig2, c2a) - sin_cos_series(true, ssig1, csig1, c2a)
 			J12 = m0x*sig12 + (A1*B1 - A2*B2)
 		}
 	} else if outmask&(REDUCEDLENGTH|GEODESICSCALE) != 0 {
 		for l := 1; l <= int(GEODESIC_ORDER); l++ {
-			C2a[l] = A1*C1a[l] - A2*C2a[l]
+			c2a[l] = A1*c1a[l] - A2*c2a[l]
 		}
-		J12 = m0x*sig12 + (Sin_cos_series(true, ssig2, csig2, C2a) - Sin_cos_series(true, ssig1, csig1, C2a))
+		J12 = m0x*sig12 + (sin_cos_series(true, ssig2, csig2, c2a) - sin_cos_series(true, ssig1, csig1, c2a))
 	}
 
 	if outmask&REDUCEDLENGTH != 0 {
@@ -353,7 +353,7 @@ func (g Geodesic) _Lengths(
 
 	if outmask&GEODESICSCALE != 0 {
 		csig12 := csig1*csig2 + ssig1*ssig2
-		t := g._ep2 * (cbet1 - cbet2) * (cbet1 + cbet2) / (dn1 + dn2)
+		t := g.ep2 * (cbet1 - cbet2) * (cbet1 + cbet2) / (dn1 + dn2)
 		M12 = csig12 + (t*ssig2-csig2*J12)*ssig1/dn1
 		M21 = csig12 - (t*ssig1-csig1*J12)*ssig2/dn2
 	}
@@ -362,8 +362,8 @@ func (g Geodesic) _Lengths(
 
 func (g Geodesic) _InverseStart(
 	sbet1, cbet1, dn1, sbet2, cbet2, dn2, lam12, slam12, clam12 float64,
-	C1a []float64,
-	C2a []float64,
+	c1a []float64,
+	c2a []float64,
 ) (float64, float64, float64, float64, float64, float64) {
 	sig12 := -1.0
 	salp2 := math.NaN()
@@ -381,10 +381,10 @@ func (g Geodesic) _InverseStart(
 
 	shortline := cbet12 >= 0.0 && sbet12 < 0.5 && cbet2*lam12 < 0.5
 	if shortline {
-		sbetm2 := Sq(sbet1 + sbet2)
-		sbetm2 /= sbetm2 + Sq(cbet1+cbet2)
-		dnm = math.Sqrt(1.0 + g._ep2*sbetm2)
-		omg12 := lam12 / (g._f1 * dnm)
+		sbetm2 := sq(sbet1 + sbet2)
+		sbetm2 /= sbetm2 + sq(cbet1+cbet2)
+		dnm = math.Sqrt(1.0 + g.ep2*sbetm2)
+		omg12 := lam12 / (g.f1 * dnm)
 		somg12 = math.Sin(omg12)
 		comg12 = math.Cos(omg12)
 	} else {
@@ -394,27 +394,27 @@ func (g Geodesic) _InverseStart(
 
 	salp1 := cbet2 * somg12
 
-	calp1 := sbet12a - cbet2*sbet1*Sq(somg12)/(1.0-comg12)
+	calp1 := sbet12a - cbet2*sbet1*sq(somg12)/(1.0-comg12)
 	if comg12 >= 0.0 {
-		calp1 = sbet12 + cbet2*sbet1*Sq(somg12)/(1.0+comg12)
+		calp1 = sbet12 + cbet2*sbet1*sq(somg12)/(1.0+comg12)
 	}
 
 	ssig12 := math.Hypot(salp1, calp1)
 	csig12 := sbet1*sbet2 + cbet1*cbet2*comg12
 
-	if shortline && (ssig12 < g._etol2) {
+	if shortline && (ssig12 < g.etol2) {
 		salp2 = cbet1 * somg12
 		var to_mul float64
 		if comg12 >= 0.0 {
-			to_mul = Sq(somg12) / (1.0 + comg12)
+			to_mul = sq(somg12) / (1.0 + comg12)
 		} else {
 			to_mul = 1.0 - comg12
 		}
 		calp2 = sbet12 - cbet1*sbet2*to_mul
 
-		salp2, calp2 = Norm(salp2, calp2)
+		salp2, calp2 = norm(salp2, calp2)
 		sig12 = math.Atan2(ssig12, csig12)
-	} else if math.Abs(g._n) > 0.1 || csig12 >= 0.0 || ssig12 >= 6.0*math.Abs(g._n)*math.Pi*Sq(cbet1) {
+	} else if math.Abs(g.n) > 0.1 || csig12 >= 0.0 || ssig12 >= 6.0*math.Abs(g.n)*math.Pi*sq(cbet1) {
 	} else {
 		var x float64
 		var y float64
@@ -422,7 +422,7 @@ func (g Geodesic) _InverseStart(
 		var lamscale float64
 		lam12x := math.Atan2(-slam12, -clam12)
 		if g.f >= 0.0 {
-			k2 := Sq(sbet1) * g._ep2
+			k2 := sq(sbet1) * g.ep2
 			eps := k2 / (2.0*(1.0+math.Sqrt(1.0+k2)) + k2)
 			lamscale = g.f * cbet1 * g._A3f(eps) * math.Pi
 			betscale = lamscale * cbet1
@@ -432,7 +432,7 @@ func (g Geodesic) _InverseStart(
 			cbet12a := cbet2*cbet1 - sbet2*sbet1
 			bet12a := math.Atan2(sbet12, cbet12a)
 			_, m12b, m0, _, _ := g._Lengths(
-				g._n,
+				g.n,
 				math.Pi+bet12a,
 				sbet1,
 				-cbet1,
@@ -443,15 +443,15 @@ func (g Geodesic) _InverseStart(
 				cbet1,
 				cbet2,
 				REDUCEDLENGTH,
-				C1a,
-				C2a,
+				c1a,
+				c2a,
 			)
 			x = -1.0 + m12b/(cbet1*cbet2*m0*math.Pi)
 			var betscale float64
 			if x < -0.01 {
 				betscale = sbet12a / x
 			} else {
-				betscale = -g.f * Sq(cbet1) * math.Pi
+				betscale = -g.f * sq(cbet1) * math.Pi
 			}
 			lamscale = betscale / cbet1
 			y = lam12x / lamscale
@@ -459,7 +459,7 @@ func (g Geodesic) _InverseStart(
 		if y > -g.tol1_ && x > -1.0-g.xthresh_ {
 			if g.f >= 0.0 {
 				salp1 = math.Min(-x, 1.0)
-				calp1 = -math.Sqrt(1.0 - Sq(salp1))
+				calp1 = -math.Sqrt(1.0 - sq(salp1))
 			} else {
 				var to_compare float64
 				if x > -g.tol1_ {
@@ -468,10 +468,10 @@ func (g Geodesic) _InverseStart(
 					to_compare = -1.0
 				}
 				calp1 = math.Max(x, to_compare)
-				salp1 = math.Sqrt(1.0 - Sq(calp1))
+				salp1 = math.Sqrt(1.0 - sq(calp1))
 			}
 		} else {
-			k := Astroid(x, y)
+			k := astroid(x, y)
 			var to_mul float64
 			if g.f >= 0.0 {
 				to_mul = -x * k / (1.0 + k)
@@ -483,12 +483,12 @@ func (g Geodesic) _InverseStart(
 			somg12 = math.Sin(omg12a)
 			comg12 = -math.Cos(omg12a)
 			salp1 = cbet2 * somg12
-			calp1 = sbet12a - cbet2*sbet1*Sq(somg12)/(1.0-comg12)
+			calp1 = sbet12a - cbet2*sbet1*sq(somg12)/(1.0-comg12)
 		}
 	}
 
 	if !(salp1 <= 0.0) {
-		salp1, calp1 = Norm(salp1, calp1)
+		salp1, calp1 = norm(salp1, calp1)
 	} else {
 		salp1 = 1.0
 		calp1 = 0.0
@@ -499,9 +499,9 @@ func (g Geodesic) _InverseStart(
 func (g Geodesic) _Lambda12(
 	sbet1, cbet1, dn1, sbet2, cbet2, dn2, salp1, calp1, slam120, clam120 float64,
 	diffp bool,
-	C1a []float64,
-	C2a []float64,
-	C3a []float64,
+	c1a []float64,
+	c2a []float64,
+	c3a []float64,
 ) (float64, float64, float64, float64, float64, float64, float64, float64, float64, float64, float64) {
 
 	if sbet1 == 0.0 && calp1 == 0.0 {
@@ -514,7 +514,7 @@ func (g Geodesic) _Lambda12(
 	somg1 := salp0 * sbet1
 	csig1 := calp1 * cbet1
 	comg1 := calp1 * cbet1
-	ssig1, csig1 = Norm(ssig1, csig1)
+	ssig1, csig1 = norm(ssig1, csig1)
 
 	var salp2 float64
 	if cbet2 != cbet1 {
@@ -532,7 +532,7 @@ func (g Geodesic) _Lambda12(
 
 	calp2 := math.Abs(calp1)
 	if cbet2 != cbet1 || math.Abs(sbet2) != -sbet1 {
-		calp2 = math.Sqrt(Sq(calp1*cbet1)+to_add) / cbet2
+		calp2 = math.Sqrt(sq(calp1*cbet1)+to_add) / cbet2
 
 	}
 
@@ -540,24 +540,24 @@ func (g Geodesic) _Lambda12(
 	somg2 := salp0 * sbet2
 	csig2 := calp2 * cbet2
 	comg2 := calp2 * cbet2
-	ssig2, csig2 = Norm(ssig2, csig2)
+	ssig2, csig2 = norm(ssig2, csig2)
 
 	sig12 := math.Atan2(math.Max(csig1*ssig2-ssig1*csig2, 0.0), csig1*csig2+ssig1*ssig2)
 	somg12 := math.Max((comg1*somg2 - somg1*comg2), 0.0)
 	comg12 := comg1*comg2 + somg1*somg2
 	eta := math.Atan2(somg12*clam120-comg12*slam120, comg12*clam120+somg12*slam120)
 
-	k2 := Sq(calp0) * g._ep2
+	k2 := sq(calp0) * g.ep2
 	eps := k2 / (2.0*(1.0+math.Sqrt(1.0+k2)) + k2)
-	g._C3f(eps, C3a)
-	B312 := Sin_cos_series(true, ssig2, csig2, C3a) - Sin_cos_series(true, ssig1, csig1, C3a)
+	g._C3f(eps, c3a)
+	B312 := sin_cos_series(true, ssig2, csig2, c3a) - sin_cos_series(true, ssig1, csig1, c3a)
 	domg12 := -g.f * g._A3f(eps) * salp0 * (sig12 + B312)
 	lam12 := eta + domg12
 
 	var dlam12 float64
 	if diffp {
 		if calp2 == 0.0 {
-			dlam12 = -2.0 * g._f1 * dn1 / sbet1
+			dlam12 = -2.0 * g.f1 * dn1 / sbet1
 		} else {
 			_, res, _, _, _ := g._Lengths(
 				eps,
@@ -571,11 +571,11 @@ func (g Geodesic) _Lambda12(
 				cbet1,
 				cbet2,
 				REDUCEDLENGTH,
-				C1a,
-				C2a,
+				c1a,
+				c2a,
 			)
 			dlam12 = res
-			dlam12 *= g._f1 / (calp2 * cbet2)
+			dlam12 *= g.f1 / (calp2 * cbet2)
 		}
 	} else {
 		dlam12 = math.NaN()
@@ -599,8 +599,8 @@ func (g Geodesic) _gen_inverse_azi(
 	)
 
 	if outmask&AZIMUTH != 0 {
-		azi1 = Atan2_deg(salp1, calp1)
-		azi2 = Atan2_deg(salp2, calp2)
+		azi1 = atan2_deg(salp1, calp1)
+		azi2 = atan2_deg(salp2, calp2)
 	}
 	return a12, s12, azi1, azi2, m12, M12, M21, S12
 }
@@ -617,7 +617,7 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 	S12 := math.NaN()
 	outmask &= OUT_MASK
 
-	lon12, lon12s := Ang_diff(lon1, lon2)
+	lon12, lon12s := ang_diff(lon1, lon2)
 	var lonsign float64
 	if lon12 >= 0.0 {
 		lonsign = 1.0
@@ -625,19 +625,19 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 		lonsign = -1.0
 	}
 
-	lon12 = lonsign * Ang_round(lon12)
-	lon12s = Ang_round((180.0 - lon12) - lonsign*lon12s)
+	lon12 = lonsign * ang_round(lon12)
+	lon12s = ang_round((180.0 - lon12) - lonsign*lon12s)
 	lam12 := lon12 * DEG2RAD
 	var slam12 float64
 	var clam12 float64
 	if lon12 > 90.0 {
-		slam12, clam12 = Sincosd(lon12s)
+		slam12, clam12 = sincosd(lon12s)
 		clam12 = -clam12
 	} else {
-		slam12, clam12 = Sincosd(lon12)
+		slam12, clam12 = sincosd(lon12)
 	}
-	lat1 = Ang_round(Lat_fix(lat1))
-	lat2 = Ang_round(Lat_fix(lat2))
+	lat1 = ang_round(lat_fix(lat1))
+	lat2 = ang_round(lat_fix(lat2))
 
 	var swapp float64
 	if math.Abs(lat1) < math.Abs(lat2) {
@@ -660,16 +660,16 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 	lat1 *= latsign
 	lat2 *= latsign
 
-	sbet1, cbet1 := Sincosd(lat1)
-	sbet1 *= g._f1
+	sbet1, cbet1 := sincosd(lat1)
+	sbet1 *= g.f1
 
-	sbet1, cbet1 = Norm(sbet1, cbet1)
+	sbet1, cbet1 = norm(sbet1, cbet1)
 	cbet1 = math.Max(cbet1, g.tiny_)
 
-	sbet2, cbet2 := Sincosd(lat2)
-	sbet2 *= g._f1
+	sbet2, cbet2 := sincosd(lat2)
+	sbet2 *= g.f1
 
-	sbet2, cbet2 = Norm(sbet2, cbet2)
+	sbet2, cbet2 = norm(sbet2, cbet2)
 	cbet2 = math.Max(cbet2, g.tiny_)
 
 	if cbet1 < -sbet1 {
@@ -684,8 +684,8 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 		cbet2 = cbet1
 	}
 
-	dn1 := math.Sqrt(1.0 + g._ep2*Sq(sbet1))
-	dn2 := math.Sqrt(1.0 + g._ep2*Sq(sbet2))
+	dn1 := math.Sqrt(1.0 + g.ep2*sq(sbet1))
+	dn2 := math.Sqrt(1.0 + g.ep2*sq(sbet2))
 
 	const CARR_SIZE uint64 = uint64(GEODESIC_ORDER) + 1
 	C1a := [CARR_SIZE]float64{}
@@ -718,7 +718,7 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 
 		sig12 = math.Atan2(math.Max((csig1*ssig2-ssig1*csig2), 0.0), csig1*csig2+ssig1*ssig2)
 		res1, res2, _, res4, res5 := g._Lengths(
-			g._n,
+			g.n,
 			sig12,
 			ssig1,
 			csig1,
@@ -743,8 +743,8 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 				m12x = 0.0
 				s12x = 0.0
 			}
-			m12x *= g._b
-			s12x *= g._b
+			m12x *= g.b
+			s12x *= g.b
 			a12 = sig12 * RAD2DEG
 		} else {
 			meridian = false
@@ -764,14 +764,14 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 		salp2 = 1.0
 
 		s12x = g.a * lam12
-		sig12 = lam12 / g._f1
-		omg12 = lam12 / g._f1
-		m12x = g._b * math.Sin(sig12)
+		sig12 = lam12 / g.f1
+		omg12 = lam12 / g.f1
+		m12x = g.b * math.Sin(sig12)
 		if outmask&GEODESICSCALE != 0 {
 			M12 = math.Cos(sig12)
 			M21 = math.Cos(sig12)
 		}
-		a12 = lon12 / g._f1
+		a12 = lon12 / g.f1
 	} else if !meridian {
 		res1, res2, res3, res4, res5, res6 := g._InverseStart(
 			sbet1, cbet1, dn1, sbet2, cbet2, dn2, lam12, slam12, clam12, C1a[:], C2a[:],
@@ -784,14 +784,14 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 		dnm = res6
 
 		if sig12 >= 0.0 {
-			s12x = sig12 * g._b * dnm
-			m12x = Sq(dnm) * g._b * math.Sin(sig12/dnm)
+			s12x = sig12 * g.b * dnm
+			m12x = sq(dnm) * g.b * math.Sin(sig12/dnm)
 			if outmask&GEODESICSCALE != 0 {
 				M12 = math.Cos(sig12 / dnm)
 				M21 = math.Cos(sig12 / dnm)
 			}
 			a12 = sig12 * RAD2DEG
-			omg12 = lam12 / (g._f1 * dnm)
+			omg12 = lam12 / (g.f1 * dnm)
 		} else {
 			tripn := false
 			tripb := false
@@ -854,7 +854,7 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 					if nsalp1 > 0.0 && math.Abs(dalp1) < math.Pi {
 						calp1 = calp1*cdalp1 - salp1*sdalp1
 						salp1 = nsalp1
-						salp1, calp1 = Norm(salp1, calp1)
+						salp1, calp1 = norm(salp1, calp1)
 						tripn = math.Abs(v) <= 16.0*g.tol0_
 						continue
 					}
@@ -862,7 +862,7 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 
 				salp1 = (salp1a + salp1b) / 2.0
 				calp1 = (calp1a + calp1b) / 2.0
-				salp1, calp1 = Norm(salp1, calp1)
+				salp1, calp1 = norm(salp1, calp1)
 				tripn = false
 				tripb = math.Abs(salp1a-salp1)+(calp1a-calp1) < g.tolb_ || math.Abs(salp1-salp1b)+(calp1-calp1b) < g.tolb_
 			}
@@ -883,8 +883,8 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 			M12 = res4
 			M21 = res5
 
-			m12x *= g._b
-			s12x *= g._b
+			m12x *= g.b
+			s12x *= g.b
 			a12 = sig12 * RAD2DEG
 			if outmask&AREA != 0 {
 				sdomg12 := math.Sin(domg12)
@@ -910,15 +910,15 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 			csig1 = calp1 * cbet1
 			ssig2 = sbet2
 			csig2 = calp2 * cbet2
-			k2 := Sq(calp0) * g._ep2
+			k2 := sq(calp0) * g.ep2
 			eps = k2 / (2.0*(1.0+math.Sqrt(1.0+k2)) + k2)
-			A4 := Sq(g.a) * calp0 * salp0 * g._e2
-			ssig1, csig1 = Norm(ssig1, csig1)
-			ssig2, csig2 = Norm(ssig2, csig2)
+			A4 := sq(g.a) * calp0 * salp0 * g.e2
+			ssig1, csig1 = norm(ssig1, csig1)
+			ssig2, csig2 = norm(ssig2, csig2)
 			C4a := [GEODESIC_ORDER]float64{}
 			g._C4f(eps, C4a[:])
-			B41 := Sin_cos_series(false, ssig1, csig1, C4a[:])
-			B42 := Sin_cos_series(false, ssig2, csig2, C4a[:])
+			B41 := sin_cos_series(false, ssig1, csig1, C4a[:])
+			B42 := sin_cos_series(false, ssig2, csig2, C4a[:])
 			S12 = A4 * (B42 - B41)
 		} else {
 			S12 = 0.0
@@ -944,7 +944,7 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 			}
 			alp12 = math.Atan2(salp12, calp12)
 		}
-		S12 += g._c2 * alp12
+		S12 += g.c2 * alp12
 		S12 *= swapp * lonsign * latsign
 		S12 += 0.0
 	}
@@ -1401,7 +1401,7 @@ func (g Geodesic) InverseLineWithCapabilities(
 	capabilities uint64,
 ) GeodesicLine {
 	a12, _, salp1, calp1, _, _, _, _, _, _ := g._gen_inverse(lat1_deg, lon1_deg, lat2_deg, lon2_deg, 0)
-	azi1 := Atan2_deg(salp1, calp1)
+	azi1 := atan2_deg(salp1, calp1)
 
 	if capabilities&(OUT_MASK&DISTANCE_IN) != 0 {
 		capabilities |= DISTANCE

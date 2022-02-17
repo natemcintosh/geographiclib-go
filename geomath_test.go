@@ -39,7 +39,7 @@ func TestSincosd(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			sin, cos := Sincosd(tC.in)
+			sin, cos := sincosd(tC.in)
 			if !almost_equal(sin, tC.out1, float64EqualityThreshold) || !almost_equal(cos, tC.out2, float64EqualityThreshold) {
 				t.Errorf("Sincosd(%v) = %v, %v; want %v, %v", tC.in, sin, cos, tC.out1, tC.out2)
 			}
@@ -69,7 +69,7 @@ func BenchmarkSincosd(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				Sincosd(bm.in)
+				sincosd(bm.in)
 			}
 
 		})
@@ -78,7 +78,7 @@ func BenchmarkSincosd(b *testing.B) {
 
 func Test_A1m1f(t *testing.T) {
 	exptected := 0.1404582405272727
-	got := _A1m1f(0.12, 6)
+	got := a1m1f(0.12, 6)
 	if !almost_equal(exptected, got, float64EqualityThreshold) {
 		t.Errorf("_A1m1f(0.12, 6) = %v; want %v", got, exptected)
 	}
@@ -100,7 +100,7 @@ func Benchmark_A1m1f(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_A1m1f(bm.in1, bm.in2)
+				a1m1f(bm.in1, bm.in2)
 			}
 
 		})
@@ -109,7 +109,7 @@ func Benchmark_A1m1f(b *testing.B) {
 
 func TestAstroid(t *testing.T) {
 	expected := 23.44475767500982
-	got := Astroid(21.0, 12.0)
+	got := astroid(21.0, 12.0)
 	if !almost_equal(expected, got, float64EqualityThreshold) {
 		t.Errorf("Astroid(21.0, 12.0) = %v; want %v", got, expected)
 	}
@@ -131,7 +131,7 @@ func BenchmarkAstroid(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				Astroid(bm.in1, bm.in2)
+				astroid(bm.in1, bm.in2)
 			}
 
 		})
@@ -214,7 +214,7 @@ func TestSin_cos_series(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			got := Sin_cos_series(tC.sinp, tC.sinx, tC.cosx, tC.c)
+			got := sin_cos_series(tC.sinp, tC.sinx, tC.cosx, tC.c)
 			if !almost_equal(tC.want, got, float64EqualityThreshold) {
 				t.Errorf("Sin_cos_series(%v, %v, %v, %v) = %v; want %v", tC.sinp, tC.sinx, tC.cosx, tC.c, got, tC.want)
 			}
@@ -294,7 +294,7 @@ func BenchmarkSin_cos_series(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				Sin_cos_series(bm.sinp, bm.sinx, bm.cosx, bm.c)
+				sin_cos_series(bm.sinp, bm.sinx, bm.cosx, bm.c)
 			}
 
 		})
@@ -303,7 +303,7 @@ func BenchmarkSin_cos_series(b *testing.B) {
 
 func Test_C1f(t *testing.T) {
 	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
-	_C1f(0.12, c, 6)
+	c1f(0.12, c, 6)
 	want_c := []float64{
 		1.0,
 		-0.059676777599999994,
@@ -339,7 +339,7 @@ func Benchmark_C1f(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_C1f(bm.eps, bm.c, bm.geodesic_order)
+				c1f(bm.eps, bm.c, bm.geodesic_order)
 			}
 
 		})
@@ -348,7 +348,7 @@ func Benchmark_C1f(b *testing.B) {
 
 func Test_C1pf(t *testing.T) {
 	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
-	_C1pf(0.12, c, 6)
+	c1pf(0.12, c, 6)
 	want_c := []float64{
 		1.0,
 		0.059517321000000005,
@@ -384,7 +384,7 @@ func Benchmark_C1pf(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_C1pf(bm.eps, bm.c, bm.geodesic_order)
+				c1pf(bm.eps, bm.c, bm.geodesic_order)
 			}
 
 		})
@@ -393,7 +393,7 @@ func Benchmark_C1pf(b *testing.B) {
 
 func Test_C2f(t *testing.T) {
 	c := []float64{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}
-	_C2f(0.12, c, 6)
+	c2f(0.12, c, 6)
 	want_c := []float64{
 		1.0,
 		0.0601087776,
@@ -429,7 +429,7 @@ func Benchmark_C2f(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_C2f(bm.eps, bm.c, bm.geodesic_order)
+				c2f(bm.eps, bm.c, bm.geodesic_order)
 			}
 
 		})
@@ -437,7 +437,7 @@ func Benchmark_C2f(b *testing.B) {
 }
 
 func Test_A2m1f(t *testing.T) {
-	got := _A2m1f(0.12, 6)
+	got := a2m1f(0.12, 6)
 	want := -0.11680607884285714
 	if !almost_equal(got, want, float64EqualityThreshold) {
 		t.Errorf("_A2m1f(%v) = %v; want %v", 0.12, got, want)
@@ -460,7 +460,7 @@ func Benchmark_A2m1f(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_A2m1f(bm.eps, bm.geodesic_order)
+				a2m1f(bm.eps, bm.geodesic_order)
 			}
 
 		})
@@ -485,7 +485,7 @@ func TestAng_diff(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			d, tvar := Ang_diff(tC.x, tC.y)
+			d, tvar := ang_diff(tC.x, tC.y)
 
 			if !f64_equals(d, tC.d) {
 				t.Errorf("d = %v; want %v", d, tC.d)
@@ -517,7 +517,7 @@ func TestAng_normalize(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			got := Ang_normalize(tC.in)
+			got := ang_normalize(tC.in)
 			if !f64_equals(got, tC.want) {
 				t.Errorf("Ang_normalize(%v) = %v; want %v", tC.in, got, tC.want)
 			}
@@ -545,7 +545,7 @@ func TestAtan2_deg(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			got := Atan2_deg(tC.x, tC.y)
+			got := atan2_deg(tC.x, tC.y)
 
 			if !f64_equals(tC.want, got) {
 				t.Errorf("Atan2_deg(%v, %v) = %v; want %v", tC.x, tC.y, got, tC.want)

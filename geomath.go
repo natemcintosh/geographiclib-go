@@ -8,20 +8,20 @@ const TWO float64 = 2.0
 const RAD2DEG float64 = 180.0 / math.Pi
 const DEG2RAD float64 = math.Pi / 180.0
 
-func Get_epsilon() float64 {
+func get_epsilon() float64 {
 	return math.Pow(TWO, 1.0-float64(DIGITS))
 }
 
-func Get_min_val() float64 {
+func get_min_val() float64 {
 	return math.SmallestNonzeroFloat64
 }
 
-// Sq: square a number
-func Sq(x float64) float64 {
+// sq: square a number
+func sq(x float64) float64 {
 	return math.Pow(x, 2.0)
 }
 
-func Cbrt(x float64) float64 {
+func cbrt(x float64) float64 {
 	y := math.Pow(math.Abs(x), 1.0/3.0)
 
 	// return y if x > 0 else (-y if x < 0 else x)
@@ -34,14 +34,14 @@ func Cbrt(x float64) float64 {
 	}
 }
 
-// Norm: normalize a two-vector
-func Norm(x, y float64) (float64, float64) {
+// norm: normalize a two-vector
+func norm(x, y float64) (float64, float64) {
 	r := math.Sqrt(x*x + y*y)
 	return (x / r), (y / r)
 }
 
-// Sum: error free transformation of a sum
-func Sum(u, v float64) (float64, float64) {
+// sum: error free transformation of a sum
+func sum(u, v float64) (float64, float64) {
 	s := u + v
 	up := s - v
 	vpp := s - up
@@ -51,8 +51,8 @@ func Sum(u, v float64) (float64, float64) {
 	return s, t
 }
 
-// Polyval: evaluate a polynomial
-func Polyval(n int64, p []float64, x float64) float64 {
+// polyval: evaluate a polynomial
+func polyval(n int64, p []float64, x float64) float64 {
 	if n < 0 {
 		return 0.0
 	} else {
@@ -64,8 +64,8 @@ func Polyval(n int64, p []float64, x float64) float64 {
 	}
 }
 
-// Ang_round: round an angle so that small values underflow to 0
-func Ang_round(x float64) float64 {
+// ang_round: round an angle so that small values underflow to 0
+func ang_round(x float64) float64 {
 	// The makes the smallest gap in x = 1/16 - nextafter(1/16, 0) = 1/2^57
 	// for reals = 0.7 pm on the earth if x is an angle in degrees.  (This
 	// is about 1000 times more resolution than we get with angles around 90
@@ -88,8 +88,8 @@ func Ang_round(x float64) float64 {
 	}
 }
 
-// Ang_normalize: reduce angle to (-180,180]
-func Ang_normalize(x float64) float64 {
+// ang_normalize: reduce angle to (-180,180]
+func ang_normalize(x float64) float64 {
 	// y = Math.remainder(x, 360)
 	// return 180 if y == -180 else y
 	y := math.Remainder(x, 360.0)
@@ -100,8 +100,8 @@ func Ang_normalize(x float64) float64 {
 	}
 }
 
-// Lat_fix: replace angles outside [-90,90] with NaN
-func Lat_fix(x float64) float64 {
+// lat_fix: replace angles outside [-90,90] with NaN
+func lat_fix(x float64) float64 {
 	if math.Abs(x) > 90.0 {
 		return math.NaN()
 	} else {
@@ -109,19 +109,19 @@ func Lat_fix(x float64) float64 {
 	}
 }
 
-// Ang_diff: compute y - x and reduce to [-180,180] accurately
-func Ang_diff(x, y float64) (float64, float64) {
-	d, t := Sum(Ang_normalize(-x), Ang_normalize(y))
-	d = Ang_normalize(d)
+// ang_diff: compute y - x and reduce to [-180,180] accurately
+func ang_diff(x, y float64) (float64, float64) {
+	d, t := sum(ang_normalize(-x), ang_normalize(y))
+	d = ang_normalize(d)
 	if d == 180.0 && t > 0.0 {
-		return Sum(-180.0, t)
+		return sum(-180.0, t)
 	} else {
-		return Sum(d, t)
+		return sum(d, t)
 	}
 }
 
-// Sincosd: compute sine and cosine of x in degrees
-func Sincosd(x float64) (float64, float64) {
+// sincosd: compute sine and cosine of x in degrees
+func sincosd(x float64) (float64, float64) {
 	// r = math.fmod(x, 360) if Math.isfinite(x) else Math.nan
 	r := math.NaN()
 	if !math.IsInf(x, 0) {
@@ -179,8 +179,8 @@ func Sincosd(x float64) (float64, float64) {
 	return s, c
 }
 
-// Atan2_deg: compute the arc tangent of y/x in degrees
-func Atan2_deg(y_deg, x_deg float64) float64 {
+// atan2_deg: compute the arc tangent of y/x in degrees
+func atan2_deg(y_deg, x_deg float64) float64 {
 	// First convert to radians.
 	y_rad := y_deg * DEG2RAD
 	x_rad := x_deg * DEG2RAD
@@ -189,7 +189,7 @@ func Atan2_deg(y_deg, x_deg float64) float64 {
 	return math.Atan2(y_rad, x_rad) * RAD2DEG
 }
 
-func Eatanhe(x float64, es float64) float64 {
+func eatanhe(x float64, es float64) float64 {
 	if es > 0.0 {
 		return es * math.Atanh(es*x)
 	} else {
@@ -197,8 +197,8 @@ func Eatanhe(x float64, es float64) float64 {
 	}
 }
 
-// Sin_cos_series: functions that used to be inside Geodesic
-func Sin_cos_series(sinp bool, sinx float64, cosx float64, c []float64) float64 {
+// sin_cos_series: functions that used to be inside Geodesic
+func sin_cos_series(sinp bool, sinx float64, cosx float64, c []float64) float64 {
 	k := len(c)
 
 	to_sub := 0
@@ -231,14 +231,14 @@ func Sin_cos_series(sinp bool, sinx float64, cosx float64, c []float64) float64 
 	}
 }
 
-// Astroid: solve astroid equation
-func Astroid(x, y float64) float64 {
-	p := Sq(x)
-	q := Sq(y)
+// astroid: solve astroid equation
+func astroid(x, y float64) float64 {
+	p := sq(x)
+	q := sq(y)
 	r := (p + q - 1.0) / 6.0
 	if !(q == 0.0 && r <= 0.0) {
 		s := p * q / 4.0
-		r2 := Sq(r)
+		r2 := sq(r)
 		r3 := r * r2
 		disc := s * (s + 2.0*r3)
 		u := r
@@ -251,7 +251,7 @@ func Astroid(x, y float64) float64 {
 				t3 += math.Sqrt(disc)
 			}
 
-			t := Cbrt(t3) // we could use built-in math.Cbrt
+			t := cbrt(t3) // we could use built-in math.Cbrt
 
 			to_add := 0.0
 			if t != 0.0 {
@@ -262,83 +262,83 @@ func Astroid(x, y float64) float64 {
 			ang := math.Atan2(math.Sqrt(-disc), -(s + r3))
 			u += 2.0 * r * math.Cos(ang/3.0)
 		}
-		v := math.Sqrt((Sq(u) + q))
+		v := math.Sqrt((sq(u) + q))
 		uv := u + v
 		if u < 0.0 {
 			uv = q / (v + u)
 		}
 		w := (uv - q) / (2.0 * v)
-		return uv / (math.Sqrt(uv+Sq(w)) + w)
+		return uv / (math.Sqrt(uv+sq(w)) + w)
 	} else {
 		return 0.0
 	}
 }
 
-func _A1m1f(eps float64, geodesic_order int64) float64 {
+func a1m1f(eps float64, geodesic_order int64) float64 {
 	COEFF := [5]float64{1.0, 4.0, 64.0, 0.0, 256.0}
 	m := geodesic_order / 2
-	t := Polyval(m, COEFF[:], Sq(eps)) / COEFF[(m+1)]
+	t := polyval(m, COEFF[:], sq(eps)) / COEFF[(m+1)]
 	return (t + eps) / (1.0 - eps)
 }
 
-func _C1f(eps float64, c []float64, geodesic_order int) {
+func c1f(eps float64, c []float64, geodesic_order int) {
 
 	COEFF := [18]float64{
 		-1.0, 6.0, -16.0, 32.0, -9.0, 64.0, -128.0, 2048.0, 9.0, -16.0, 768.0, 3.0, -5.0, 512.0,
 		-7.0, 1280.0, -7.0, 2048.0,
 	}
-	eps2 := Sq(eps)
+	eps2 := sq(eps)
 	d := eps
 	var o int64 = 0
 
 	for l := 1; l <= geodesic_order; l++ {
 		m := int64((geodesic_order - l) / 2)
-		c[l] = d * Polyval(m, COEFF[o:], eps2) / COEFF[(o+m+1)]
+		c[l] = d * polyval(m, COEFF[o:], eps2) / COEFF[(o+m+1)]
 		o += m + 2
 		d *= eps
 	}
 }
 
-func _C1pf(eps float64, c []float64, geodesic_order int) {
+func c1pf(eps float64, c []float64, geodesic_order int) {
 
 	COEFF := [18]float64{
 		205.0, -432.0, 768.0, 1536.0, 4005.0, -4736.0, 3840.0, 12288.0, -225.0, 116.0, 384.0,
 		-7173.0, 2695.0, 7680.0, 3467.0, 7680.0, 38081.0, 61440.0,
 	}
 
-	eps2 := Sq(eps)
+	eps2 := sq(eps)
 	d := eps
 	var o int64 = 0
 
 	for l := 1; l <= geodesic_order; l++ {
 		m := int64((geodesic_order - l) / 2)
-		c[l] = d * Polyval(m, COEFF[o:], eps2) / COEFF[(o+m+1)]
+		c[l] = d * polyval(m, COEFF[o:], eps2) / COEFF[(o+m+1)]
 		o += m + 2
 		d *= eps
 	}
 }
 
-func _A2m1f(eps float64, geodesic_order int64) float64 {
+func a2m1f(eps float64, geodesic_order int64) float64 {
 
 	COEFF := []float64{-11.0, -28.0, -192.0, 0.0, 256.0}
 	var m int64 = geodesic_order / 2
-	t := Polyval(m, COEFF, Sq(eps)) / COEFF[(m+1)]
+	t := polyval(m, COEFF, sq(eps)) / COEFF[(m+1)]
 	return (t - eps) / (1.0 + eps)
 }
 
-func _C2f(eps float64, c []float64, geodesic_order int) {
+func c2f(eps float64, c []float64, geodesic_order int) {
 
 	COEFF := [18]float64{
 		1.0, 2.0, 16.0, 32.0, 35.0, 64.0, 384.0, 2048.0, 15.0, 80.0, 768.0, 7.0, 35.0, 512.0, 63.0,
 		1280.0, 77.0, 2048.0,
 	}
-	eps2 := Sq(eps)
+	eps2 := sq(eps)
 	d := eps
 	var o int64 = 0
 
 	for l := 1; l <= geodesic_order; l++ {
 		m := int64((geodesic_order - l) / 2)
-		c[l] = d * Polyval(m, COEFF[o:], eps2) / COEFF[(o+m+1)]
+		c[l] = d * polyval(m, COEFF[o:], eps2) / COEFF[(o+m+1)]
 		o += m + 2
 		d *= eps
 	}
