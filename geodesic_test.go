@@ -2207,6 +2207,13 @@ func BenchmarkInverse20(b *testing.B) {
 	}
 }
 
+func BenchmarkInverse(b *testing.B) {
+	geod := Wgs84()
+	for i := 0; i < b.N; i++ {
+		geod.InverseCalcDistanceAzimuths(0, 0, 1, 1)
+	}
+}
+
 func TestDirect20(t *testing.T) {
 	geod := Wgs84()
 
