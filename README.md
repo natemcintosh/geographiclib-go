@@ -23,7 +23,7 @@ That wrapper does not provide all of the functionality of the original C library
 - [X] Geodisic Inverse
 - [X] Geodisic Inverse tests
 - [X] Polygon Area
-- [ ] Polygon Area tests
+- [X] Polygon Area tests
 - [ ] C Wrapper
 - [ ] Benchmarks comparing go implementation with C wrapper
 
