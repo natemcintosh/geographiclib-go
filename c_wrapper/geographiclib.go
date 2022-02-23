@@ -27,14 +27,9 @@ import (
 	"github.com/golang/geo/s2"
 )
 
-var (
-	// WGS84Spheroid represents the default WGS84 ellipsoid.
-	WGS84Spheroid = NewSpheroid(6378137, 1/298.257223563)
-)
-
 // Spheroid is an object that can perform geodesic operations
 // on a given spheroid.
-type Spheroid struct {
+type Geodesic struct {
 	cRepr        C.struct_geod_geodesic
 	Radius       float64
 	Flattening   float64
@@ -42,9 +37,9 @@ type Spheroid struct {
 }
 
 // NewSpheroid creates a spheroid from a radius and flattening.
-func NewSpheroid(radius float64, flattening float64) *Spheroid {
+func NewGeodesic(radius float64, flattening float64) *Geodesic {
 	minorAxis := radius - radius*flattening
-	s := &Spheroid{
+	s := &Geodesic{
 		Radius:       radius,
 		Flattening:   flattening,
 		SphereRadius: (radius*2 + minorAxis) / 3,
@@ -53,10 +48,15 @@ func NewSpheroid(radius float64, flattening float64) *Spheroid {
 	return s
 }
 
+// Wgs84 represents the default WGS84 ellipsoid.
+func Wgs84() *Geodesic {
+	return NewGeodesic(6378137, 1/298.257223563)
+}
+
 // Inverse solves the geodetic inverse problem on the given spheroid
 // (https://en.wikipedia.org/wiki/Geodesy#Geodetic_problems).
 // Returns s12 (distance in meters), az1 (azimuth at point 1) and az2 (azimuth at point 2).
-func (s *Spheroid) Inverse(a, b s2.LatLng) (s12, az1, az2 float64) {
+func (s *Geodesic) Inverse(a, b s2.LatLng) (s12, az1, az2 float64) {
 	var retS12, retAZ1, retAZ2 C.double
 	C.geod_inverse(
 		&s.cRepr,
@@ -75,7 +75,7 @@ func (s *Spheroid) Inverse(a, b s2.LatLng) (s12, az1, az2 float64) {
 // by the line of points.
 // This is intended for use for LineStrings. LinearRings/Polygons should use "AreaAndPerimeter".
 // Returns the sum of the s12 (distance in meters) units.
-func (s *Spheroid) InverseBatch(points []s2.Point) float64 {
+func (s *Geodesic) InverseBatch(points []s2.Point) float64 {
 	lats := make([]C.double, len(points))
 	lngs := make([]C.double, len(points))
 	for i, p := range points {
@@ -97,7 +97,7 @@ func (s *Spheroid) InverseBatch(points []s2.Point) float64 {
 // AreaAndPerimeter computes the area and perimeter of a polygon on a given spheroid.
 // The points must never be duplicated (i.e. do not include the "final" point of a Polygon LinearRing).
 // Area is in meter^2, Perimeter is in meters.
-func (s *Spheroid) AreaAndPerimeter(points []s2.Point) (area float64, perimeter float64) {
+func (s *Geodesic) AreaAndPerimeter(points []s2.Point) (area float64, perimeter float64) {
 	lats := make([]C.double, len(points))
 	lngs := make([]C.double, len(points))
 	for i, p := range points {
@@ -120,7 +120,7 @@ func (s *Spheroid) AreaAndPerimeter(points []s2.Point) (area float64, perimeter 
 // Project returns computes the location of the projected point.
 //
 // Using the direct geodesic problem from GeographicLib (Karney 2013).
-func (s *Spheroid) Project(point s2.LatLng, distance float64, azimuth s1.Angle) s2.LatLng {
+func (s *Geodesic) Project(point s2.LatLng, distance float64, azimuth s1.Angle) s2.LatLng {
 	var lat, lng C.double
 
 	C.geod_direct(
