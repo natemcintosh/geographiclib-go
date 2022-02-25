@@ -17,13 +17,11 @@ extern "C" {
 // CR_GEOGRAPHICLIB_InverseBatch computes the sum of the length of the lines
 // represented by an array of lat/lngs using Inverse from GeographicLib.
 // It is batched in C++ to reduce the cgo overheads.
-void CR_GEOGRAPHICLIB_InverseBatch(
-  struct geod_geodesic* spheroid,
-  double lats[],
-  double lngs[],
-  int len,
-  double *result
-);
+void CR_GEOGRAPHICLIB_InverseBatch(struct geod_geodesic* spheroid,
+                                   double lats[],
+                                   double lngs[],
+                                   int len,
+                                   double* result);
 
 #if defined(__cplusplus)
 }
