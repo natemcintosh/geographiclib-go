@@ -53,6 +53,41 @@ func Wgs84() *Geodesic {
 	return NewGeodesic(6378137, 1/298.257223563)
 }
 
+// LatLon represents latitude and longitude of a point. All units in degrees
+type LatLon struct {
+	LatDeg, LonDeg float64
+}
+
+// DirectCalcLatLon gets the lat and lon of the second point, based on input
+//   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
+//   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
+//   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
+//   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
+// func (g Geodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
+// 	var retLatDeg, retLonDeg, placeholder C.double
+// 	capabilities := LATITUDE | LONGITUDE
+
+// 	C.geod_gendirect(
+// 		g,
+// 		C.double(lat1_deg),
+// 		C.double(lon1_deg),
+// 		C.double(azi1_deg),
+// 		C.unsigned(capabilities),
+// 		C.double(s12_m),
+// 		&retLatDeg,
+// 		&retLonDeg,
+// 		&placeholder,
+// 		&placeholder,
+// 		&placeholder,
+// 		&placeholder,
+// 		&placeholder,
+// 		&placeholder,
+// 	)
+// 	lat2 := float64(retLatDeg)
+// 	lon2 := float64(retLonDeg)
+// 	return LatLon{LatDeg: lat2, LonDeg: lon2}
+// }
+
 // Inverse solves the geodetic inverse problem on the given spheroid
 // (https://en.wikipedia.org/wiki/Geodesy#Geodetic_problems).
 // Returns s12 (distance in meters), az1 (azimuth at point 1) and az2 (azimuth at point 2).
