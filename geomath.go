@@ -25,11 +25,12 @@ func cbrt(x float64) float64 {
 	y := math.Pow(math.Abs(x), 1.0/3.0)
 
 	// return y if x > 0 else (-y if x < 0 else x)
-	if x > 0 {
+	switch {
+	case x > 0:
 		return y
-	} else if x < 0 {
+	case x < 0:
 		return -y
-	} else {
+	default:
 		return x
 	}
 }
@@ -156,11 +157,12 @@ func sincosd(x float64) (float64, float64) {
 		q += 4
 	}
 
-	if q == 1 {
+	switch {
+	case q == 1:
 		s, c = c, -s
-	} else if q == 2 {
+	case q == 2:
 		s, c = -s, -c
-	} else if q == 3 {
+	case q == 3:
 		s, c = -c, s
 	}
 
