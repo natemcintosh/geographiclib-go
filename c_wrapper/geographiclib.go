@@ -63,30 +63,118 @@ type LatLon struct {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-// func (g Geodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
-// 	var retLatDeg, retLonDeg, placeholder C.double
-// 	capabilities := LATITUDE | LONGITUDE
+func (g Geodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
+	var retLatDeg, retLonDeg, placeholder C.double
+	capabilities := LATITUDE | LONGITUDE
 
-// 	C.geod_gendirect(
-// 		g,
-// 		C.double(lat1_deg),
-// 		C.double(lon1_deg),
-// 		C.double(azi1_deg),
-// 		C.unsigned(capabilities),
-// 		C.double(s12_m),
-// 		&retLatDeg,
-// 		&retLonDeg,
-// 		&placeholder,
-// 		&placeholder,
-// 		&placeholder,
-// 		&placeholder,
-// 		&placeholder,
-// 		&placeholder,
-// 	)
-// 	lat2 := float64(retLatDeg)
-// 	lon2 := float64(retLonDeg)
-// 	return LatLon{LatDeg: lat2, LonDeg: lon2}
-// }
+	C.geod_gendirect(
+		&g.cRepr,
+		C.double(lat1_deg),
+		C.double(lon1_deg),
+		C.double(azi1_deg),
+		C.unsigned(capabilities),
+		C.double(s12_m),
+		&retLatDeg,
+		&retLonDeg,
+		&placeholder,
+		&placeholder,
+		&placeholder,
+		&placeholder,
+		&placeholder,
+		&placeholder,
+	)
+	lat2 := float64(retLatDeg)
+	lon2 := float64(retLonDeg)
+	return LatLon{LatDeg: lat2, LonDeg: lon2}
+}
+
+// LatLonAzi represents latitude, longitude, and azimuth of a point. All units in degrees
+type LatLonAzi struct {
+	LatDeg, LonDeg, AziDeg float64
+}
+
+// DirectCalcLatLonAzi gets the lat, lon, and azimuth of the second point, based on input
+//   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
+//   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
+//   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
+//   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
+func (g Geodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
+	var retLatDeg, retLonDeg, retAziDeg, placeholder C.double
+	capabilities := LATITUDE | LONGITUDE | AZIMUTH
+
+	C.geod_gendirect(
+		&g.cRepr,
+		C.double(lat1_deg),
+		C.double(lon1_deg),
+		C.double(azi1_deg),
+		C.unsigned(capabilities),
+		C.double(s12_m),
+		&retLatDeg,
+		&retLonDeg,
+		&retAziDeg,
+		&placeholder,
+		&placeholder,
+		&placeholder,
+		&placeholder,
+		&placeholder,
+	)
+	lat2 := float64(retLatDeg)
+	lon2 := float64(retLonDeg)
+	azi2 := float64(retAziDeg)
+	return LatLonAzi{LatDeg: lat2, LonDeg: lon2, AziDeg: azi2}
+}
+
+// AllDirectResults contains all information that can be computed from the direct method
+// latitude, longitude, azimuth, reduced length, geodesic scales, area under the geodesic,
+// and arc length between point 1 and point 2
+type AllDirectResults struct {
+	LatDeg         float64 // Latitude [degrees]
+	LonDeg         float64 // Longitude [degrees]
+	AziDeg         float64 // Azimuth [degrees]
+	ReducedLengthM float64 // Reduced length of the geodesic [meters]
+	M12            float64 // Geodesic scale of point 2 relative to point 1 [dimensionless]
+	M21            float64 // Geodesic scale of point 1 relative to point 2 [dimensionless]
+	S12M2          float64 // Area under the geodesic [meters^2]
+	A12Deg         float64 // Arc length between point 1 and point 2 [degrees]
+}
+
+// DirectCalcAll calculates everything possible for the direct method. Takes inputs
+//   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
+//   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
+//   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
+//   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
+func (g Geodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
+	var retLatDeg, retLonDeg, retAziDeg, retReducedLength, retM12, retM21, retS12M2, retA12Deg C.double
+	capabilities := ALL
+
+	C.geod_gendirect(
+		&g.cRepr,
+		C.double(lat1_deg),
+		C.double(lon1_deg),
+		C.double(azi1_deg),
+		C.unsigned(capabilities),
+		C.double(s12_m),
+		&retLatDeg,
+		&retLonDeg,
+		&retAziDeg,
+		&retReducedLength,
+		&retM12,
+		&retM21,
+		&retS12M2,
+		&retA12Deg,
+	)
+
+	return AllDirectResults{
+		LatDeg:         float64(retLatDeg),
+		LonDeg:         float64(retLonDeg),
+		AziDeg:         float64(retAziDeg),
+		ReducedLengthM: float64(retReducedLength),
+		M12:            float64(retM12),
+		M21:            float64(retM21),
+		S12M2:          float64(retS12M2),
+		A12Deg:         float64(retA12Deg),
+	}
+}
 
 // Inverse solves the geodetic inverse problem on the given spheroid
 // (https://en.wikipedia.org/wiki/Geodesy#Geodetic_problems).

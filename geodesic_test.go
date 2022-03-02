@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/natemcintosh/geographiclib-go/c_wrapper"
 )
 
 // f64_equals tests if two float64 values are equal to within a small epsilon.
@@ -1461,6 +1463,7 @@ func Benchmark_gen_direct(b *testing.B) {
 
 func TestDirectBadInputs(t *testing.T) {
 	geod := Wgs84()
+	cgeod := c_wrapper.Wgs84()
 	testCases := []struct {
 		desc    string
 		lat     float64
@@ -1555,6 +1558,7 @@ func TestDirectBadInputs(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			latlonazi := geod.DirectCalcLatLonAzi(tC.lat, tC.lon, tC.azi, tC.s12)
+			clatlonazi := cgeod.DirectCalcLatLonAzi(tC.lat, tC.lon, tC.azi, tC.s12)
 
 			if !f64_equals(tC.wantlat, latlonazi.LatDeg) {
 				t.Errorf("Direct() lat = %v; want %v", latlonazi.LatDeg, tC.wantlat)
@@ -1567,12 +1571,100 @@ func TestDirectBadInputs(t *testing.T) {
 			if !f64_equals(tC.wantazi, latlonazi.AziDeg) {
 				t.Errorf("Direct() lon = %v; want %v", latlonazi.AziDeg, tC.wantazi)
 			}
+
+			if !f64_equals(tC.wantlat, clatlonazi.LatDeg) {
+				t.Errorf("Direct() lat = %v; want %v", clatlonazi.LatDeg, tC.wantlat)
+			}
+
+			if !f64_equals(tC.wantlon, clatlonazi.LonDeg) {
+				t.Errorf("Direct() lon = %v; want %v", clatlonazi.LonDeg, tC.wantlon)
+			}
+
+			if !f64_equals(tC.wantazi, clatlonazi.AziDeg) {
+				t.Errorf("Direct() lon = %v; want %v", clatlonazi.AziDeg, tC.wantazi)
+			}
 		})
 	}
 }
 
 func BenchmarkDirectBadInputs(b *testing.B) {
 	geod := Wgs84()
+	benchmarks := []struct {
+		desc string
+		lat  float64
+		lon  float64
+		azi  float64
+		s12  float64
+	}{
+		{
+			desc: "inf s12",
+			lat:  0.0,
+			lon:  0.0,
+			azi:  90.0,
+			s12:  math.Inf(0),
+		},
+		{
+			desc: "nan s12",
+			lat:  0.0,
+			lon:  0.0,
+			azi:  90.0,
+			s12:  math.NaN(),
+		},
+		{
+			desc: "inf azi",
+			lat:  0.0,
+			lon:  0.0,
+			azi:  math.Inf(0),
+			s12:  1000.0,
+		},
+		{
+			desc: "nan azi",
+			lat:  0.0,
+			lon:  0.0,
+			azi:  math.NaN(),
+			s12:  1000.0,
+		},
+		{
+			desc: "inf lon",
+			lat:  0.0,
+			lon:  math.Inf(0),
+			azi:  90.0,
+			s12:  1000.0,
+		},
+		{
+			desc: "nan lon",
+			lat:  0.0,
+			lon:  math.NaN(),
+			azi:  90.0,
+			s12:  1000.0,
+		},
+		{
+			desc: "inf lat",
+			lat:  math.Inf(0),
+			lon:  0.0,
+			azi:  90.0,
+			s12:  1000.0,
+		},
+		{
+			desc: "nan lat",
+			lat:  math.NaN(),
+			lon:  0.0,
+			azi:  90.0,
+			s12:  1000.0,
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				geod.DirectCalcLatLonAzi(bm.lat, bm.lon, bm.azi, bm.s12)
+			}
+		})
+	}
+}
+
+func BenchmarkCWrapperDirectBadInputs(b *testing.B) {
+	geod := c_wrapper.Wgs84()
 	benchmarks := []struct {
 		desc string
 		lat  float64
@@ -1763,6 +1855,7 @@ func read_dot_dat(filename string) ([]dat_struct, error) {
 func TestDirect100(t *testing.T) {
 	// Create a geod with which to do the computations
 	geod := Wgs84()
+	// cgeod := c_wrapper.Wgs84()
 
 	// Get the set of 100 test cases from the test_fixtures folder
 	filename := "test_fixtures/GeodTest-100.dat"
@@ -1776,6 +1869,7 @@ func TestDirect100(t *testing.T) {
 	// For each test case, run the direct computation, and compare the results
 	for row_num, tc := range test_cases {
 		res := geod.DirectCalcAll(tc.lat1, tc.lon1, tc.azi1, tc.s12_dist)
+		// cres := cgeod.DirectCalcAll(tc.lat1, tc.lon1, tc.azi1, tc.s12_dist)
 
 		// Check each result. Note that there should not be any NaN results from this file
 		if !almost_equal(res.LatDeg, tc.lat2, float64EqualityThreshold) {
@@ -1801,6 +1895,31 @@ func TestDirect100(t *testing.T) {
 		if !almost_equal(res.A12Deg, tc.a12, float64EqualityThreshold) {
 			t.Errorf("Row: %d -- Direct() A12Deg = %v; want %v", row_num, res.A12Deg, tc.a12)
 		}
+
+		// Check each result. Note that there should not be any NaN results from this file
+		// if !almost_equal(cres.LatDeg, tc.lat2, float64EqualityThreshold) {
+		// 	t.Errorf("Row: %d -- Direct() Lat2 = %v; want %v", row_num, cres.LatDeg, tc.lat2)
+		// }
+
+		// if !almost_equal(cres.LonDeg, tc.lon2, float64EqualityThreshold) {
+		// 	t.Errorf("Row: %d -- Direct() Lon2 = %v; want %v", row_num, cres.LonDeg, tc.lon2)
+		// }
+
+		// if !almost_equal(cres.AziDeg, tc.azi2, float64EqualityThreshold) {
+		// 	t.Errorf("Row: %d -- Direct() AziDeg = %v; want %v", row_num, cres.AziDeg, tc.azi2)
+		// }
+
+		// if !almost_equal(cres.ReducedLengthM, tc.m12, float64EqualityThreshold) {
+		// 	t.Errorf("Row: %d -- Direct() ReducedLengthM = %v; want %v", row_num, cres.ReducedLengthM, tc.m12)
+		// }
+
+		// if !almost_equal(cres.S12M2, tc.s12_area, 8.8e2) {
+		// 	t.Errorf("Row: %d -- Direct() S12M2 = %v; want %v", row_num, cres.S12M2, tc.s12_area)
+		// }
+
+		// if !almost_equal(cres.A12Deg, tc.a12, float64EqualityThreshold) {
+		// 	t.Errorf("Row: %d -- Direct() A12Deg = %v; want %v", row_num, cres.A12Deg, tc.a12)
+		// }
 
 	}
 }
@@ -2291,7 +2410,9 @@ func TestGeodSolve0(t *testing.T) {
 
 func TestGeodSolve1(t *testing.T) {
 	geod := Wgs84()
+	cgeod := c_wrapper.Wgs84()
 	dir := geod.DirectCalcLatLonAzi(40.63972222, -73.77888889, 53.5, 5850e3)
+	cdir := cgeod.DirectCalcLatLonAzi(40.63972222, -73.77888889, 53.5, 5850e3)
 
 	if !almost_equal(dir.LatDeg, 49.01467, 0.5e-5) {
 		t.Errorf("lat2 = %v; want %v", dir.LatDeg, 49.01467)
@@ -2303,6 +2424,18 @@ func TestGeodSolve1(t *testing.T) {
 
 	if !almost_equal(dir.AziDeg, 111.62947, 0.5e-5) {
 		t.Errorf("azi1 = %v; want %v", dir.AziDeg, 111.62947)
+	}
+
+	if !almost_equal(cdir.LatDeg, 49.01467, 0.5e-5) {
+		t.Errorf("lat2 = %v; want %v", cdir.LatDeg, 49.01467)
+	}
+
+	if !almost_equal(cdir.LonDeg, 2.56106, 0.5e-5) {
+		t.Errorf("lon2 = %v; want %v", cdir.LonDeg, 2.56106)
+	}
+
+	if !almost_equal(cdir.AziDeg, 111.62947, 0.5e-5) {
+		t.Errorf("azi1 = %v; want %v", cdir.AziDeg, 111.62947)
 	}
 }
 
@@ -2358,11 +2491,17 @@ func TestGeodSolve4(t *testing.T) {
 func TestGeodSolve5(t *testing.T) {
 	// Check fix for point2=pole bug found 2010-05-03
 	geod := Wgs84()
+	cgeod := c_wrapper.Wgs84()
 	dir := geod.DirectCalcLatLonAzi(0.01777745589997, 30, 0, 10e6)
+	cdir := cgeod.DirectCalcLatLonAzi(0.01777745589997, 30, 0, 10e6)
 	want_lat := 90.0
 
 	if !almost_equal(dir.LatDeg, want_lat, 0.5e-5) {
 		t.Errorf("lat2 = %v; want %v", dir.LatDeg, want_lat)
+	}
+
+	if !almost_equal(cdir.LatDeg, want_lat, 0.5e-5) {
+		t.Errorf("lat2 = %v; want %v", cdir.LatDeg, want_lat)
 	}
 
 	if dir.LonDeg < 0 {
@@ -2376,6 +2515,15 @@ func TestGeodSolve5(t *testing.T) {
 		if !almost_equal(dir.AziDeg, want_azi, 0.5e-5) {
 			t.Errorf("azi1 = %v; want %v", dir.AziDeg, want_azi)
 		}
+
+		if !almost_equal(cdir.LonDeg, want_lon, 0.5e-5) {
+			t.Errorf("lon2 = %v; want %v", cdir.LonDeg, want_lon)
+		}
+
+		if !almost_equal(cdir.AziDeg, want_azi, 0.5e-5) {
+			t.Errorf("azi1 = %v; want %v", cdir.AziDeg, want_azi)
+		}
+
 	} else {
 		want_lon := 30.0
 		want_azi := 0.0
@@ -2385,6 +2533,14 @@ func TestGeodSolve5(t *testing.T) {
 
 		if !almost_equal(dir.AziDeg, want_azi, 0.5e-5) {
 			t.Errorf("azi1 = %v; want %v", dir.AziDeg, want_azi)
+		}
+
+		if !almost_equal(cdir.LonDeg, want_lon, 0.5e-5) {
+			t.Errorf("lon2 = %v; want %v", cdir.LonDeg, want_lon)
+		}
+
+		if !almost_equal(cdir.AziDeg, want_azi, 0.5e-5) {
+			t.Errorf("azi1 = %v; want %v", cdir.AziDeg, want_azi)
 		}
 	}
 }
@@ -2600,11 +2756,17 @@ func TestGeodSolve28(t *testing.T) {
 	// Check for bad placement of assignment of r.a12 with |f| > 0.01 (bug in
 	// Java implementation fixed on 2015-05-19).
 	geod := NewGeodesic(6.4e6, 0.1)
+	// cgeod := c_wrapper.NewGeodesic(6.4e6, 0.1)
 	dir := geod.DirectCalcAll(1, 2, 10, 5e6)
+	// cdir := cgeod.DirectCalcAll(1, 2, 10, 5e6)
 
 	if !almost_equal(dir.A12Deg, 48.55570690, 0.5e-8) {
 		t.Errorf("a12 = %v; want %v", dir.A12Deg, 48.55570690)
 	}
+
+	// if !almost_equal(cdir.A12Deg, 48.55570690, 0.5e-8) {
+	// 	t.Errorf("a12 = %v; want %v", cdir.A12Deg, 48.55570690)
+	// }
 }
 
 func TestGeodSolve29(t *testing.T) {
@@ -3075,7 +3237,9 @@ func TestGeodSolve73(t *testing.T) {
 	// Also the + sign on azi2 is a check on the normalizing of azimuths
 	// (converting -0.0 to +0.0).
 	geod := Wgs84()
+	cgeod := c_wrapper.Wgs84()
 	dir := geod.DirectCalcLatLonAzi(90, 10, 180, -1e6)
+	cdir := cgeod.DirectCalcLatLonAzi(90, 10, 180, -1e6)
 
 	want_lat := 81.04623
 	want_lon := -170.0
@@ -3094,6 +3258,22 @@ func TestGeodSolve73(t *testing.T) {
 	}
 
 	if !(math.Copysign(1, dir.AziDeg) > 0) {
+		t.Errorf("sign(azi) <= 0; want > 0")
+	}
+
+	if !almost_equal(cdir.LatDeg, want_lat, 0.5e-5) {
+		t.Errorf("lat = %v; want %v", cdir.LatDeg, want_lat)
+	}
+
+	if !almost_equal(cdir.LonDeg, want_lon, 0.5e-5) {
+		t.Errorf("lon = %v; want %v", cdir.LonDeg, want_lon)
+	}
+
+	if !almost_equal(cdir.AziDeg, want_azi, 0.5e-5) {
+		t.Errorf("azi = %v; want %v", cdir.AziDeg, want_azi)
+	}
+
+	if !(math.Copysign(1, cdir.AziDeg) > 0) {
 		t.Errorf("sign(azi) <= 0; want > 0")
 	}
 }
