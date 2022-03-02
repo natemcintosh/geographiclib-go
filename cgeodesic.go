@@ -194,6 +194,19 @@ func (g *CGeodesic) DirectCalcWithCapabilities(
 	}
 }
 
+// InverseCalcDistance returns the distance from point 1 to point 2 in meters. Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g *CGeodesic) InverseCalcDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) float64 {
+	capabilities := DISTANCE
+
+	res := g.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return res.DistanceM
+}
+
 // InverseCalcDistanceAzimuths solves the geodetic inverse problem on the given spheroid
 // (https://en.wikipedia.org/wiki/Geodesy#Geodetic_problems).
 // Returns s12 (distance in meters), az1 (azimuth at point 1) and az2 (azimuth at point 2).

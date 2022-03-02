@@ -1931,6 +1931,7 @@ func TestInverseLength(t *testing.T) {
 	testCases := []struct {
 		desc             string
 		geod             Geodesic
+		cgeod            *CGeodesic
 		lat1, lon1       float64
 		lat2, lon2       float64
 		wants12          float64
@@ -1939,6 +1940,7 @@ func TestInverseLength(t *testing.T) {
 		{
 			desc:             "short line bug",
 			geod:             Wgs84(),
+			cgeod:            CWgs84(),
 			lat1:             36.493349428792,
 			lon1:             0.0,
 			lat2:             36.49334942879201,
@@ -1949,6 +1951,7 @@ func TestInverseLength(t *testing.T) {
 		{
 			desc:             "volatile sbet12a bug test 1",
 			geod:             Wgs84(),
+			cgeod:            CWgs84(),
 			lat1:             88.202499451857,
 			lon1:             0.0,
 			lat2:             -88.202499451857,
@@ -1959,6 +1962,7 @@ func TestInverseLength(t *testing.T) {
 		{
 			desc:             "volatile sbet12a bug test 2",
 			geod:             Wgs84(),
+			cgeod:            CWgs84(),
 			lat1:             89.333123580033,
 			lon1:             0.0,
 			lat2:             -89.333123580032997687,
@@ -1969,6 +1973,7 @@ func TestInverseLength(t *testing.T) {
 		{
 			desc:             "volatile x bug",
 			geod:             Wgs84(),
+			cgeod:            CWgs84(),
 			lat1:             56.320923501171,
 			lon1:             0.0,
 			lat2:             -56.320923501171,
@@ -1979,6 +1984,7 @@ func TestInverseLength(t *testing.T) {
 		{
 			desc:             "tol1_ bug",
 			geod:             Wgs84(),
+			cgeod:            CWgs84(),
 			lat1:             52.784459512564,
 			lon1:             0.0,
 			lat2:             -52.784459512563990912,
@@ -1989,6 +1995,7 @@ func TestInverseLength(t *testing.T) {
 		{
 			desc:             "bet2 = -bet1 bug",
 			geod:             Wgs84(),
+			cgeod:            CWgs84(),
 			lat1:             48.522876735459,
 			lon1:             0.0,
 			lat2:             -48.52287673545898293,
@@ -1999,6 +2006,7 @@ func TestInverseLength(t *testing.T) {
 		{
 			desc:             "anitpodal prolate bug 1",
 			geod:             NewGeodesic(6.4e6, -1/150.0),
+			cgeod:            NewCGeodesic(6.4e6, -1/150.0),
 			lat1:             0.07476,
 			lon1:             0,
 			lat2:             -0.07476,
@@ -2010,9 +2018,14 @@ func TestInverseLength(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			s12 := tC.geod.InverseCalcDistance(tC.lat1, tC.lon1, tC.lat2, tC.lon2)
+			cs12 := tC.cgeod.InverseCalcDistance(tC.lat1, tC.lon1, tC.lat2, tC.lon2)
 
 			if !almost_equal(tC.wants12, s12, tC.acceptable_delta) {
 				t.Errorf("InverseCalcDistance() s12 = %v; want %v", s12, tC.wants12)
+			}
+
+			if !almost_equal(tC.wants12, cs12, tC.acceptable_delta) {
+				t.Errorf("CInverseCalcDistance() s12 = %v; want %v", cs12, tC.wants12)
 			}
 		})
 	}
@@ -2020,6 +2033,7 @@ func TestInverseLength(t *testing.T) {
 
 func BenchmarkInverseLength(b *testing.B) {
 	geod := Wgs84()
+	cgeod := CWgs84()
 	benchmarks := []struct {
 		desc       string
 		lat1, lon1 float64
@@ -2073,6 +2087,12 @@ func BenchmarkInverseLength(b *testing.B) {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				geod.InverseCalcDistance(bm.lat1, bm.lon1, bm.lat2, bm.lon2)
+			}
+		})
+
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				cgeod.InverseCalcDistance(bm.lat1, bm.lon1, bm.lat2, bm.lon2)
 			}
 		})
 	}
@@ -2476,11 +2496,17 @@ func TestGeodSolve2(t *testing.T) {
 func TestGeodSolve4(t *testing.T) {
 	// Check fix for short line bug found 2010-05-21
 	geod := Wgs84()
+	cgeod := CWgs84()
 	s12 := geod.InverseCalcDistance(36.493349428792, 0, 36.49334942879201, 0.0000008)
+	cs12 := cgeod.InverseCalcDistance(36.493349428792, 0, 36.49334942879201, 0.0000008)
 	want_s12 := 0.072
 
 	if !almost_equal(s12, want_s12, 0.5e-3) {
 		t.Errorf("s12 = %v; want %v", s12, want_s12)
+	}
+
+	if !almost_equal(cs12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", cs12, want_s12)
 	}
 }
 
@@ -2545,19 +2571,37 @@ func TestGeodSolve6(t *testing.T) {
 	// Check fix for volatile sbet12a bug found 2011-06-25 (gcc 4.4.4
 	// x86 -O3).  Found again on 2012-03-27 with tdm-mingw32 (g++ 4.6.1).
 	geod := Wgs84()
+	cgeod := CWgs84()
 	s12 := geod.InverseCalcDistance(88.202499451857, 0, -88.202499451857, 179.981022032992859592)
+	cs12 := cgeod.InverseCalcDistance(88.202499451857, 0, -88.202499451857, 179.981022032992859592)
 	want_s12 := 20003898.214
 	if !almost_equal(s12, want_s12, 0.5e-3) {
 		t.Errorf("s12 = %v; want %v", s12, want_s12)
 	}
 
+	if !almost_equal(cs12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", cs12, want_s12)
+	}
+
 	s12 = geod.InverseCalcDistance(89.262080389218, 0, -89.262080389218, 179.992207982775375662)
+	cs12 = cgeod.InverseCalcDistance(89.262080389218, 0, -89.262080389218, 179.992207982775375662)
 	want_s12 = 20003925.854
 	if !almost_equal(s12, want_s12, 0.5e-3) {
 		t.Errorf("s12 = %v; want %v", s12, want_s12)
 	}
 
+	if !almost_equal(cs12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", cs12, want_s12)
+	}
+
 	s12 = geod.InverseCalcDistance(
+		89.333123580033,
+		0,
+		-89.333123580032997687,
+		179.99295812360148422,
+	)
+
+	cs12 = cgeod.InverseCalcDistance(
 		89.333123580033,
 		0,
 		-89.333123580032997687,
@@ -2567,16 +2611,26 @@ func TestGeodSolve6(t *testing.T) {
 	if !almost_equal(s12, want_s12, 0.5e-3) {
 		t.Errorf("s12 = %v; want %v", s12, want_s12)
 	}
+
+	if !almost_equal(cs12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", cs12, want_s12)
+	}
 }
 
 func TestGeodSolve9(t *testing.T) {
 	// Check fix for volatile x bug found 2011-06-25 (gcc 4.4.4 x86 -O3)
 	geod := Wgs84()
+	cgeod := CWgs84()
 
 	s12 := geod.InverseCalcDistance(56.320923501171, 0, -56.320923501171, 179.664747671772880215)
+	cs12 := cgeod.InverseCalcDistance(56.320923501171, 0, -56.320923501171, 179.664747671772880215)
 	want_s12 := 19993558.287
 	if !almost_equal(s12, want_s12, 0.5e-3) {
 		t.Errorf("s12 = %v; want %v", s12, want_s12)
+	}
+
+	if !almost_equal(cs12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", cs12, want_s12)
 	}
 
 }
@@ -2585,8 +2639,16 @@ func TestGeodSolve10(t *testing.T) {
 	// Check fix for adjust tol1_ bug found 2011-06-25 (Visual Studio
 	// 10 rel + debug)
 	geod := Wgs84()
+	cgeod := CWgs84()
 
 	s12 := geod.InverseCalcDistance(
+		52.784459512564,
+		0,
+		-52.784459512563990912,
+		179.634407464943777557,
+	)
+
+	cs12 := cgeod.InverseCalcDistance(
 		52.784459512564,
 		0,
 		-52.784459512563990912,
@@ -2597,13 +2659,24 @@ func TestGeodSolve10(t *testing.T) {
 	if !almost_equal(s12, want_s12, 0.5e-3) {
 		t.Errorf("s12 = %v; want %v", s12, want_s12)
 	}
+
+	if !almost_equal(cs12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", cs12, want_s12)
+	}
 }
 
 func TestGeodSolve11(t *testing.T) {
 	// Check fix for bet2 = -bet1 bug found 2011-06-25 (Visual Studio
 	// 10 rel + debug)
 	geod := Wgs84()
+	cgeod := CWgs84()
+
 	s12 := geod.InverseCalcDistance(
+		48.522876735459, 0,
+		-48.52287673545898293,
+		179.599720456223079643,
+	)
+	cs12 := cgeod.InverseCalcDistance(
 		48.522876735459, 0,
 		-48.52287673545898293,
 		179.599720456223079643,
@@ -2612,6 +2685,10 @@ func TestGeodSolve11(t *testing.T) {
 	want_s12 := 19989144.774
 	if !almost_equal(s12, want_s12, 0.5e-3) {
 		t.Errorf("s12 = %v; want %v", s12, want_s12)
+	}
+
+	if !almost_equal(cs12, want_s12, 0.5e-3) {
+		t.Errorf("s12 = %v; want %v", cs12, want_s12)
 	}
 }
 
