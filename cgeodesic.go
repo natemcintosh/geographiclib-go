@@ -23,19 +23,19 @@ import (
 	"github.com/golang/geo/s2"
 )
 
-// Spheroid is an object that can perform geodesic operations
+// CGeodesic is an object that can perform geodesic operations
 // on a given spheroid.
-type Geodesic struct {
+type CGeodesic struct {
 	cRepr        C.struct_geod_geodesic
 	Radius       float64
 	Flattening   float64
 	SphereRadius float64
 }
 
-// NewSpheroid creates a spheroid from a radius and flattening.
-func NewGeodesic(radius float64, flattening float64) *Geodesic {
+// NewCGeodesic creates a CGeodesic from a radius and flattening.
+func NewCGeodesic(radius float64, flattening float64) *CGeodesic {
 	minorAxis := radius - radius*flattening
-	s := &Geodesic{
+	s := &CGeodesic{
 		Radius:       radius,
 		Flattening:   flattening,
 		SphereRadius: (radius*2 + minorAxis) / 3,
@@ -44,9 +44,9 @@ func NewGeodesic(radius float64, flattening float64) *Geodesic {
 	return s
 }
 
-// Wgs84 represents the default WGS84 ellipsoid.
-func Wgs84() *Geodesic {
-	return NewGeodesic(6378137, 1/298.257223563)
+// CWgs84 represents the c wrapper of the default WGS84 ellipsoid
+func CWgs84() *CGeodesic {
+	return NewCGeodesic(6378137, 1/298.257223563)
 }
 
 // LatLon represents latitude and longitude of a point. All units in degrees
@@ -59,7 +59,7 @@ type LatLon struct {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
+func (g CGeodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
 	var retLatDeg, retLonDeg, placeholder C.double
 	capabilities := LATITUDE | LONGITUDE
 
@@ -94,7 +94,7 @@ type LatLonAzi struct {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
+func (g CGeodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
 	var retLatDeg, retLonDeg, retAziDeg, placeholder C.double
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH
 
@@ -139,7 +139,7 @@ type AllDirectResults struct {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
+func (g CGeodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
 	var retLatDeg, retLonDeg, retAziDeg, retReducedLength, retM12, retM21, retS12M2, retA12Deg C.double
 	capabilities := ALL
 
@@ -175,7 +175,7 @@ func (g Geodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) All
 // Inverse solves the geodetic inverse problem on the given spheroid
 // (https://en.wikipedia.org/wiki/Geodesy#Geodetic_problems).
 // Returns s12 (distance in meters), az1 (azimuth at point 1) and az2 (azimuth at point 2).
-func (s *Geodesic) Inverse(a, b s2.LatLng) (s12, az1, az2 float64) {
+func (s *CGeodesic) Inverse(a, b s2.LatLng) (s12, az1, az2 float64) {
 	var retS12, retAZ1, retAZ2 C.double
 	C.geod_inverse(
 		&s.cRepr,
@@ -193,7 +193,7 @@ func (s *Geodesic) Inverse(a, b s2.LatLng) (s12, az1, az2 float64) {
 // AreaAndPerimeter computes the area and perimeter of a polygon on a given spheroid.
 // The points must never be duplicated (i.e. do not include the "final" point of a Polygon LinearRing).
 // Area is in meter^2, Perimeter is in meters.
-func (s *Geodesic) AreaAndPerimeter(points []s2.Point) (area float64, perimeter float64) {
+func (s *CGeodesic) AreaAndPerimeter(points []s2.Point) (area float64, perimeter float64) {
 	lats := make([]C.double, len(points))
 	lngs := make([]C.double, len(points))
 	for i, p := range points {
@@ -216,7 +216,7 @@ func (s *Geodesic) AreaAndPerimeter(points []s2.Point) (area float64, perimeter 
 // Project returns computes the location of the projected point.
 //
 // Using the direct geodesic problem from GeographicLib (Karney 2013).
-func (s *Geodesic) Project(point s2.LatLng, distance float64, azimuth s1.Angle) s2.LatLng {
+func (s *CGeodesic) Project(point s2.LatLng, distance float64, azimuth s1.Angle) s2.LatLng {
 	var lat, lng C.double
 
 	C.geod_direct(

@@ -22,14 +22,14 @@ import (
 func TestInverse(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		spheroid *Geodesic
+		spheroid *CGeodesic
 		a, b     s2.LatLng
 
 		s12, az1, az2 float64
 	}{
 		{
 			desc:     "{0,0}, {1,1} on WGS84Spheroid",
-			spheroid: Wgs84(),
+			spheroid: CWgs84(),
 			a:        s2.LatLngFromDegrees(0, 0),
 			b:        s2.LatLngFromDegrees(1, 1),
 			s12:      156899.56829134029,
@@ -135,7 +135,7 @@ func almost_equal(a, b, threshold float64) bool {
 }
 
 func TestInverse20(t *testing.T) {
-	geod := Wgs84()
+	geod := CWgs84()
 
 	for row, tC := range test_cases {
 		lat1, lon1, azi1 := tC[0], tC[1], tC[2]
@@ -162,7 +162,7 @@ func TestInverse20(t *testing.T) {
 }
 
 func BenchmarkInverse20(b *testing.B) {
-	geod := Wgs84()
+	geod := CWgs84()
 	for i := 0; i < b.N; i++ {
 		for _, tC := range test_cases {
 			lat1, lon1 := tC[0], tC[1]
@@ -177,21 +177,21 @@ func BenchmarkInverse20(b *testing.B) {
 
 func BenchmarkInverse(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Wgs84().Inverse(s2.LatLngFromDegrees(0, 0), s2.LatLngFromDegrees(1, 1))
+		CWgs84().Inverse(s2.LatLngFromDegrees(0, 0), s2.LatLngFromDegrees(1, 1))
 	}
 }
 
 func TestAreaAndPerimeter(t *testing.T) {
 	testCases := []struct {
 		desc      string
-		spheroid  *Geodesic
+		spheroid  *CGeodesic
 		points    []s2.Point
 		area      float64
 		perimeter float64
 	}{
 		{
 			desc:     "WKT from Wikipedia",
-			spheroid: Wgs84(),
+			spheroid: CWgs84(),
 			points: []s2.Point{
 				s2.PointFromLatLng(s2.LatLngFromDegrees(40, 40)),
 				s2.PointFromLatLng(s2.LatLngFromDegrees(45, 20)),
@@ -214,7 +214,7 @@ func TestAreaAndPerimeter(t *testing.T) {
 func TestProject(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		spheroid *Geodesic
+		spheroid *CGeodesic
 		point    s2.LatLng
 		distance float64
 		azimuth  float64
@@ -222,7 +222,7 @@ func TestProject(t *testing.T) {
 	}{
 		{
 			desc:     "{0,0} project to 100000, radians(45.0) on WGS84Spheroid",
-			spheroid: Wgs84(),
+			spheroid: CWgs84(),
 			point:    s2.LatLng{Lat: 0, Lng: 0},
 			distance: 100000,
 			azimuth:  45 * math.Pi / 180.0,
