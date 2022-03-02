@@ -1,6 +1,6 @@
 package geographiclibgo
 
-// #include "c_lib.h"
+// #include "geodesic.h"
 import "C"
 
 import (

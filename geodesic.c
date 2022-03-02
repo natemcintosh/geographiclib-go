@@ -23,7 +23,7 @@
  * https://geographiclib.sourceforge.io/
  */
 
-#include "c_lib.h"
+#include "geodesic.h"
 
 #include <float.h>
 #include <limits.h>
