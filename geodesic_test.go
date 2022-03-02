@@ -1790,7 +1790,7 @@ func read_dot_dat(filename string) ([]dat_struct, error) {
 func TestDirect100(t *testing.T) {
 	// Create a geod with which to do the computations
 	geod := Wgs84()
-	// cgeod := Wgs84()
+	// cgeod := CWgs84()
 
 	// Get the set of 100 test cases from the test_fixtures folder
 	filename := "test_fixtures/GeodTest-100.dat"
@@ -2360,6 +2360,19 @@ func BenchmarkDirect20(b *testing.B) {
 	}
 }
 
+func BenchmarkCDirect20(b *testing.B) {
+	geod := CWgs84()
+	for i := 0; i < b.N; i++ {
+		for _, tC := range test_cases {
+			lat1, lon1, azi1 := tC[0], tC[1], tC[2]
+			s12 := tC[6]
+
+			geod.DirectCalcWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
+
+		}
+	}
+}
+
 func TestGeodSolve0(t *testing.T) {
 	geod := Wgs84()
 	cgeod := CWgs84()
@@ -2745,17 +2758,17 @@ func TestGeodSolve28(t *testing.T) {
 	// Check for bad placement of assignment of r.a12 with |f| > 0.01 (bug in
 	// Java implementation fixed on 2015-05-19).
 	geod := NewGeodesic(6.4e6, 0.1)
-	// cgeod := NewGeodesic(6.4e6, 0.1)
+	cgeod := NewGeodesic(6.4e6, 0.1)
 	dir := geod.DirectCalcAll(1, 2, 10, 5e6)
-	// cdir := cgeod.DirectCalcAll(1, 2, 10, 5e6)
+	cdir := cgeod.DirectCalcAll(1, 2, 10, 5e6)
 
 	if !almost_equal(dir.A12Deg, 48.55570690, 0.5e-8) {
 		t.Errorf("a12 = %v; want %v", dir.A12Deg, 48.55570690)
 	}
 
-	// if !almost_equal(cdir.A12Deg, 48.55570690, 0.5e-8) {
-	// 	t.Errorf("a12 = %v; want %v", cdir.A12Deg, 48.55570690)
-	// }
+	if !almost_equal(cdir.A12Deg, 48.55570690, 0.5e-8) {
+		t.Errorf("a12 = %v; want %v", cdir.A12Deg, 48.55570690)
+	}
 }
 
 func TestGeodSolve29(t *testing.T) {
