@@ -1,3 +1,3 @@
 # C Wrapper
 
-This module is included only for benchmarking and testing purposes.
+This is the C Wrapper. The API should match that of the directory above exactly

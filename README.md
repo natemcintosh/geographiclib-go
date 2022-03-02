@@ -32,3 +32,6 @@ That wrapper does not provide all of the functionality of the original C library
     - [ ] Examples of direct case on Mars
     - [ ] Examples of inverse case
     - [ ] Examples of calculating an area
+- [ ] Consider switching from having units in names to using github.com/golang/geo/ 
+which uses types for units. It would perhaps involve more allocations; need to do some
+testing. 
