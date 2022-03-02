@@ -47,7 +47,7 @@ func CWgs84() *CGeodesic {
 func (g CGeodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
 	capabilities := LATITUDE | LONGITUDE
 
-	res := g.direct_with_capabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+	res := g.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
 
 	return LatLon{LatDeg: res.LatDeg, LonDeg: res.LonDeg}
 }
@@ -60,9 +60,71 @@ func (g CGeodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64)
 func (g CGeodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH
 
-	res := g.direct_with_capabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+	res := g.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
 
 	return LatLonAzi{LatDeg: res.LatDeg, LonDeg: res.LonDeg, AziDeg: res.AziDeg}
+}
+
+// DirectCalcLatLonAziReducedLength gets the lat, lon, azimuth, and reduced length of geodesic
+// of the second point, based on input
+//   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
+//   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
+//   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
+//   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
+func (g CGeodesic) DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziReducedLength {
+	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH
+
+	res := g.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+
+	return LatLonAziReducedLength{
+		LatDeg:         res.LatDeg,
+		LonDeg:         res.LonDeg,
+		AziDeg:         res.AziDeg,
+		ReducedLengthM: res.ReducedLengthM,
+	}
+}
+
+// DirectCalcLatLonAziGeodesicScales gets the lat, lon, azimuth, and geodesic scales,
+// based on input
+//   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
+//   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
+//   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
+//   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
+func (g CGeodesic) DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziGeodesicScales {
+	capabilities := LATITUDE | LONGITUDE | AZIMUTH | GEODESICSCALE
+
+	res := g.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+
+	return LatLonAziGeodesicScales{
+		LatDeg: res.LatDeg,
+		LonDeg: res.LonDeg,
+		AziDeg: res.AziDeg,
+		M12:    res.M12,
+		M21:    res.M21,
+	}
+}
+
+// DirectCalcLatLonAziReducedLengthGeodesicScales gets the lat, lon, azimuth, reduced length,
+// and geodesic scales based on input
+//   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
+//   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
+//   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
+//   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
+func (g CGeodesic) DirectCalcLatLonAziReducedLengthGeodesicScales(
+	lat1_deg, lon1_deg, azi1_deg, s12_m float64,
+) LatLonAziReducedLengthGeodesicScales {
+	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE
+
+	res := g.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+
+	return LatLonAziReducedLengthGeodesicScales{
+		LatDeg:         res.LatDeg,
+		LonDeg:         res.LonDeg,
+		AziDeg:         res.AziDeg,
+		ReducedLengthM: res.ReducedLengthM,
+		M12:            res.M12,
+		M21:            res.M21,
+	}
 }
 
 // DirectCalcAll calculates everything possible for the direct method. Takes inputs
@@ -74,7 +136,7 @@ func (g CGeodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) Al
 
 	capabilities := ALL
 
-	res := g.direct_with_capabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+	res := g.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
 
 	return AllDirectResults{
 		LatDeg:         res.LatDeg,
@@ -88,13 +150,13 @@ func (g CGeodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) Al
 	}
 }
 
-// direct_with_capabilities takes inputs
+// DirectCalcWithCapabilities takes inputs
 //   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - capabilities - One or more of the capabilities constant as defined in the file
 //     geodesiccapability.go. Usually, they are OR'd together, e.g. LATITUDE | LONGITUDE
-func (g CGeodesic) direct_with_capabilities(
+func (g CGeodesic) DirectCalcWithCapabilities(
 	lat1_deg float64,
 	lon1_deg float64,
 	azi1_deg float64,
