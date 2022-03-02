@@ -2,10 +2,10 @@
 Author: Nathan McIntosh
 
 ### About
-A golang port of geographiclib, as well as a C wrapper using cgo. This repository aims to provide 
+A golang port of geographiclib, as well as a C wrapper using cgo. This repository aims to provide
 all functionality in both the C wrapper and the go implementation. The C wrapper is based
 on [this repo](https://pkg.go.dev/github.com/ruiaylin/pgparser/types/geo/geographiclib).
-That wrapper does not provide all of the functionality of the original C library. 
+That wrapper does not provide all of the functionality of the original C library.
 
 ### Aims
  - Mimic the [rust port](https://github.com/georust/geographiclib-rs) and the [python port](https://pypi.org/project/geographiclib/) as closely as possible
@@ -26,6 +26,9 @@ That wrapper does not provide all of the functionality of the original C library
 - [X] Polygon Area tests
 - [ ] C Wrapper
 - [ ] Benchmarks comparing go implementation with C wrapper
-
-#### General Notes
-There is a lot of probably unnecessary math in `geomath.go`. First make sure the tests pass, then replace them with standard library functions.
+- [ ] Add description of the direct and inverse problem, with pictures
+- [ ] Add Examples to README
+    - [ ] Examples of direct case on Earth
+    - [ ] Examples of direct case on Mars
+    - [ ] Examples of inverse case
+    - [ ] Examples of calculating an area
