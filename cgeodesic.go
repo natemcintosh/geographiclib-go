@@ -1,5 +1,8 @@
 package geographiclibgo
 
+// #cgo CXXFLAGS: -std=c++14
+// #cgo LDFLAGS: -lm
+//
 // #include "geodesic.h"
 import "C"
 
