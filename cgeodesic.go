@@ -45,28 +45,11 @@ func CWgs84() *CGeodesic {
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
 func (g CGeodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
-	var retLatDeg, retLonDeg, placeholder C.double
 	capabilities := LATITUDE | LONGITUDE
 
-	C.geod_gendirect(
-		&g.cRepr,
-		C.double(lat1_deg),
-		C.double(lon1_deg),
-		C.double(azi1_deg),
-		C.unsigned(capabilities),
-		C.double(s12_m),
-		&retLatDeg,
-		&retLonDeg,
-		&placeholder,
-		&placeholder,
-		&placeholder,
-		&placeholder,
-		&placeholder,
-		&placeholder,
-	)
-	lat2 := float64(retLatDeg)
-	lon2 := float64(retLonDeg)
-	return LatLon{LatDeg: lat2, LonDeg: lon2}
+	res := g.direct_with_capabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+
+	return LatLon{LatDeg: res.LatDeg, LonDeg: res.LonDeg}
 }
 
 // DirectCalcLatLonAzi gets the lat, lon, and azimuth of the second point, based on input
@@ -75,29 +58,11 @@ func (g CGeodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64)
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
 func (g CGeodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
-	var retLatDeg, retLonDeg, retAziDeg, placeholder C.double
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH
 
-	C.geod_gendirect(
-		&g.cRepr,
-		C.double(lat1_deg),
-		C.double(lon1_deg),
-		C.double(azi1_deg),
-		C.unsigned(capabilities),
-		C.double(s12_m),
-		&retLatDeg,
-		&retLonDeg,
-		&retAziDeg,
-		&placeholder,
-		&placeholder,
-		&placeholder,
-		&placeholder,
-		&placeholder,
-	)
-	lat2 := float64(retLatDeg)
-	lon2 := float64(retLonDeg)
-	azi2 := float64(retAziDeg)
-	return LatLonAzi{LatDeg: lat2, LonDeg: lon2, AziDeg: azi2}
+	res := g.direct_with_capabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+
+	return LatLonAzi{LatDeg: res.LatDeg, LonDeg: res.LonDeg, AziDeg: res.AziDeg}
 }
 
 // DirectCalcAll calculates everything possible for the direct method. Takes inputs
@@ -106,8 +71,44 @@ func (g CGeodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
 func (g CGeodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
-	var retLatDeg, retLonDeg, retAziDeg, retReducedLength, retM12, retM21, retS12M2, retA12Deg C.double
+
 	capabilities := ALL
+
+	res := g.direct_with_capabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+
+	return AllDirectResults{
+		LatDeg:         res.LatDeg,
+		LonDeg:         res.LonDeg,
+		AziDeg:         res.AziDeg,
+		ReducedLengthM: res.ReducedLengthM,
+		M12:            res.M12,
+		M21:            res.M21,
+		S12M2:          res.S12M2,
+		A12Deg:         res.A12Deg,
+	}
+}
+
+// direct_with_capabilities takes inputs
+//   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
+//   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
+//   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
+//   - capabilities - One or more of the capabilities constant as defined in the file
+//     geodesiccapability.go. Usually, they are OR'd together, e.g. LATITUDE | LONGITUDE
+func (g CGeodesic) direct_with_capabilities(
+	lat1_deg float64,
+	lon1_deg float64,
+	azi1_deg float64,
+	s12_m float64,
+	capabilities uint64,
+) AllDirectResults {
+	retLatDeg := C.double(math.NaN())
+	retLonDeg := C.double(math.NaN())
+	retAziDeg := C.double(math.NaN())
+	retReducedLength := C.double(math.NaN())
+	retM12 := C.double(math.NaN())
+	retM21 := C.double(math.NaN())
+	retS12M2 := C.double(math.NaN())
+	retA12Deg := C.double(math.NaN())
 
 	C.geod_gendirect(
 		&g.cRepr,
