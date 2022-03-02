@@ -8,8 +8,6 @@ import (
 	"os"
 	"strconv"
 	"testing"
-
-	"github.com/natemcintosh/geographiclib-go/c_wrapper"
 )
 
 // f64_equals tests if two float64 values are equal to within a small epsilon.
@@ -1463,7 +1461,7 @@ func Benchmark_gen_direct(b *testing.B) {
 
 func TestDirectBadInputs(t *testing.T) {
 	geod := Wgs84()
-	cgeod := c_wrapper.Wgs84()
+	cgeod := CWgs84()
 	testCases := []struct {
 		desc    string
 		lat     float64
@@ -1664,7 +1662,7 @@ func BenchmarkDirectBadInputs(b *testing.B) {
 }
 
 func BenchmarkCWrapperDirectBadInputs(b *testing.B) {
-	geod := c_wrapper.Wgs84()
+	geod := CWgs84()
 	benchmarks := []struct {
 		desc string
 		lat  float64
@@ -1855,7 +1853,7 @@ func read_dot_dat(filename string) ([]dat_struct, error) {
 func TestDirect100(t *testing.T) {
 	// Create a geod with which to do the computations
 	geod := Wgs84()
-	// cgeod := c_wrapper.Wgs84()
+	// cgeod := Wgs84()
 
 	// Get the set of 100 test cases from the test_fixtures folder
 	filename := "test_fixtures/GeodTest-100.dat"
@@ -2410,7 +2408,7 @@ func TestGeodSolve0(t *testing.T) {
 
 func TestGeodSolve1(t *testing.T) {
 	geod := Wgs84()
-	cgeod := c_wrapper.Wgs84()
+	cgeod := CWgs84()
 	dir := geod.DirectCalcLatLonAzi(40.63972222, -73.77888889, 53.5, 5850e3)
 	cdir := cgeod.DirectCalcLatLonAzi(40.63972222, -73.77888889, 53.5, 5850e3)
 
@@ -2491,7 +2489,7 @@ func TestGeodSolve4(t *testing.T) {
 func TestGeodSolve5(t *testing.T) {
 	// Check fix for point2=pole bug found 2010-05-03
 	geod := Wgs84()
-	cgeod := c_wrapper.Wgs84()
+	cgeod := CWgs84()
 	dir := geod.DirectCalcLatLonAzi(0.01777745589997, 30, 0, 10e6)
 	cdir := cgeod.DirectCalcLatLonAzi(0.01777745589997, 30, 0, 10e6)
 	want_lat := 90.0
@@ -2756,7 +2754,7 @@ func TestGeodSolve28(t *testing.T) {
 	// Check for bad placement of assignment of r.a12 with |f| > 0.01 (bug in
 	// Java implementation fixed on 2015-05-19).
 	geod := NewGeodesic(6.4e6, 0.1)
-	// cgeod := c_wrapper.NewGeodesic(6.4e6, 0.1)
+	// cgeod := NewGeodesic(6.4e6, 0.1)
 	dir := geod.DirectCalcAll(1, 2, 10, 5e6)
 	// cdir := cgeod.DirectCalcAll(1, 2, 10, 5e6)
 
@@ -3237,7 +3235,7 @@ func TestGeodSolve73(t *testing.T) {
 	// Also the + sign on azi2 is a check on the normalizing of azimuths
 	// (converting -0.0 to +0.0).
 	geod := Wgs84()
-	cgeod := c_wrapper.Wgs84()
+	cgeod := CWgs84()
 	dir := geod.DirectCalcLatLonAzi(90, 10, 180, -1e6)
 	cdir := cgeod.DirectCalcLatLonAzi(90, 10, 180, -1e6)
 

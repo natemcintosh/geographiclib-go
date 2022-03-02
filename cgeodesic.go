@@ -1,17 +1,4 @@
-// Copyright 2020 The Cockroach Authors.
-//
-// Use of this software is governed by the Business Source License
-// included in the file licenses/BSL.txt.
-//
-// As of the Change Date specified in that file, in accordance with
-// the Business Source License, use of this software will be governed
-// by the Apache License, Version 2.0, included in the file
-// licenses/APL.txt.
-//
-// This module is included only for testing purposes only.
-
-// Package c_wrapper is a wrapper around the GeographicLib library.
-package c_wrapper
+package geographiclibgo
 
 // #include "c_lib.h"
 import "C"
@@ -49,11 +36,6 @@ func CWgs84() *CGeodesic {
 	return NewCGeodesic(6378137, 1/298.257223563)
 }
 
-// LatLon represents latitude and longitude of a point. All units in degrees
-type LatLon struct {
-	LatDeg, LonDeg float64
-}
-
 // DirectCalcLatLon gets the lat and lon of the second point, based on input
 //   - lat1_deg - Latitude of 1st point [degrees] [-90.,90.]
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
@@ -82,11 +64,6 @@ func (g CGeodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64)
 	lat2 := float64(retLatDeg)
 	lon2 := float64(retLonDeg)
 	return LatLon{LatDeg: lat2, LonDeg: lon2}
-}
-
-// LatLonAzi represents latitude, longitude, and azimuth of a point. All units in degrees
-type LatLonAzi struct {
-	LatDeg, LonDeg, AziDeg float64
 }
 
 // DirectCalcLatLonAzi gets the lat, lon, and azimuth of the second point, based on input
@@ -118,20 +95,6 @@ func (g CGeodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float
 	lon2 := float64(retLonDeg)
 	azi2 := float64(retAziDeg)
 	return LatLonAzi{LatDeg: lat2, LonDeg: lon2, AziDeg: azi2}
-}
-
-// AllDirectResults contains all information that can be computed from the direct method
-// latitude, longitude, azimuth, reduced length, geodesic scales, area under the geodesic,
-// and arc length between point 1 and point 2
-type AllDirectResults struct {
-	LatDeg         float64 // Latitude [degrees]
-	LonDeg         float64 // Longitude [degrees]
-	AziDeg         float64 // Azimuth [degrees]
-	ReducedLengthM float64 // Reduced length of the geodesic [meters]
-	M12            float64 // Geodesic scale of point 2 relative to point 1 [dimensionless]
-	M21            float64 // Geodesic scale of point 1 relative to point 2 [dimensionless]
-	S12M2          float64 // Area under the geodesic [meters^2]
-	A12Deg         float64 // Arc length between point 1 and point 2 [degrees]
 }
 
 // DirectCalcAll calculates everything possible for the direct method. Takes inputs
