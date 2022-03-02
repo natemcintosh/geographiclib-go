@@ -44,7 +44,7 @@ func CWgs84() *CGeodesic {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g CGeodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
+func (g *CGeodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
 	capabilities := LATITUDE | LONGITUDE
 
 	res := g.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
@@ -57,7 +57,7 @@ func (g CGeodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64)
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g CGeodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
+func (g *CGeodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH
 
 	res := g.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
@@ -71,7 +71,7 @@ func (g CGeodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g CGeodesic) DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziReducedLength {
+func (g *CGeodesic) DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziReducedLength {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH
 
 	res := g.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
@@ -90,7 +90,7 @@ func (g CGeodesic) DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g CGeodesic) DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziGeodesicScales {
+func (g *CGeodesic) DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziGeodesicScales {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | GEODESICSCALE
 
 	res := g.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
@@ -110,7 +110,7 @@ func (g CGeodesic) DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_de
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g CGeodesic) DirectCalcLatLonAziReducedLengthGeodesicScales(
+func (g *CGeodesic) DirectCalcLatLonAziReducedLengthGeodesicScales(
 	lat1_deg, lon1_deg, azi1_deg, s12_m float64,
 ) LatLonAziReducedLengthGeodesicScales {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE
@@ -132,7 +132,7 @@ func (g CGeodesic) DirectCalcLatLonAziReducedLengthGeodesicScales(
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g CGeodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
+func (g *CGeodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
 
 	capabilities := ALL
 
@@ -156,7 +156,7 @@ func (g CGeodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) Al
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - capabilities - One or more of the capabilities constant as defined in the file
 //     geodesiccapability.go. Usually, they are OR'd together, e.g. LATITUDE | LONGITUDE
-func (g CGeodesic) DirectCalcWithCapabilities(
+func (g *CGeodesic) DirectCalcWithCapabilities(
 	lat1_deg float64,
 	lon1_deg float64,
 	azi1_deg float64,
@@ -197,10 +197,10 @@ func (g CGeodesic) DirectCalcWithCapabilities(
 // InverseCalcDistanceAzimuths solves the geodetic inverse problem on the given spheroid
 // (https://en.wikipedia.org/wiki/Geodesy#Geodetic_problems).
 // Returns s12 (distance in meters), az1 (azimuth at point 1) and az2 (azimuth at point 2).
-func (s *CGeodesic) InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuths {
+func (g *CGeodesic) InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuths {
 	var retS12, retAZ1, retAZ2 C.double
 	C.geod_inverse(
-		&s.cRepr,
+		&g.cRepr,
 		C.double(lat1_deg),
 		C.double(lon1_deg),
 		C.double(lat2_deg),
@@ -210,6 +210,52 @@ func (s *CGeodesic) InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lo
 		&retAZ2,
 	)
 	return DistanceAzimuths{DistanceM: float64(retS12), Azimuth1Deg: float64(retAZ1), Azimuth2Deg: float64(retAZ2)}
+}
+
+// InverseCalcWithCapabilities allows the user to specify which capabilites they wish to use.
+// This function is useful if you want some other subset of capabilities than those offered
+// by the other InverseCalc...() methods.
+// Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+// - capabilities - One or more of the capabilities constant as defined in the file
+//     geodesiccapability.go. Usually, they are OR'd together, e.g. LATITUDE | LONGITUDE
+func (g *CGeodesic) InverseCalcWithCapabilities(
+	lat1_deg float64,
+	lon1_deg float64,
+	lat2_deg float64,
+	lon2_deg float64,
+	capabilities uint64,
+) AllInverseResults {
+	var rets12M, retAzi1Deg, retAzi2Deg, retReducedLengthM, retM12, retM21, retS12M2 C.double
+
+	a12 := C.geod_geninverse(
+		&g.cRepr,
+		C.double(lat1_deg),
+		C.double(lon1_deg),
+		C.double(lat2_deg),
+		C.double(lon2_deg),
+		&rets12M,
+		&retAzi1Deg,
+		&retAzi2Deg,
+		&retReducedLengthM,
+		&retM12,
+		&retM21,
+		&retS12M2,
+	)
+
+	return AllInverseResults{
+		DistanceM:      float64(rets12M),
+		Azimuth1Deg:    float64(retAzi1Deg),
+		Azimuth2Deg:    float64(retAzi2Deg),
+		ArcLengthDeg:   float64(a12),
+		ReducedLengthM: float64(retReducedLengthM),
+		M12:            float64(retM12),
+		M21:            float64(retM21),
+		S12M2:          float64(retS12M2),
+	}
 }
 
 // AreaAndPerimeter computes the area and perimeter of a polygon on a given spheroid.

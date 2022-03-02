@@ -2728,9 +2728,15 @@ func TestGeodSolve17(t *testing.T) {
 func TestGeodSolve26(t *testing.T) {
 	// Check 0/0 problem with area calculation on sphere 2015-09-08
 	geod := NewGeodesic(6.4e6, 0)
+	cgeod := NewCGeodesic(6.4e6, 0)
 	inv := geod.InverseCalcWithCapabilities(1, 2, 3, 4, AREA)
+	cinv := cgeod.InverseCalcWithCapabilities(1, 2, 3, 4, AREA)
 
 	if !almost_equal(inv.S12M2, 49911046115.0, 0.5) {
+		t.Errorf("S12 = %v; want %v", inv.S12M2, 49911046115.0)
+	}
+
+	if !almost_equal(cinv.S12M2, 49911046115.0, 0.5) {
 		t.Errorf("S12 = %v; want %v", inv.S12M2, 49911046115.0)
 	}
 }
@@ -3265,7 +3271,9 @@ func TestGeodSolve74(t *testing.T) {
 	// Check fix for inaccurate areas, bug introduced in v1.46, fixed
 	// 2015-10-16.
 	geod := Wgs84()
+	cgeod := CWgs84()
 	inv := geod.InverseCalcWithCapabilities(54.1589, 15.3872, 54.1591, 15.3877, ALL)
+	cinv := cgeod.InverseCalcWithCapabilities(54.1589, 15.3872, 54.1591, 15.3877, ALL)
 	want_azi1 := 55.723110355
 	want_azi2 := 55.723515675
 	want_s12 := 39.527686385
@@ -3305,6 +3313,38 @@ func TestGeodSolve74(t *testing.T) {
 
 	if !almost_equal(inv.S12M2, want_S12, 5e-4) {
 		t.Errorf("S12 = %v; want %v", inv.S12M2, want_S12)
+	}
+
+	if !almost_equal(cinv.Azimuth1Deg, want_azi1, 5e-9) {
+		t.Errorf("azi1 = %v; want %v", cinv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(cinv.Azimuth2Deg, want_azi2, 5e-9) {
+		t.Errorf("azi2 = %v; want %v", cinv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(cinv.DistanceM, want_s12, 5e-9) {
+		t.Errorf("s12 = %v; want %v", cinv.DistanceM, want_s12)
+	}
+
+	if !almost_equal(cinv.ArcLengthDeg, want_a12, 5e-9) {
+		t.Errorf("a12 = %v; want %v", cinv.ArcLengthDeg, want_a12)
+	}
+
+	if !almost_equal(cinv.ReducedLengthM, want_m12, 5e-9) {
+		t.Errorf("m12 = %v; want %v", cinv.ReducedLengthM, want_m12)
+	}
+
+	if !almost_equal(cinv.M12, want_M12, 5e-9) {
+		t.Errorf("M12 = %v; want %v", cinv.M12, want_M12)
+	}
+
+	if !almost_equal(cinv.M21, want_M21, 5e-9) {
+		t.Errorf("M21 = %v; want %v", cinv.M21, want_M21)
+	}
+
+	if !almost_equal(cinv.S12M2, want_S12, 5e-4) {
+		t.Errorf("S12 = %v; want %v", cinv.S12M2, want_S12)
 	}
 }
 
@@ -3358,7 +3398,9 @@ func TestGeodSolve80(t *testing.T) {
 	// length geodesic (includes GeodSolve80 - GeodSolve83) + using an incapable
 	// line.
 	geod := Wgs84()
+	cgeod := CWgs84()
 	inv := geod.InverseCalcWithCapabilities(0, 0, 0, 90, GEODESICSCALE)
+	cinv := cgeod.InverseCalcWithCapabilities(0, 0, 0, 90, GEODESICSCALE)
 	want_M12 := -0.00528427534
 	want_M21 := -0.00528427534
 	if !almost_equal(inv.M12, want_M12, 0.5e-10) {
@@ -3368,7 +3410,15 @@ func TestGeodSolve80(t *testing.T) {
 		t.Errorf("M12 = %v; want %v", inv.M21, want_M21)
 	}
 
+	if !almost_equal(cinv.M12, want_M12, 0.5e-10) {
+		t.Errorf("M12 = %v; want %v", cinv.M12, want_M12)
+	}
+	if !almost_equal(cinv.M21, want_M21, 0.5e-10) {
+		t.Errorf("M12 = %v; want %v", cinv.M21, want_M21)
+	}
+
 	inv = geod.InverseCalcWithCapabilities(0, 0, 1e-6, 1e-6, GEODESICSCALE)
+	cinv = cgeod.InverseCalcWithCapabilities(0, 0, 1e-6, 1e-6, GEODESICSCALE)
 	want_M12 = 1.0
 	want_M21 = 1.0
 	if !almost_equal(inv.M12, want_M12, 0.5e-10) {
@@ -3378,7 +3428,15 @@ func TestGeodSolve80(t *testing.T) {
 		t.Errorf("M12 = %v; want %v", inv.M21, want_M21)
 	}
 
+	if !almost_equal(cinv.M12, want_M12, 0.5e-10) {
+		t.Errorf("M12 = %v; want %v", cinv.M12, want_M12)
+	}
+	if !almost_equal(cinv.M21, want_M21, 0.5e-10) {
+		t.Errorf("M12 = %v; want %v", cinv.M21, want_M21)
+	}
+
 	inv = geod.InverseCalcWithCapabilities(20.001, 0, 20.001, 0, ALL)
+	cinv = cgeod.InverseCalcWithCapabilities(20.001, 0, 20.001, 0, ALL)
 	want_a12 := 0.0
 	want_s12 := 0.0
 	want_azi1 := 180.0
@@ -3432,7 +3490,52 @@ func TestGeodSolve80(t *testing.T) {
 		t.Errorf("sign(m12) <= 0; want > 0")
 	}
 
+	if !almost_equal(cinv.Azimuth1Deg, want_azi1, 1e-13) {
+		t.Errorf("azi1 = %v; want %v", cinv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(cinv.Azimuth2Deg, want_azi2, 1e-8) {
+		t.Errorf("azi2 = %v; want %v", cinv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(cinv.DistanceM, want_s12, 1e-13) {
+		t.Errorf("s12 = %v; want %v", cinv.DistanceM, want_s12)
+	}
+
+	if !almost_equal(cinv.ArcLengthDeg, want_a12, 1e-13) {
+		t.Errorf("a12 = %v; want %v", cinv.ArcLengthDeg, want_a12)
+	}
+
+	if !almost_equal(cinv.ReducedLengthM, want_m12, 1e-8) {
+		t.Errorf("m12 = %v; want %v", cinv.ReducedLengthM, want_m12)
+	}
+
+	if !almost_equal(cinv.M12, want_M12, 1e-15) {
+		t.Errorf("M12 = %v; want %v", cinv.M12, want_M12)
+	}
+
+	if !almost_equal(cinv.M21, want_M21, 1e-15) {
+		t.Errorf("M21 = %v; want %v", cinv.M21, want_M21)
+	}
+
+	if !almost_equal(cinv.S12M2, want_S12, 1e-10) {
+		t.Errorf("S12 = %v; want %v", cinv.S12M2, want_S12)
+	}
+
+	if !(math.Copysign(1, cinv.ArcLengthDeg) > 0) {
+		t.Errorf("sign(a12) <= 0; want > 0")
+	}
+
+	if !(math.Copysign(1, cinv.DistanceM) > 0) {
+		t.Errorf("sign(s12) <= 0; want > 0")
+	}
+
+	if !(math.Copysign(1, cinv.ReducedLengthM) > 0) {
+		t.Errorf("sign(m12) <= 0; want > 0")
+	}
+
 	inv = geod.InverseCalcWithCapabilities(90, 0, 90, 180, ALL)
+	cinv = cgeod.InverseCalcWithCapabilities(90, 0, 90, 180, ALL)
 	want_a12 = 0.0
 	want_s12 = 0.0
 	want_azi1 = 0.0
@@ -3472,6 +3575,38 @@ func TestGeodSolve80(t *testing.T) {
 
 	if !almost_equal(inv.S12M2, want_S12, 0.5) {
 		t.Errorf("S12 = %v; want %v", inv.S12M2, want_S12)
+	}
+
+	if !almost_equal(cinv.Azimuth1Deg, want_azi1, 1e-13) {
+		t.Errorf("azi1 = %v; want %v", cinv.Azimuth1Deg, want_azi1)
+	}
+
+	if !almost_equal(cinv.Azimuth2Deg, want_azi2, 1e-8) {
+		t.Errorf("azi2 = %v; want %v", cinv.Azimuth2Deg, want_azi2)
+	}
+
+	if !almost_equal(cinv.DistanceM, want_s12, 1e-13) {
+		t.Errorf("s12 = %v; want %v", cinv.DistanceM, want_s12)
+	}
+
+	if !almost_equal(cinv.ArcLengthDeg, want_a12, 1e-13) {
+		t.Errorf("a12 = %v; want %v", cinv.ArcLengthDeg, want_a12)
+	}
+
+	if !almost_equal(cinv.ReducedLengthM, want_m12, 1e-8) {
+		t.Errorf("m12 = %v; want %v", cinv.ReducedLengthM, want_m12)
+	}
+
+	if !almost_equal(cinv.M12, want_M12, 1e-15) {
+		t.Errorf("M12 = %v; want %v", cinv.M12, want_M12)
+	}
+
+	if !almost_equal(cinv.M21, want_M21, 1e-15) {
+		t.Errorf("M21 = %v; want %v", cinv.M21, want_M21)
+	}
+
+	if !almost_equal(cinv.S12M2, want_S12, 0.5) {
+		t.Errorf("S12 = %v; want %v", cinv.S12M2, want_S12)
 	}
 
 	// An incapable line which can't take distance as input
