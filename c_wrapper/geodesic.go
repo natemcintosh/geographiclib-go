@@ -13,10 +13,7 @@
 // Package c_wrapper is a wrapper around the GeographicLib library.
 package c_wrapper
 
-// #cgo CXXFLAGS: -std=c++14
-// #cgo LDFLAGS: -lm
-//
-// #include "geodesic.h"
+// #include "c_lib.h"
 import "C"
 
 import (
