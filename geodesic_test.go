@@ -135,6 +135,12 @@ func BenchmarkWgs84(b *testing.B) {
 	}
 }
 
+func BenchmarkCWgs84(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		CWgs84()
+	}
+}
+
 func Test_A3f(t *testing.T) {
 	geod := Wgs84()
 	if !almost_equal(geod._A3f(0.12), 0.9363788874000158, float64EqualityThreshold) {
@@ -1587,6 +1593,7 @@ func TestDirectBadInputs(t *testing.T) {
 
 func BenchmarkDirectBadInputs(b *testing.B) {
 	geod := Wgs84()
+	cgeod := CWgs84()
 	benchmarks := []struct {
 		desc string
 		lat  float64
@@ -1658,80 +1665,10 @@ func BenchmarkDirectBadInputs(b *testing.B) {
 				geod.DirectCalcLatLonAzi(bm.lat, bm.lon, bm.azi, bm.s12)
 			}
 		})
-	}
-}
 
-func BenchmarkCWrapperDirectBadInputs(b *testing.B) {
-	geod := CWgs84()
-	benchmarks := []struct {
-		desc string
-		lat  float64
-		lon  float64
-		azi  float64
-		s12  float64
-	}{
-		{
-			desc: "inf s12",
-			lat:  0.0,
-			lon:  0.0,
-			azi:  90.0,
-			s12:  math.Inf(0),
-		},
-		{
-			desc: "nan s12",
-			lat:  0.0,
-			lon:  0.0,
-			azi:  90.0,
-			s12:  math.NaN(),
-		},
-		{
-			desc: "inf azi",
-			lat:  0.0,
-			lon:  0.0,
-			azi:  math.Inf(0),
-			s12:  1000.0,
-		},
-		{
-			desc: "nan azi",
-			lat:  0.0,
-			lon:  0.0,
-			azi:  math.NaN(),
-			s12:  1000.0,
-		},
-		{
-			desc: "inf lon",
-			lat:  0.0,
-			lon:  math.Inf(0),
-			azi:  90.0,
-			s12:  1000.0,
-		},
-		{
-			desc: "nan lon",
-			lat:  0.0,
-			lon:  math.NaN(),
-			azi:  90.0,
-			s12:  1000.0,
-		},
-		{
-			desc: "inf lat",
-			lat:  math.Inf(0),
-			lon:  0.0,
-			azi:  90.0,
-			s12:  1000.0,
-		},
-		{
-			desc: "nan lat",
-			lat:  math.NaN(),
-			lon:  0.0,
-			azi:  90.0,
-			s12:  1000.0,
-		},
-	}
-
-	for _, bm := range benchmarks {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				geod.DirectCalcLatLonAzi(bm.lat, bm.lon, bm.azi, bm.s12)
+				cgeod.DirectCalcLatLonAzi(bm.lat, bm.lon, bm.azi, bm.s12)
 			}
 		})
 	}
@@ -2333,6 +2270,7 @@ func BenchmarkInverse(b *testing.B) {
 
 func TestDirect20(t *testing.T) {
 	geod := Wgs84()
+	// cgeod := CWgs84()
 
 	for row, tC := range test_cases {
 		lat1, lon1, azi1 := tC[0], tC[1], tC[2]
@@ -2341,6 +2279,7 @@ func TestDirect20(t *testing.T) {
 		M12, M21, S12 := tC[9], tC[10], tC[11]
 
 		inv := geod.DirectCalcWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
+		// cinv := cgeod.DirectCalcWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
 
 		if !almost_equal(lat2, inv.LatDeg, 1e-13) {
 			t.Errorf("row %d -- Inverse() lat2 = %v; want %v", row, inv.LatDeg, lat2)
@@ -2373,6 +2312,38 @@ func TestDirect20(t *testing.T) {
 		if !almost_equal(S12, inv.S12M2, 0.1) {
 			t.Errorf("row %d -- Inverse() S12 = %v; want %v", row, inv.S12M2, S12)
 		}
+
+		// if !almost_equal(lat2, cinv.LatDeg, 1e-13) {
+		// 	t.Errorf("row %d -- CInverse() lat2 = %v; want %v", row, cinv.LatDeg, lat2)
+		// }
+
+		// if !almost_equal(lon2, cinv.LonDeg, 1e-13) {
+		// 	t.Errorf("row %d -- CInverse() lon2 = %v; want %v", row, cinv.LonDeg, lon2)
+		// }
+
+		// if !almost_equal(azi2, cinv.AziDeg, 1e-13) {
+		// 	t.Errorf("row %d -- CInverse() azi2 = %v; want %v", row, cinv.AziDeg, azi2)
+		// }
+
+		// if !almost_equal(a12, cinv.A12Deg, 1e-13) {
+		// 	t.Errorf("row %d -- CInverse() a12 = %v; want %v", row, cinv.A12Deg, a12)
+		// }
+
+		// if !almost_equal(m12, cinv.ReducedLengthM, 1e-8) {
+		// 	t.Errorf("row %d -- CInverse() m12 = %v; want %v", row, cinv.ReducedLengthM, m12)
+		// }
+
+		// if !almost_equal(M12, cinv.M12, 1e-15) {
+		// 	t.Errorf("row %d -- CInverse() M12 = %v; want %v", row, cinv.M12, M12)
+		// }
+
+		// if !almost_equal(M21, cinv.M21, 1e-15) {
+		// 	t.Errorf("row %d -- CInverse() M21 = %v; want %v", row, cinv.M21, M21)
+		// }
+
+		// if !almost_equal(S12, cinv.S12M2, 0.1) {
+		// 	t.Errorf("row %d -- CInverse() S12 = %v; want %v", row, cinv.S12M2, S12)
+		// }
 	}
 }
 
@@ -2391,7 +2362,9 @@ func BenchmarkDirect20(b *testing.B) {
 
 func TestGeodSolve0(t *testing.T) {
 	geod := Wgs84()
+	cgeod := CWgs84()
 	inv := geod.InverseCalcDistanceAzimuths(40.6, -73.8, 49.01666667, 2.55)
+	cinv := cgeod.InverseCalcDistanceAzimuths(40.6, -73.8, 49.01666667, 2.55)
 
 	if !almost_equal(inv.Azimuth1Deg, 53.47022, 0.5e-5) {
 		t.Errorf("azi1 = %v; want %v", inv.Azimuth1Deg, 53.47022)
@@ -2403,6 +2376,18 @@ func TestGeodSolve0(t *testing.T) {
 
 	if !almost_equal(inv.DistanceM, 5853226, 0.5) {
 		t.Errorf("s12 = %v; want %v", inv.DistanceM, 5853226)
+	}
+
+	if !almost_equal(cinv.Azimuth1Deg, 53.47022, 0.5e-5) {
+		t.Errorf("azi1 = %v; want %v", cinv.Azimuth1Deg, 53.47022)
+	}
+
+	if !almost_equal(cinv.Azimuth2Deg, 111.59367, 0.5e-5) {
+		t.Errorf("azi2 = %v; want %v", cinv.Azimuth2Deg, 111.59367)
+	}
+
+	if !almost_equal(cinv.DistanceM, 5853226, 0.5) {
+		t.Errorf("s12 = %v; want %v", cinv.DistanceM, 5853226)
 	}
 }
 

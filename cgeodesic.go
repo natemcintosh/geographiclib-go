@@ -163,14 +163,7 @@ func (g CGeodesic) DirectCalcWithCapabilities(
 	s12_m float64,
 	capabilities uint64,
 ) AllDirectResults {
-	retLatDeg := C.double(math.NaN())
-	retLonDeg := C.double(math.NaN())
-	retAziDeg := C.double(math.NaN())
-	retReducedLength := C.double(math.NaN())
-	retM12 := C.double(math.NaN())
-	retM21 := C.double(math.NaN())
-	retS12M2 := C.double(math.NaN())
-	retA12Deg := C.double(math.NaN())
+	var retLatDeg, retLonDeg, retAziDeg, ret_s12M, retReducedLength, retM12, retM21, retS12M2, retA12Deg C.double
 
 	C.geod_gendirect(
 		&g.cRepr,
@@ -182,11 +175,11 @@ func (g CGeodesic) DirectCalcWithCapabilities(
 		&retLatDeg,
 		&retLonDeg,
 		&retAziDeg,
+		&ret_s12M,
 		&retReducedLength,
 		&retM12,
 		&retM21,
 		&retS12M2,
-		&retA12Deg,
 	)
 
 	return AllDirectResults{
@@ -201,22 +194,22 @@ func (g CGeodesic) DirectCalcWithCapabilities(
 	}
 }
 
-// Inverse solves the geodetic inverse problem on the given spheroid
+// InverseCalcDistanceAzimuths solves the geodetic inverse problem on the given spheroid
 // (https://en.wikipedia.org/wiki/Geodesy#Geodetic_problems).
 // Returns s12 (distance in meters), az1 (azimuth at point 1) and az2 (azimuth at point 2).
-func (s *CGeodesic) Inverse(a, b s2.LatLng) (s12, az1, az2 float64) {
+func (s *CGeodesic) InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuths {
 	var retS12, retAZ1, retAZ2 C.double
 	C.geod_inverse(
 		&s.cRepr,
-		C.double(a.Lat.Degrees()),
-		C.double(a.Lng.Degrees()),
-		C.double(b.Lat.Degrees()),
-		C.double(b.Lng.Degrees()),
+		C.double(lat1_deg),
+		C.double(lon1_deg),
+		C.double(lat2_deg),
+		C.double(lon2_deg),
 		&retS12,
 		&retAZ1,
 		&retAZ2,
 	)
-	return float64(retS12), float64(retAZ1), float64(retAZ2)
+	return DistanceAzimuths{DistanceM: float64(retS12), Azimuth1Deg: float64(retAZ1), Azimuth2Deg: float64(retAZ2)}
 }
 
 // AreaAndPerimeter computes the area and perimeter of a polygon on a given spheroid.

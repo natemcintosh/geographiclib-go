@@ -1,32 +1,39 @@
 package geographiclibgo
 
-// func TestInverse(t *testing.T) {
-// 	testCases := []struct {
-// 		desc     string
-// 		spheroid *CGeodesic
-// 		a, b     s2.LatLng
+import (
+	"testing"
 
-// 		s12, az1, az2 float64
-// 	}{
-// 		{
-// 			desc:     "{0,0}, {1,1} on WGS84Spheroid",
-// 			spheroid: CWgs84(),
-// 			a:        s2.LatLngFromDegrees(0, 0),
-// 			b:        s2.LatLngFromDegrees(1, 1),
-// 			s12:      156899.56829134029,
-// 			az1:      45.188040229358869,
-// 			az2:      45.196767321644863,
-// 		},
-// 	}
-// 	for _, tc := range testCases {
-// 		t.Run(tc.desc, func(t *testing.T) {
-// 			s12, az1, az2 := tc.spheroid.Inverse(tc.a, tc.b)
-// 			require.Equal(t, tc.s12, s12)
-// 			require.Equal(t, tc.az1, az1)
-// 			require.Equal(t, tc.az2, az2)
-// 		})
-// 	}
-// }
+	"github.com/stretchr/testify/require"
+)
+
+func TestInverse(t *testing.T) {
+	testCases := []struct {
+		desc                   string
+		spheroid               *CGeodesic
+		lat1, lon1, lat2, lon2 float64
+		s12, az1, az2          float64
+	}{
+		{
+			desc:     "{0,0}, {1,1} on WGS84Spheroid",
+			spheroid: CWgs84(),
+			lat1:     0,
+			lon1:     0,
+			lat2:     1,
+			lon2:     1,
+			s12:      156899.56829134029,
+			az1:      45.188040229358869,
+			az2:      45.196767321644863,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			res := tc.spheroid.InverseCalcDistanceAzimuths(tc.lat1, tc.lon1, tc.lat2, tc.lon2)
+			require.Equal(t, tc.s12, res.DistanceM)
+			require.Equal(t, tc.az1, res.Azimuth1Deg)
+			require.Equal(t, tc.az2, res.Azimuth2Deg)
+		})
+	}
+}
 
 // // test_cases numbers comes from python test file
 // var test_cases = [20][12]float64{
