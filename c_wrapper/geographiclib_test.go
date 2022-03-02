@@ -181,33 +181,6 @@ func BenchmarkInverse(b *testing.B) {
 	}
 }
 
-func TestInverseBatch(t *testing.T) {
-	testCases := []struct {
-		desc     string
-		spheroid *Geodesic
-		points   []s2.Point
-		sum      float64
-	}{
-		{
-			desc:     "WKT from Wikipedia",
-			spheroid: Wgs84(),
-			points: []s2.Point{
-				s2.PointFromLatLng(s2.LatLngFromDegrees(40, 40)),
-				s2.PointFromLatLng(s2.LatLngFromDegrees(45, 20)),
-				s2.PointFromLatLng(s2.LatLngFromDegrees(30, 45)),
-			},
-			sum: 4.477956179118822e+06,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
-			sum := tc.spheroid.InverseBatch(tc.points)
-			require.Equal(t, tc.sum, sum)
-		})
-	}
-}
-
 func TestAreaAndPerimeter(t *testing.T) {
 	testCases := []struct {
 		desc      string
