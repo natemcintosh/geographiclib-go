@@ -6,13 +6,6 @@ package geographiclibgo
 // #include "geodesic.h"
 import "C"
 
-import (
-	"math"
-
-	"github.com/golang/geo/s1"
-	"github.com/golang/geo/s2"
-)
-
 // CGeodesic is an object that can perform geodesic operations
 // on a given spheroid.
 type CGeodesic struct {
@@ -414,13 +407,12 @@ func (g *CGeodesic) InverseCalcWithCapabilities(
 // AreaAndPerimeter computes the area and perimeter of a polygon on a given spheroid.
 // The points must never be duplicated (i.e. do not include the "final" point of a Polygon LinearRing).
 // Area is in meter^2, Perimeter is in meters.
-func (s *CGeodesic) AreaAndPerimeter(points []s2.Point) (area float64, perimeter float64) {
+func (s *CGeodesic) AreaAndPerimeter(points [][2]float64) (area float64, perimeter float64) {
 	lats := make([]C.double, len(points))
 	lngs := make([]C.double, len(points))
 	for i, p := range points {
-		latlng := s2.LatLngFromPoint(p)
-		lats[i] = C.double(latlng.Lat.Degrees())
-		lngs[i] = C.double(latlng.Lng.Degrees())
+		lats[i] = C.double(p[0])
+		lngs[i] = C.double(p[1])
 	}
 	var areaDouble, perimeterDouble C.double
 	C.geod_polygonarea(
@@ -437,19 +429,24 @@ func (s *CGeodesic) AreaAndPerimeter(points []s2.Point) (area float64, perimeter
 // Project returns computes the location of the projected point.
 //
 // Using the direct geodesic problem from GeographicLib (Karney 2013).
-func (s *CGeodesic) Project(point s2.LatLng, distance float64, azimuth s1.Angle) s2.LatLng {
+func (s *CGeodesic) Project(
+	lat_in_deg float64,
+	lon_in_deg float64,
+	distance float64,
+	azimuth_deg float64,
+) (lat_deg, lon_deg float64) {
 	var lat, lng C.double
 
 	C.geod_direct(
 		&s.cRepr,
-		C.double(point.Lat.Degrees()),
-		C.double(point.Lng.Degrees()),
-		C.double(azimuth*180.0/math.Pi),
+		C.double(lat_in_deg),
+		C.double(lon_in_deg),
+		C.double(azimuth_deg),
 		C.double(distance),
 		&lat,
 		&lng,
 		nil,
 	)
 
-	return s2.LatLngFromDegrees(float64(lat), float64(lng))
+	return float64(lat), float64(lng)
 }
