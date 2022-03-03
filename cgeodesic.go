@@ -16,19 +16,19 @@ import (
 // CGeodesic is an object that can perform geodesic operations
 // on a given spheroid.
 type CGeodesic struct {
-	cRepr        C.struct_geod_geodesic
-	Radius       float64
-	Flattening   float64
-	SphereRadius float64
+	cRepr         C.struct_geod_geodesic
+	a             float64
+	f             float64
+	sphere_radius float64
 }
 
 // NewCGeodesic creates a CGeodesic from a radius and flattening.
 func NewCGeodesic(radius float64, flattening float64) *CGeodesic {
 	minorAxis := radius - radius*flattening
 	s := &CGeodesic{
-		Radius:       radius,
-		Flattening:   flattening,
-		SphereRadius: (radius*2 + minorAxis) / 3,
+		a:             radius,
+		f:             flattening,
+		sphere_radius: (radius*2 + minorAxis) / 3,
 	}
 	C.geod_init(&s.cRepr, C.double(radius), C.double(flattening))
 	return s
@@ -37,6 +37,14 @@ func NewCGeodesic(radius float64, flattening float64) *CGeodesic {
 // CWgs84 represents the c wrapper of the default WGS84 ellipsoid
 func CWgs84() *CGeodesic {
 	return NewCGeodesic(6378137, 1/298.257223563)
+}
+
+func (g *CGeodesic) EqualtorialRadius() float64 {
+	return g.a
+}
+
+func (g *CGeodesic) Flattening() float64 {
+	return g.f
 }
 
 // DirectCalcLatLon gets the lat and lon of the second point, based on input
@@ -329,6 +337,31 @@ func (g *CGeodesic) InverseCalcDistanceAzimuthsArcLengthReducedLengthScales(
 		ReducedLengthM: res.ReducedLengthM,
 		M12:            res.M12,
 		M21:            res.M21,
+	}
+}
+
+// InverseCalcAll returns everything described in the `AllInverseResults` results type.
+// Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g *CGeodesic) InverseCalcAll(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) AllInverseResults {
+	capabilities := DISTANCE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE | AREA
+
+	res := g.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return AllInverseResults{
+		DistanceM:      res.DistanceM,
+		Azimuth1Deg:    res.Azimuth1Deg,
+		Azimuth2Deg:    res.Azimuth2Deg,
+		ArcLengthDeg:   res.ArcLengthDeg,
+		ReducedLengthM: res.ReducedLengthM,
+		M12:            res.M12,
+		M21:            res.M21,
+		S12M2:          res.S12M2,
 	}
 }
 

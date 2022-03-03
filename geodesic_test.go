@@ -2225,6 +2225,7 @@ var test_cases = [20][12]float64{
 
 func TestInverse20(t *testing.T) {
 	geod := Wgs84()
+	cgeod := CWgs84()
 
 	for row, tC := range test_cases {
 		lat1, lon1, azi1 := tC[0], tC[1], tC[2]
@@ -2233,6 +2234,7 @@ func TestInverse20(t *testing.T) {
 		M12, M21, S12 := tC[9], tC[10], tC[11]
 
 		inv := geod.InverseCalcAll(lat1, lon1, lat2, lon2)
+		cinv := cgeod.InverseCalcAll(lat1, lon1, lat2, lon2)
 
 		if !almost_equal(azi1, inv.Azimuth1Deg, 1e-13) {
 			t.Errorf("row %d -- Inverse() azi1 = %v; want %v", row, inv.Azimuth1Deg, azi1)
@@ -2264,6 +2266,38 @@ func TestInverse20(t *testing.T) {
 
 		if !almost_equal(S12, inv.S12M2, 0.1) {
 			t.Errorf("row %d -- Inverse() S12 = %v; want %v", row, inv.S12M2, S12)
+		}
+
+		if !almost_equal(azi1, cinv.Azimuth1Deg, 1e-13) {
+			t.Errorf("row %d -- Inverse() azi1 = %v; want %v", row, cinv.Azimuth1Deg, azi1)
+		}
+
+		if !almost_equal(azi2, cinv.Azimuth2Deg, 1e-13) {
+			t.Errorf("row %d -- Inverse() azi2 = %v; want %v", row, cinv.Azimuth2Deg, azi2)
+		}
+
+		if !almost_equal(s12, cinv.DistanceM, 1e-8) {
+			t.Errorf("row %d -- Inverse() s12 = %v; want %v", row, cinv.DistanceM, s12)
+		}
+
+		if !almost_equal(a12, cinv.ArcLengthDeg, 1e-13) {
+			t.Errorf("row %d -- Inverse() a12 = %v; want %v", row, cinv.ArcLengthDeg, a12)
+		}
+
+		if !almost_equal(m12, cinv.ReducedLengthM, 1e-8) {
+			t.Errorf("row %d -- Inverse() m12 = %v; want %v", row, cinv.ReducedLengthM, m12)
+		}
+
+		if !almost_equal(M12, cinv.M12, 1e-15) {
+			t.Errorf("row %d -- Inverse() M12 = %v; want %v", row, cinv.M12, M12)
+		}
+
+		if !almost_equal(M21, cinv.M21, 1e-15) {
+			t.Errorf("row %d -- Inverse() M21 = %v; want %v", row, cinv.M21, M21)
+		}
+
+		if !almost_equal(S12, cinv.S12M2, 0.1) {
+			t.Errorf("row %d -- Inverse() S12 = %v; want %v", row, cinv.S12M2, S12)
 		}
 	}
 }
@@ -3970,4 +4004,55 @@ func TestInverseOldTest(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDirectAndInverseInterface(t *testing.T) {
+	// The goal of this test is to ensure that both the Geodesic and the CGeodesic structs
+	// meet the DirectAndInverse interface
+	geod := Wgs84()
+	cgeod := CWgs84()
+
+	var lat1_deg, lon1_deg, lat2_deg, lon2_deg, azi1_deg, s12_m float64
+	capabilities := ALL
+
+	geod.DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	geod.DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	geod.DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	geod.DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	geod.DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	geod.DirectCalcLatLonAziReducedLengthGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	geod.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+	geod.DirectLineWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+	geod.EqualtorialRadius()
+	geod.Flattening()
+	geod.InverseCalcAll(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	geod.InverseCalcAzimuthsArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	geod.InverseCalcDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	geod.InverseCalcDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	geod.InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	geod.InverseCalcDistanceAzimuthsArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	geod.InverseCalcDistanceAzimuthsArcLengthReducedLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	geod.InverseCalcDistanceAzimuthsArcLengthReducedLengthScales(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	geod.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+	geod.InverseLineWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+	geod.LineWithCapabilities(lat1_deg, lon1_deg, azi1_deg, capabilities)
+
+	cgeod.DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	cgeod.DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	cgeod.DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	cgeod.DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	cgeod.DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	cgeod.DirectCalcLatLonAziReducedLengthGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m)
+	cgeod.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
+	cgeod.EqualtorialRadius()
+	cgeod.Flattening()
+	cgeod.InverseCalcAll(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	cgeod.InverseCalcAzimuthsArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	cgeod.InverseCalcDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	cgeod.InverseCalcDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	cgeod.InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	cgeod.InverseCalcDistanceAzimuthsArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	cgeod.InverseCalcDistanceAzimuthsArcLengthReducedLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	cgeod.InverseCalcDistanceAzimuthsArcLengthReducedLengthScales(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
+	cgeod.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
 }

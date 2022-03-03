@@ -28,7 +28,8 @@ That wrapper does not provide all of the functionality of the original C library
 - [ ] Benchmarks comparing go implementation with C wrapper
     - [ ] Have benchmarks
     - [ ] Create a summary of them for README
-- [ ] Add geod interface and explain it in README
+- [X] Add DirectAndInverse interface
+    - [ ] Explain it in README
 - [ ] Add description of the direct and inverse problem, with pictures
 - [ ] Add Examples to README
     - [ ] Examples of direct case on Earth
