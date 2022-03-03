@@ -11,7 +11,7 @@ all functionality in both the C wrapper and the go implementation.
  - Provide useful benchmarks comparing the go implementation to the c-wrapper version
 
 ### Progress
-- [ ] Go translation
+- [X] Go translation
     - [X] Geomath
     - [X] Geomath tests
     - [X] Geodesic Capability constants
@@ -33,7 +33,7 @@ all functionality in both the C wrapper and the go implementation.
     - [ ] Polygon Area
     - [ ] Polygon Area tests
 - [ ] Benchmarks comparing go implementation with C wrapper
-    - [ ] Have benchmarks
+    - [X] Have benchmarks
     - [ ] Create a summary of them for README
 - [X] Add DirectAndInverse interface
     - [ ] Explain it in README

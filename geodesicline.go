@@ -56,7 +56,8 @@ func NewGeodesicLine(
 }
 
 // NewGeodesicLineWithCaps is the same as NewGeodesicLine but the user specifies a
-// `caps` field
+// `caps` field.
+// If you do not wish to specify `salp1` and/or `calp1`, set them as math.NaN()
 func NewGeodesicLineWithCaps(
 	geod Geodesic,
 	lat1, lon1, azi1 float64,
