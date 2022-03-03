@@ -12,11 +12,11 @@ type GeodesicLine struct {
 	_B21   float64
 	_B31   float64
 	_B41   float64
-	_C1a   [GEODESIC_ORDER + 1]float64
-	_C1pa  [GEODESIC_ORDER + 1]float64
-	_C2a   [GEODESIC_ORDER + 1]float64
-	_C3a   [GEODESIC_ORDER]float64
-	_C4a   [GEODESIC_ORDER]float64
+	_C1a   [_GEODESIC_ORDER + 1]float64
+	_C1pa  [_GEODESIC_ORDER + 1]float64
+	_C2a   [_GEODESIC_ORDER + 1]float64
+	_C3a   [_GEODESIC_ORDER]float64
+	_C4a   [_GEODESIC_ORDER]float64
 	_b     float64
 	_c2    float64
 	_calp0 float64
@@ -103,12 +103,12 @@ func NewGeodesicLineWithCaps(
 	eps := _k2 / (2.0*(1.0+math.Sqrt(1.0+_k2)) + _k2)
 
 	_A1m1 := 0.0
-	var _C1a [GEODESIC_ORDER + 1]float64
+	var _C1a [_GEODESIC_ORDER + 1]float64
 	_B11 := 0.0
 	_stau1 := 0.0
 	_ctau1 := 0.0
 
-	if caps&CAP_C1 != 0 {
+	if caps&_CAP_C1 != 0 {
 		_A1m1 = a1m1f(eps, geod.GEODESIC_ORDER)
 		c1f(eps, _C1a[:], int(geod.GEODESIC_ORDER))
 		_B11 = sin_cos_series(true, _ssig1, _csig1, _C1a[:])
@@ -118,33 +118,33 @@ func NewGeodesicLineWithCaps(
 		_ctau1 = _csig1*c - _ssig1*s
 	}
 
-	var _C1pa [GEODESIC_ORDER + 1]float64
-	if caps&CAP_C1p != 0 {
+	var _C1pa [_GEODESIC_ORDER + 1]float64
+	if caps&_CAP_C1p != 0 {
 		c1pf(eps, _C1pa[:], int(geod.GEODESIC_ORDER))
 	}
 
 	_A2m1 := 0.0
-	var _C2a [GEODESIC_ORDER + 1]float64
+	var _C2a [_GEODESIC_ORDER + 1]float64
 	_B21 := 0.0
-	if caps&CAP_C2 != 0 {
+	if caps&_CAP_C2 != 0 {
 		_A2m1 = a2m1f(eps, geod.GEODESIC_ORDER)
 		c2f(eps, _C2a[:], int(geod.GEODESIC_ORDER))
 		_B21 = sin_cos_series(true, _ssig1, _csig1, _C2a[:])
 	}
 
-	var _C3a [GEODESIC_ORDER]float64
+	var _C3a [_GEODESIC_ORDER]float64
 	_A3c := 0.0
 	_B31 := 0.0
-	if caps&CAP_C3 != 0 {
+	if caps&_CAP_C3 != 0 {
 		geod._C3f(eps, _C3a[:])
 		_A3c = -f * _salp0 * geod._A3f(eps)
 		_B31 = sin_cos_series(true, _ssig1, _csig1, _C3a[:])
 	}
 
-	var _C4a [GEODESIC_ORDER]float64
+	var _C4a [_GEODESIC_ORDER]float64
 	_A4 := 0.0
 	_B41 := 0.0
-	if caps&CAP_C4 != 0 {
+	if caps&_CAP_C4 != 0 {
 		geod._C4f(eps, _C4a[:])
 		_A4 = sq(a) * _calp0 * _salp0 * geod.e2
 		_B41 = sin_cos_series(false, _ssig1, _csig1, _C4a[:])

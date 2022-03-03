@@ -98,7 +98,7 @@ const WGS84_A float64 = 6378137.0
 // 1/298.257223563 is well ingrained.
 const WGS84_F float64 = 1.0 / ((298257223563.0) / 1000000000.0)
 
-const GEODESIC_ORDER int64 = 6
+const _GEODESIC_ORDER int64 = 6
 const nC3x_ int64 = 15
 const nC4x_ int64 = 21
 
@@ -146,7 +146,7 @@ type Geodesic struct {
 	maxit1_        uint64
 	maxit2_        uint64
 
-	_A3x [GEODESIC_ORDER]float64
+	_A3x [_GEODESIC_ORDER]float64
 	_C3x [nC3x_]float64
 	_C4x [nC4x_]float64
 
@@ -160,7 +160,7 @@ type Geodesic struct {
 
 func NewGeodesic(a, f float64) Geodesic {
 	var maxit1_ uint64 = 20
-	maxit2_ := maxit1_ + DIGITS + 10
+	maxit2_ := maxit1_ + _DIGITS + 10
 	tiny_ := math.Sqrt(get_min_val())
 	tol0_ := get_epsilon()
 	tol1_ := 200.0 * tol0_
@@ -188,7 +188,7 @@ func NewGeodesic(a, f float64) Geodesic {
 	_c2 := (sq(a) + sq(_b)*to_mul) / 2.0
 	_etol2 := 0.1 * tol2_ / math.Sqrt(math.Max(math.Abs(f), 0.001)*math.Min((1.0-f/2.0), 1.0)/2.0)
 
-	_A3x := [GEODESIC_ORDER]float64{}
+	_A3x := [_GEODESIC_ORDER]float64{}
 	_C3x := [nC3x_]float64{}
 	_C4x := [nC4x_]float64{}
 
@@ -197,8 +197,8 @@ func NewGeodesic(a, f float64) Geodesic {
 	k := 0
 
 	coefa3 := coeff_A3()
-	for j := GEODESIC_ORDER - 1; j >= 0; j-- {
-		m := int64(math.Min(float64(j), float64(GEODESIC_ORDER-j-1)))
+	for j := _GEODESIC_ORDER - 1; j >= 0; j-- {
+		m := int64(math.Min(float64(j), float64(_GEODESIC_ORDER-j-1)))
 		_A3x[k] = polyval(m, coefa3[o:], _n) / coefa3[o+m+1]
 		k += 1
 		o += m + 2
@@ -209,9 +209,9 @@ func NewGeodesic(a, f float64) Geodesic {
 	k = 0
 
 	coefc3 := coeff_C3()
-	for l := 1; l < int(GEODESIC_ORDER); l++ {
-		for j := int(GEODESIC_ORDER) - 1; j >= l; j-- {
-			m := int64(math.Min(float64(j), float64(int(GEODESIC_ORDER)-j-1)))
+	for l := 1; l < int(_GEODESIC_ORDER); l++ {
+		for j := int(_GEODESIC_ORDER) - 1; j >= l; j-- {
+			m := int64(math.Min(float64(j), float64(int(_GEODESIC_ORDER)-j-1)))
 			_C3x[k] = polyval(m, coefc3[o:], _n) / coefc3[o+m+1]
 			k += 1
 			o += m + 2
@@ -224,9 +224,9 @@ func NewGeodesic(a, f float64) Geodesic {
 	k = 0
 
 	coefc4 := coeff_C4()
-	for l := 0; l < int(GEODESIC_ORDER); l++ {
-		for j := int(GEODESIC_ORDER) - 1; j >= l; j-- {
-			m := int64(int(GEODESIC_ORDER) - j - 1)
+	for l := 0; l < int(_GEODESIC_ORDER); l++ {
+		for j := int(_GEODESIC_ORDER) - 1; j >= l; j-- {
+			m := int64(int(_GEODESIC_ORDER) - j - 1)
 			_C4x[k] = polyval(m, coefc4[o:], _n) / coefc4[(o+m+1)]
 			k += 1
 			o += m + 2
@@ -244,7 +244,7 @@ func NewGeodesic(a, f float64) Geodesic {
 		_c2,
 		_etol2,
 
-		GEODESIC_ORDER,
+		_GEODESIC_ORDER,
 		nC3x_,
 		nC4x_,
 		maxit1_,
@@ -276,14 +276,14 @@ func (g Geodesic) Flattening() float64 {
 }
 
 func (g Geodesic) _A3f(eps float64) float64 {
-	return polyval(int64(GEODESIC_ORDER-1), g._A3x[:], eps)
+	return polyval(int64(_GEODESIC_ORDER-1), g._A3x[:], eps)
 }
 
 func (g Geodesic) _C3f(eps float64, c []float64) {
 	mult := 1.0
 	o := 0
-	for l := 1; l < int(GEODESIC_ORDER); l++ {
-		m := int(GEODESIC_ORDER) - l - 1
+	for l := 1; l < int(_GEODESIC_ORDER); l++ {
+		m := int(_GEODESIC_ORDER) - l - 1
 		mult *= eps
 		c[l] = mult * polyval(int64(m), g._C3x[o:], eps)
 		o += m + 1
@@ -293,8 +293,8 @@ func (g Geodesic) _C3f(eps float64, c []float64) {
 func (g Geodesic) _C4f(eps float64, c []float64) {
 	mult := 1.0
 	o := 0
-	for l := 0; l < int(GEODESIC_ORDER); l++ {
-		m := int(GEODESIC_ORDER) - l - 1
+	for l := 0; l < int(_GEODESIC_ORDER); l++ {
+		m := int(_GEODESIC_ORDER) - l - 1
 		c[l] = mult * polyval(int64(m), g._C4x[o:], eps)
 		o += m + 1
 		mult *= eps
@@ -320,11 +320,11 @@ func (g Geodesic) _Lengths(
 	J12 := 0.0
 
 	if outmask&(DISTANCE|REDUCEDLENGTH|GEODESICSCALE) != 0 {
-		A1 = a1m1f(eps, GEODESIC_ORDER)
-		c1f(eps, c1a, int(GEODESIC_ORDER))
+		A1 = a1m1f(eps, _GEODESIC_ORDER)
+		c1f(eps, c1a, int(_GEODESIC_ORDER))
 		if outmask&(REDUCEDLENGTH|GEODESICSCALE) != 0 {
-			A2 = a2m1f(eps, GEODESIC_ORDER)
-			c2f(eps, c2a, int(GEODESIC_ORDER))
+			A2 = a2m1f(eps, _GEODESIC_ORDER)
+			c2f(eps, c2a, int(_GEODESIC_ORDER))
 			m0x = A1 - A2
 			A2 = 1.0 + A2
 		}
@@ -339,7 +339,7 @@ func (g Geodesic) _Lengths(
 			J12 = m0x*sig12 + (A1*B1 - A2*B2)
 		}
 	} else if outmask&(REDUCEDLENGTH|GEODESICSCALE) != 0 {
-		for l := 1; l <= int(GEODESIC_ORDER); l++ {
+		for l := 1; l <= int(_GEODESIC_ORDER); l++ {
 			c2a[l] = A1*c1a[l] - A2*c2a[l]
 		}
 		J12 = m0x*sig12 + (sin_cos_series(true, ssig2, csig2, c2a) - sin_cos_series(true, ssig1, csig1, c2a))
@@ -687,10 +687,10 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 	dn1 := math.Sqrt(1.0 + g.ep2*sq(sbet1))
 	dn2 := math.Sqrt(1.0 + g.ep2*sq(sbet2))
 
-	const CARR_SIZE uint64 = uint64(GEODESIC_ORDER) + 1
+	const CARR_SIZE uint64 = uint64(_GEODESIC_ORDER) + 1
 	C1a := [CARR_SIZE]float64{}
 	C2a := [CARR_SIZE]float64{}
-	C3a := [GEODESIC_ORDER]float64{}
+	C3a := [_GEODESIC_ORDER]float64{}
 
 	meridian := lat1 == -90.0 || slam12 == 0.0
 	calp1 := 0.0
@@ -915,7 +915,7 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 			A4 := sq(g.a) * calp0 * salp0 * g.e2
 			ssig1, csig1 = norm(ssig1, csig1)
 			ssig2, csig2 = norm(ssig2, csig2)
-			C4a := [GEODESIC_ORDER]float64{}
+			C4a := [_GEODESIC_ORDER]float64{}
 			g._C4f(eps, C4a[:])
 			B41 := sin_cos_series(false, ssig1, csig1, C4a[:])
 			B42 := sin_cos_series(false, ssig2, csig2, C4a[:])

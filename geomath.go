@@ -2,14 +2,14 @@ package geographiclibgo
 
 import "math"
 
-const DIGITS uint64 = 53
-const TWO float64 = 2.0
+const _DIGITS uint64 = 53
+const _TWO float64 = 2.0
 
 const RAD2DEG float64 = 180.0 / math.Pi
 const DEG2RAD float64 = math.Pi / 180.0
 
 func get_epsilon() float64 {
-	return math.Pow(TWO, 1.0-float64(DIGITS))
+	return math.Pow(_TWO, 1.0-float64(_DIGITS))
 }
 
 func get_min_val() float64 {
