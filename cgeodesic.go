@@ -261,6 +261,77 @@ func (g *CGeodesic) InverseCalcDistanceAzimuths(
 	}
 }
 
+// InverseCalcDistanceAzimuthsArcLength returns the distance from one point to the next,
+// the azimuth at point 1, the azimuth at point 2, and the arc length between the points.
+// Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g *CGeodesic) InverseCalcDistanceAzimuthsArcLength(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) DistanceAzimuthsArcLength {
+	capabilities := DISTANCE | AZIMUTH
+
+	res := g.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return DistanceAzimuthsArcLength{
+		DistanceM:    res.DistanceM,
+		Azimuth1Deg:  res.Azimuth1Deg,
+		Azimuth2Deg:  res.Azimuth2Deg,
+		ArcLengthDeg: res.ArcLengthDeg,
+	}
+}
+
+// InverseCalcDistanceAzimuthsArcLengthReducedLength returns the distance from one point
+// to the next, the azimuth at point 1, the azimuth at point 2, the arc length
+// between the points, and the reduceed length of the geodesic.
+// Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g *CGeodesic) InverseCalcDistanceAzimuthsArcLengthReducedLength(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) DistanceAzimuthsArcLengthReducedLength {
+	capabilities := DISTANCE | AZIMUTH | REDUCEDLENGTH
+
+	res := g.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return DistanceAzimuthsArcLengthReducedLength{
+		DistanceM:      res.DistanceM,
+		Azimuth1Deg:    res.Azimuth1Deg,
+		Azimuth2Deg:    res.Azimuth2Deg,
+		ArcLengthDeg:   res.ArcLengthDeg,
+		ReducedLengthM: res.ReducedLengthM,
+	}
+}
+
+// InverseCalcDistanceAzimuthsArcLengthReducedLengthScales returns everything described
+// by the `DistanceAzimuthsArcLengthReducedLengthScales` type.
+// Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g *CGeodesic) InverseCalcDistanceAzimuthsArcLengthReducedLengthScales(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) DistanceAzimuthsArcLengthReducedLengthScales {
+	capabilities := DISTANCE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE
+
+	res := g.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return DistanceAzimuthsArcLengthReducedLengthScales{
+		DistanceM:      res.DistanceM,
+		Azimuth1Deg:    res.Azimuth1Deg,
+		Azimuth2Deg:    res.Azimuth2Deg,
+		ArcLengthDeg:   res.ArcLengthDeg,
+		ReducedLengthM: res.ReducedLengthM,
+		M12:            res.M12,
+		M21:            res.M21,
+	}
+}
+
 // InverseCalcWithCapabilities allows the user to specify which capabilites they wish to use.
 // This function is useful if you want some other subset of capabilities than those offered
 // by the other InverseCalc...() methods.
