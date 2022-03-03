@@ -207,22 +207,58 @@ func (g *CGeodesic) InverseCalcDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg f
 	return res.DistanceM
 }
 
-// InverseCalcDistanceAzimuths solves the geodetic inverse problem on the given spheroid
-// (https://en.wikipedia.org/wiki/Geodesy#Geodetic_problems).
-// Returns s12 (distance in meters), az1 (azimuth at point 1) and az2 (azimuth at point 2).
-func (g *CGeodesic) InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuths {
-	var retS12, retAZ1, retAZ2 C.double
-	C.geod_inverse(
-		&g.cRepr,
-		C.double(lat1_deg),
-		C.double(lon1_deg),
-		C.double(lat2_deg),
-		C.double(lon2_deg),
-		&retS12,
-		&retAZ1,
-		&retAZ2,
-	)
-	return DistanceAzimuths{DistanceM: float64(retS12), Azimuth1Deg: float64(retAZ1), Azimuth2Deg: float64(retAZ2)}
+// InverseCalcDistanceArcLength returns the distance from one point to the next, and the
+// arc length between the points. Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g *CGeodesic) InverseCalcDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceArcLength {
+	capabilities := DISTANCE
+
+	res := g.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return DistanceArcLength{DistanceM: res.DistanceM, ArcLengthDeg: res.ArcLengthDeg}
+}
+
+// InverseCalcAzimuthsArcLength returns the azimuth at point 1, the azimuth at point 2,
+// and the arc length between the points. Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g *CGeodesic) InverseCalcAzimuthsArcLength(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) AzimuthsArcLength {
+	capabilities := AZIMUTH
+
+	res := g.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return AzimuthsArcLength{
+		Azimuth1Deg:  res.Azimuth1Deg,
+		Azimuth2Deg:  res.Azimuth2Deg,
+		ArcLengthDeg: res.ArcLengthDeg,
+	}
+}
+
+// InverseCalcDistanceAzimuths returns the distance from one point to the next, and the
+// azimuths. Takes inputs
+// - lat1_deg latitude of point 1 [degrees].
+// - lon1_deg longitude of point 1 [degrees].
+// - lat2_deg latitude of point 2 [degrees].
+// - lon2_deg longitude of point 2 [degrees].
+func (g *CGeodesic) InverseCalcDistanceAzimuths(
+	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
+) DistanceAzimuths {
+	capabilities := DISTANCE | AZIMUTH
+
+	res := g.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
+
+	return DistanceAzimuths{
+		DistanceM:   res.DistanceM,
+		Azimuth1Deg: res.Azimuth1Deg,
+		Azimuth2Deg: res.Azimuth2Deg,
+	}
 }
 
 // InverseCalcWithCapabilities allows the user to specify which capabilites they wish to use.
