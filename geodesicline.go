@@ -195,19 +195,26 @@ func NewGeodesicLineWithCaps(
 	}
 }
 
-// _gen_position returns (a12, lat2, lon2, azi2, s12, m12, M12, M21, S12)
 func (g GeodesicLine) _gen_position(arcmode bool, s12_a12 float64, outmask uint64) (
-	float64, float64, float64, float64, float64, float64, float64, float64, float64,
+	a12 float64,
+	lat2 float64,
+	lon2 float64,
+	azi2 float64,
+	s12 float64,
+	m12 float64,
+	M12 float64,
+	M21 float64,
+	S12 float64,
 ) {
-	a12 := math.NaN()
-	lat2 := math.NaN()
-	lon2 := math.NaN()
-	azi2 := math.NaN()
-	s12 := math.NaN()
-	m12 := math.NaN()
-	M12 := math.NaN()
-	M21 := math.NaN()
-	S12 := math.NaN()
+	a12 = math.NaN()
+	lat2 = math.NaN()
+	lon2 = math.NaN()
+	azi2 = math.NaN()
+	s12 = math.NaN()
+	m12 = math.NaN()
+	M12 = math.NaN()
+	M21 = math.NaN()
+	S12 = math.NaN()
 
 	outmask &= g.caps & OUT_MASK
 	if !(arcmode || (g.caps&(OUT_MASK&DISTANCE_IN) != 0)) {

@@ -608,14 +608,22 @@ func (g Geodesic) _Lambda12(
 
 }
 
-// _gen_inverse_azi returns (a12, s12, azi1, azi2, m12, M12, M21, S12)
 func (g Geodesic) _gen_inverse_azi(
 	lat1, lon1, lat2, lon2 float64,
 	outmask uint64,
-) (float64, float64, float64, float64, float64, float64, float64, float64) {
+) (
+	a12 float64,
+	s12 float64,
+	azi1 float64,
+	azi2 float64,
+	m12 float64,
+	M12 float64,
+	M21 float64,
+	S12 float64,
+) {
 
-	azi1 := math.NaN()
-	azi2 := math.NaN()
+	azi1 = math.NaN()
+	azi2 = math.NaN()
 	outmask &= OUT_MASK
 
 	a12, s12, salp1, calp1, salp2, calp2, m12, M12, M21, S12 := g._gen_inverse(
@@ -629,16 +637,24 @@ func (g Geodesic) _gen_inverse_azi(
 	return a12, s12, azi1, azi2, m12, M12, M21, S12
 }
 
-// _gen_inverse returns (a12, s12, salp1, calp1, salp2, calp2, m12, M12, M21, S12)
 func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
-	float64, float64, float64, float64, float64, float64, float64, float64, float64, float64,
+	a12 float64,
+	s12 float64,
+	salp1 float64,
+	calp1 float64,
+	salp2 float64,
+	calp2 float64,
+	m12 float64,
+	M12 float64,
+	M21 float64,
+	S12 float64,
 ) {
-	a12 := math.NaN()
-	s12 := math.NaN()
-	m12 := math.NaN()
-	M12 := math.NaN()
-	M21 := math.NaN()
-	S12 := math.NaN()
+	a12 = math.NaN()
+	s12 = math.NaN()
+	m12 = math.NaN()
+	M12 = math.NaN()
+	M21 = math.NaN()
+	S12 = math.NaN()
 	outmask &= OUT_MASK
 
 	lon12, lon12s := ang_diff(lon1, lon2)
@@ -717,10 +733,10 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 	C3a := [_GEODESIC_ORDER]float64{}
 
 	meridian := lat1 == -90.0 || slam12 == 0.0
-	calp1 := 0.0
-	salp1 := 0.0
-	calp2 := 0.0
-	salp2 := 0.0
+	calp1 = 0.0
+	salp1 = 0.0
+	calp2 = 0.0
+	salp2 = 0.0
 	ssig1 := 0.0
 	csig1 := 0.0
 	ssig2 := 0.0
