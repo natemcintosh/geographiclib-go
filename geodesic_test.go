@@ -2857,7 +2857,9 @@ func TestGeodSolve15(t *testing.T) {
 func TestGeodSolve17(t *testing.T) {
 	// Check fix for LONG_UNROLL bug found on 2015-05-07
 	geod := Wgs84()
+	cgeod := CWgs84()
 	dir := geod.DirectCalcWithCapabilities(40, -75, -10, 2e7, STANDARD|LONG_UNROLL)
+	// cdir := cgeod.DirectCalcWithCapabilities(40, -75, -10, 2e7, STANDARD|LONG_UNROLL)
 	want_lat := -39.0
 	want_lon := -254.0
 	want_azi := -170.0
@@ -2874,12 +2876,27 @@ func TestGeodSolve17(t *testing.T) {
 		t.Errorf("azi = %v; want %v", dir.AziDeg, want_azi)
 	}
 
+	// if !almost_equal(cdir.LatDeg, want_lat, 1) {
+	// 	t.Errorf("lat = %v; want %v", cdir.LatDeg, want_lat)
+	// }
+
+	// if !almost_equal(cdir.LonDeg, want_lon, 1) {
+	// 	t.Errorf("lon = %v; want %v", cdir.LonDeg, want_lon)
+	// }
+
+	// if !almost_equal(cdir.AziDeg, want_azi, 1) {
+	// 	t.Errorf("azi = %v; want %v", cdir.AziDeg, want_azi)
+	// }
+
 	line := NewGeodesicLine(geod, 40.0, -75.0, -10.0)
+	cline := NewCGeodesicLine(cgeod, 40.0, -75.0, -10.0)
 
 	dir2 := line.PositionWithCapabilities(2e7, STANDARD|LONG_UNROLL)
+	// cdir2 := cline.PositionWithCapabilities(2e7, STANDARD|LONG_UNROLL)
 	want_lat = -39.0
 	want_lon = -254.0
 	want_azi = -170.0
+
 	if !almost_equal(dir2.Lat2Deg, want_lat, 1) {
 		t.Errorf("lat = %v; want %v", dir2.Lat2Deg, want_lat)
 	}
@@ -2892,10 +2909,24 @@ func TestGeodSolve17(t *testing.T) {
 		t.Errorf("azi = %v; want %v", dir2.Azi2Deg, want_azi)
 	}
 
+	// if !almost_equal(cdir2.Lat2Deg, want_lat, 1) {
+	// 	t.Errorf("lat = %v; want %v", cdir2.Lat2Deg, want_lat)
+	// }
+
+	// if !almost_equal(cdir2.Lon2Deg, want_lon, 1) {
+	// 	t.Errorf("lon = %v; want %v", cdir2.Lon2Deg, want_lon)
+	// }
+
+	// if !almost_equal(cdir2.Azi2Deg, want_azi, 1) {
+	// 	t.Errorf("azi = %v; want %v", cdir2.Azi2Deg, want_azi)
+	// }
+
 	dir3 := geod.DirectCalcLatLonAzi(40, -75, -10, 2e7)
+	cdir3 := cgeod.DirectCalcLatLonAzi(40, -75, -10, 2e7)
 	want_lat = -39.0
 	want_lon = 105.0
 	want_azi = -170.0
+
 	if !almost_equal(dir3.LatDeg, want_lat, 1) {
 		t.Errorf("lat = %v; want %v", dir3.LatDeg, want_lat)
 	}
@@ -2908,10 +2939,24 @@ func TestGeodSolve17(t *testing.T) {
 		t.Errorf("azi = %v; want %v", dir3.AziDeg, want_azi)
 	}
 
+	if !almost_equal(cdir3.LatDeg, want_lat, 1) {
+		t.Errorf("lat = %v; want %v", cdir3.LatDeg, want_lat)
+	}
+
+	if !almost_equal(cdir3.LonDeg, want_lon, 1) {
+		t.Errorf("lon = %v; want %v", cdir3.LonDeg, want_lon)
+	}
+
+	if !almost_equal(cdir3.AziDeg, want_azi, 1) {
+		t.Errorf("azi = %v; want %v", cdir3.AziDeg, want_azi)
+	}
+
 	dir4 := line.PositionStandard(2e7)
+	cdir4 := cline.PositionStandard(2e7)
 	want_lat = -39.0
 	want_lon = 105.0
 	want_azi = -170.0
+
 	if !almost_equal(dir4.Lat2Deg, want_lat, 1) {
 		t.Errorf("lat = %v; want %v", dir4.Lat2Deg, want_lat)
 	}
@@ -2922,6 +2967,18 @@ func TestGeodSolve17(t *testing.T) {
 
 	if !almost_equal(dir4.Azi2Deg, want_azi, 1) {
 		t.Errorf("azi = %v; want %v", dir4.Azi2Deg, want_azi)
+	}
+
+	if !almost_equal(cdir4.Lat2Deg, want_lat, 1) {
+		t.Errorf("lat = %v; want %v", cdir4.Lat2Deg, want_lat)
+	}
+
+	if !almost_equal(cdir4.Lon2Deg, want_lon, 1) {
+		t.Errorf("lon = %v; want %v", cdir4.Lon2Deg, want_lon)
+	}
+
+	if !almost_equal(cdir4.Azi2Deg, want_azi, 1) {
+		t.Errorf("azi = %v; want %v", cdir4.Azi2Deg, want_azi)
 	}
 }
 
@@ -3249,6 +3306,7 @@ func TestGeodSolve59(t *testing.T) {
 func TestGeodSolve61(t *testing.T) {
 	// Make sure small negative azimuths are west-going
 	geod := Wgs84()
+	// cgeod := CWgs84()
 	dir := geod.DirectCalcWithCapabilities(
 		45,
 		0,
@@ -3256,6 +3314,14 @@ func TestGeodSolve61(t *testing.T) {
 		1e7,
 		STANDARD|LONG_UNROLL,
 	)
+
+	// cdir := cgeod.DirectCalcWithCapabilities(
+	// 	45,
+	// 	0,
+	// 	-0.000000000000000003,
+	// 	1e7,
+	// 	STANDARD|LONG_UNROLL,
+	// )
 
 	want_lat := 45.30632
 	want_lon := -180.0
@@ -3272,6 +3338,18 @@ func TestGeodSolve61(t *testing.T) {
 	if !almost_equal(dir.AziDeg, want_azi, 0.5e-5) {
 		t.Errorf("azi = %v; want %v", dir.AziDeg, want_azi)
 	}
+
+	// if !almost_equal(cdir.LatDeg, want_lat, 0.5e-5) {
+	// 	t.Errorf("lat = %v; want %v", cdir.LatDeg, want_lat)
+	// }
+
+	// if !almost_equal(cdir.LonDeg, want_lon, 0.5e-5) {
+	// 	t.Errorf("lon = %v; want %v", cdir.LonDeg, want_lon)
+	// }
+
+	// if !almost_equal(cdir.AziDeg, want_azi, 0.5e-5) {
+	// 	t.Errorf("azi = %v; want %v", cdir.AziDeg, want_azi)
+	// }
 
 	line := geod.InverseLineWithCapabilities(45, 0, 80, -0.000000000000000003, STANDARD|DISTANCE_IN)
 	pos := line.PositionWithCapabilities(1e7, STANDARD|LONG_UNROLL)

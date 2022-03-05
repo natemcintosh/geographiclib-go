@@ -434,11 +434,9 @@ type PositionResult struct {
 func (g GeodesicLine) PositionWithCapabilities(s12_m float64, capabilities uint64) PositionResult {
 	a12, lat2, lon2, azi2, s12, m12, M12, M21, S12 := g._gen_position(false, s12_m, capabilities)
 
-	var outlon1 float64
+	outlon1 := g.lon1
 	if capabilities&LONG_UNROLL != 0 {
 		outlon1 = ang_normalize(g.lon1)
-	} else {
-		outlon1 = g.lon1
 	}
 
 	return PositionResult{
@@ -457,15 +455,15 @@ func (g GeodesicLine) PositionWithCapabilities(s12_m float64, capabilities uint6
 	}
 }
 
-// SetArc: specify the position of point 3 in terms of arc length `a13`, the spherical
+// set_arc: specify the position of point 3 in terms of arc length `a13`, the spherical
 // arc length from point 1 to point 3 in degrees
-func (g *GeodesicLine) SetArc(a13 float64) {
+func (g *GeodesicLine) set_arc(a13 float64) {
 	g.a13 = a13
 	_, _, _, _, g.s13, _, _, _, _ = g._gen_position(true, g.a13, DISTANCE)
 }
 
-// SetDistance specifies the position of point 3 in terms of distance
-func (g *GeodesicLine) SetDistance(s13_m float64) {
+// set_distance specifies the position of point 3 in terms of distance
+func (g *GeodesicLine) set_distance(s13_m float64) {
 	g.s13 = s13_m
 	g.a13, _, _, _, _, _, _, _, _ = g._gen_position(false, g.s13, 0)
 }

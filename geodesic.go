@@ -1448,7 +1448,7 @@ func (g Geodesic) InverseLineWithCapabilities(
 	}
 
 	line := new_geodesic_line_all_options(g, lat1_deg, lon1_deg, azi1, capabilities, salp1, calp1)
-	line.SetArc(a12)
+	line.set_arc(a12)
 	return line
 }
 
@@ -1470,9 +1470,9 @@ func (g Geodesic) _gen_direct_line(
 		capabilities,
 	)
 	if arcmode {
-		line.SetArc(s12_a12_m)
+		line.set_arc(s12_a12_m)
 	} else {
-		line.SetDistance(s12_a12_m)
+		line.set_distance(s12_a12_m)
 	}
 	return line
 }
