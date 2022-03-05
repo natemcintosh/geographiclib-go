@@ -43,22 +43,46 @@ type GeodesicLine struct {
 }
 
 // NewGeodesicLine creates a GeodesicLine, with `caps` of STANDARD | DISTANCE_IN
-// If you do not wish to specify `salp1` and/or `calp1`, set them as math.NaN()
 func NewGeodesicLine(
 	geod Geodesic,
 	lat1, lon1, azi1 float64,
-	salp1, calp1 float64,
 ) GeodesicLine {
 	// Specify default `caps`
 	caps := STANDARD | DISTANCE_IN
 
-	return NewGeodesicLineWithCaps(geod, lat1, lon1, azi1, caps, salp1, calp1)
+	return new_geodesic_line_all_options(
+		geod,
+		lat1,
+		lon1,
+		azi1,
+		caps,
+		math.NaN(),
+		math.NaN(),
+	)
 }
 
 // NewGeodesicLineWithCaps is the same as NewGeodesicLine but the user specifies a
 // `caps` field.
-// If you do not wish to specify `salp1` and/or `calp1`, set them as math.NaN()
 func NewGeodesicLineWithCaps(
+	geod Geodesic,
+	lat1, lon1, azi1 float64,
+	capabilities uint64,
+) GeodesicLine {
+	return new_geodesic_line_all_options(
+		geod,
+		lat1,
+		lon1,
+		azi1,
+		capabilities,
+		math.NaN(),
+		math.NaN(),
+	)
+}
+
+// new_geodesic_line_all_options is the same as NewGeodesicLine but the user specifies a
+// `caps` field.
+// If you do not wish to specify `salp1` and/or `calp1`, set them as math.NaN()
+func new_geodesic_line_all_options(
 	geod Geodesic,
 	lat1, lon1, azi1 float64,
 	caps uint64,

@@ -7,7 +7,7 @@ import (
 
 func TestNewGeodesicLine(t *testing.T) {
 	geod := Wgs84()
-	gl := NewGeodesicLine(geod, 0.0, 0.0, 0.0, math.NaN(), math.NaN())
+	gl := NewGeodesicLine(geod, 0.0, 0.0, 0.0)
 
 	if !f64_equals(gl.a, 6378137.0) {
 		t.Errorf("a = %v; want %v", gl.a, 6378137.0)
@@ -78,13 +78,13 @@ func TestNewGeodesicLine(t *testing.T) {
 func BenchmarkNewGeodesicLine(b *testing.B) {
 	geod := Wgs84()
 	for i := 0; i < b.N; i++ {
-		NewGeodesicLine(geod, 0.0, 0.0, 0.0, math.NaN(), math.NaN())
+		NewGeodesicLine(geod, 0.0, 0.0, 0.0)
 	}
 }
 
 func Test_gen_position(t *testing.T) {
 	geod := Wgs84()
-	gl := NewGeodesicLine(geod, 0.0, 0.0, 10.0, math.NaN(), math.NaN())
+	gl := NewGeodesicLine(geod, 0.0, 0.0, 10.0)
 	a12, lat2, lon2, azi2, s12, m12, M12, M21, S12 := gl._gen_position(false, 150.0, 3979)
 
 	if !f64_equals(a12, 0.0013520059461334633) {
@@ -119,7 +119,7 @@ func Test_gen_position(t *testing.T) {
 
 func Benchmark_gen_position(b *testing.B) {
 	geod := Wgs84()
-	gl := NewGeodesicLine(geod, 0.0, 0.0, 10.0, math.NaN(), math.NaN())
+	gl := NewGeodesicLine(geod, 0.0, 0.0, 10.0)
 	for i := 0; i < b.N; i++ {
 		gl._gen_position(false, 150.0, 3979)
 	}

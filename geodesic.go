@@ -1017,7 +1017,7 @@ func (g Geodesic) _gen_direct(
 		outmask |= DISTANCE_IN
 	}
 
-	line := NewGeodesicLineWithCaps(g, lat1, lon1, azi1, outmask, math.NaN(), math.NaN())
+	line := NewGeodesicLineWithCaps(g, lat1, lon1, azi1, outmask)
 	a12, lat2, lon2, azi2, s12, m12, M12, M21, S12 := line._gen_position(arcmode, s12_a12, outmask)
 
 	return a12, lat2, lon2, azi2, s12, m12, M12, M21, S12, outmask
@@ -1447,7 +1447,7 @@ func (g Geodesic) InverseLineWithCapabilities(
 		capabilities |= DISTANCE
 	}
 
-	line := NewGeodesicLineWithCaps(g, lat1_deg, lon1_deg, azi1, capabilities, salp1, calp1)
+	line := new_geodesic_line_all_options(g, lat1_deg, lon1_deg, azi1, capabilities, salp1, calp1)
 	line.SetArc(a12)
 	return line
 }
@@ -1468,8 +1468,6 @@ func (g Geodesic) _gen_direct_line(
 		lon1_deg,
 		azi1_deg,
 		capabilities,
-		math.NaN(),
-		math.NaN(),
 	)
 	if arcmode {
 		line.SetArc(s12_a12_m)
@@ -1502,7 +1500,5 @@ func (g Geodesic) LineWithCapabilities(
 		lon1_deg,
 		azi1_deg,
 		capabilities,
-		math.NaN(),
-		math.NaN(),
 	)
 }

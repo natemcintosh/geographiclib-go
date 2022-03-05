@@ -2874,7 +2874,7 @@ func TestGeodSolve17(t *testing.T) {
 		t.Errorf("azi = %v; want %v", dir.AziDeg, want_azi)
 	}
 
-	line := NewGeodesicLine(geod, 40.0, -75.0, -10.0, math.NaN(), math.NaN())
+	line := NewGeodesicLine(geod, 40.0, -75.0, -10.0)
 
 	dir2 := line.PositionWithCapabilities(2e7, STANDARD|LONG_UNROLL)
 	want_lat = -39.0
