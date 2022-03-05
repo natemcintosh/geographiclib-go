@@ -61,19 +61,19 @@ func NewGeodesicLine(
 	)
 }
 
-// NewGeodesicLineWithCaps is the same as NewGeodesicLine but the user specifies a
+// NewGeodesicLineWithCapability is the same as NewGeodesicLine but the user specifies a
 // `caps` field.
-func NewGeodesicLineWithCaps(
+func NewGeodesicLineWithCapability(
 	geod Geodesic,
 	lat1, lon1, azi1 float64,
-	capabilities uint64,
+	caps uint64,
 ) GeodesicLine {
 	return new_geodesic_line_all_options(
 		geod,
 		lat1,
 		lon1,
 		azi1,
-		capabilities,
+		caps,
 		math.NaN(),
 		math.NaN(),
 	)

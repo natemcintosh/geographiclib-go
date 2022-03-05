@@ -1017,7 +1017,7 @@ func (g Geodesic) _gen_direct(
 		outmask |= DISTANCE_IN
 	}
 
-	line := NewGeodesicLineWithCaps(g, lat1, lon1, azi1, outmask)
+	line := NewGeodesicLineWithCapability(g, lat1, lon1, azi1, outmask)
 	a12, lat2, lon2, azi2, s12, m12, M12, M21, S12 := line._gen_position(arcmode, s12_a12, outmask)
 
 	return a12, lat2, lon2, azi2, s12, m12, M12, M21, S12, outmask
@@ -1462,7 +1462,7 @@ func (g Geodesic) _gen_direct_line(
 	if !arcmode {
 		capabilities |= DISTANCE_IN
 	}
-	line := NewGeodesicLineWithCaps(
+	line := NewGeodesicLineWithCapability(
 		g,
 		lat1_deg,
 		lon1_deg,
@@ -1494,7 +1494,7 @@ func (g Geodesic) LineWithCapabilities(
 	lat1_deg, lon1_deg, azi1_deg float64,
 	capabilities uint64,
 ) GeodesicLine {
-	return NewGeodesicLineWithCaps(
+	return NewGeodesicLineWithCapability(
 		g,
 		lat1_deg,
 		lon1_deg,

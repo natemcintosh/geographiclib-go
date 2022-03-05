@@ -10,13 +10,34 @@ type CGeodesicLine struct {
 	cRepr C.struct_geod_geodesicline
 }
 
-// // NewCGeodesicLine creates a GeodesicLine, with `caps` of STANDARD | DISTANCE_IN
+// NewCGeodesicLine creates a GeodesicLine, with `caps` of STANDARD | DISTANCE_IN
 func NewCGeodesicLine(
 	geod *CGeodesic,
 	lat1, lon1, azi1 float64,
 ) *CGeodesicLine {
 
 	capabilities := STANDARD | DISTANCE_IN
+
+	l := CGeodesicLine{}
+	C.geod_lineinit(
+		&l.cRepr,
+		&geod.cRepr,
+		C.double(lat1),
+		C.double(lon1),
+		C.double(azi1),
+		C.unsigned(capabilities),
+	)
+
+	return &l
+}
+
+// NewCGeodesicLineWithCapability is the same as NewCGeodesicLine but the user specifies a
+// `capabilities` field.
+func NewCGeodesicLineWithCapability(
+	geod *CGeodesic,
+	lat1, lon1, azi1 float64,
+	capabilities uint64,
+) *CGeodesicLine {
 
 	l := CGeodesicLine{}
 	C.geod_lineinit(
