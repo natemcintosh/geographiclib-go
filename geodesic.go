@@ -291,19 +291,19 @@ func Wgs84() Geodesic {
 	return NewGeodesic(WGS84_A, WGS84_F)
 }
 
-func (g Geodesic) EqualtorialRadius() float64 {
+func (g *Geodesic) EqualtorialRadius() float64 {
 	return g.a
 }
 
-func (g Geodesic) Flattening() float64 {
+func (g *Geodesic) Flattening() float64 {
 	return g.f
 }
 
-func (g Geodesic) _A3f(eps float64) float64 {
+func (g *Geodesic) _A3f(eps float64) float64 {
 	return polyval(int64(_GEODESIC_ORDER-1), g._A3x[:], eps)
 }
 
-func (g Geodesic) _C3f(eps float64, c []float64) {
+func (g *Geodesic) _C3f(eps float64, c []float64) {
 	mult := 1.0
 	o := 0
 	for l := 1; l < int(_GEODESIC_ORDER); l++ {
@@ -314,7 +314,7 @@ func (g Geodesic) _C3f(eps float64, c []float64) {
 	}
 }
 
-func (g Geodesic) _C4f(eps float64, c []float64) {
+func (g *Geodesic) _C4f(eps float64, c []float64) {
 	mult := 1.0
 	o := 0
 	for l := 0; l < int(_GEODESIC_ORDER); l++ {
@@ -325,7 +325,7 @@ func (g Geodesic) _C4f(eps float64, c []float64) {
 	}
 }
 
-func (g Geodesic) _Lengths(
+func (g *Geodesic) _Lengths(
 	eps, sig12, ssig1, csig1, dn1, ssig2, csig2, dn2, cbet1, cbet2 float64,
 	outmask uint64,
 	c1a []float64,
@@ -384,7 +384,7 @@ func (g Geodesic) _Lengths(
 	return s12b, m12b, m0, M12, M21
 }
 
-func (g Geodesic) _InverseStart(
+func (g *Geodesic) _InverseStart(
 	sbet1, cbet1, dn1, sbet2, cbet2, dn2, lam12, slam12, clam12 float64,
 	c1a []float64,
 	c2a []float64,
@@ -520,7 +520,7 @@ func (g Geodesic) _InverseStart(
 	return sig12, salp1, calp1, salp2, calp2, dnm
 }
 
-func (g Geodesic) _Lambda12(
+func (g *Geodesic) _Lambda12(
 	sbet1, cbet1, dn1, sbet2, cbet2, dn2, salp1, calp1, slam120, clam120 float64,
 	diffp bool,
 	c1a []float64,
@@ -608,7 +608,7 @@ func (g Geodesic) _Lambda12(
 
 }
 
-func (g Geodesic) _gen_inverse_azi(
+func (g *Geodesic) _gen_inverse_azi(
 	lat1, lon1, lat2, lon2 float64,
 	outmask uint64,
 ) (
@@ -637,7 +637,7 @@ func (g Geodesic) _gen_inverse_azi(
 	return a12, s12, azi1, azi2, m12, M12, M21, S12
 }
 
-func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
+func (g *Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 	a12 float64,
 	s12 float64,
 	salp1 float64,
@@ -1005,7 +1005,7 @@ func (g Geodesic) _gen_inverse(lat1, lon1, lat2, lon2 float64, outmask uint64) (
 }
 
 // _gen_direct returns (a12, lat2, lon2, azi2, s12, m12, M12, M21, S12, outmask)
-func (g Geodesic) _gen_direct(
+func (g *Geodesic) _gen_direct(
 	lat1 float64,
 	lon1 float64,
 	azi1 float64,
@@ -1017,7 +1017,7 @@ func (g Geodesic) _gen_direct(
 		outmask |= DISTANCE_IN
 	}
 
-	line := NewGeodesicLineWithCapability(g, lat1, lon1, azi1, outmask)
+	line := NewGeodesicLineWithCapability(*g, lat1, lon1, azi1, outmask)
 	a12, lat2, lon2, azi2, s12, m12, M12, M21, S12 := line._gen_position(arcmode, s12_a12, outmask)
 
 	return a12, lat2, lon2, azi2, s12, m12, M12, M21, S12, outmask
@@ -1033,7 +1033,7 @@ type LatLon struct {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
+func (g *Geodesic) DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon {
 	capabilities := LATITUDE | LONGITUDE
 	_, lat2, lon2, _, _, _, _, _, _, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
@@ -1051,7 +1051,7 @@ type LatLonAzi struct {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
+func (g *Geodesic) DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH
 	_, lat2, lon2, azi2, _, _, _, _, _, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
@@ -1073,7 +1073,7 @@ type LatLonAziReducedLength struct {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziReducedLength {
+func (g *Geodesic) DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziReducedLength {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH
 	_, lat2, lon2, azi2, _, m12, _, _, _, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
@@ -1096,7 +1096,7 @@ type LatLonAziGeodesicScales struct {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziGeodesicScales {
+func (g *Geodesic) DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziGeodesicScales {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | GEODESICSCALE
 	_, lat2, lon2, azi2, _, _, M12, M21, _, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
@@ -1120,7 +1120,7 @@ type LatLonAziReducedLengthGeodesicScales struct {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectCalcLatLonAziReducedLengthGeodesicScales(
+func (g *Geodesic) DirectCalcLatLonAziReducedLengthGeodesicScales(
 	lat1_deg, lon1_deg, azi1_deg, s12_m float64,
 ) LatLonAziReducedLengthGeodesicScales {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE
@@ -1156,7 +1156,7 @@ type AllDirectResults struct {
 //   - lon1_deg - Longitude of 1st point [degrees] [-180., 180.]
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - s12_m - Distance from 1st to 2nd point [meters] Value may be negative
-func (g Geodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
+func (g *Geodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults {
 	capabilities := LATITUDE | LONGITUDE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE | AREA
 	a12, lat2, lon2, azi2, _, m12, M12, M21, S12, _ := g._gen_direct(
 		lat1_deg, lon1_deg, azi1_deg, false, s12_m, capabilities,
@@ -1182,7 +1182,7 @@ func (g Geodesic) DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) All
 //   - azi1_deg - Azimuth at 1st point [degrees] [-180., 180.]
 //   - capabilities - One or more of the capabilities constant as defined in the file
 //     geodesiccapability.go. Usually, they are OR'd together, e.g. LATITUDE | LONGITUDE
-func (g Geodesic) DirectCalcWithCapabilities(
+func (g *Geodesic) DirectCalcWithCapabilities(
 	lat1_deg, lon1_deg, azi1_deg, s12_m float64,
 	capabilities uint64,
 ) AllDirectResults {
@@ -1206,7 +1206,7 @@ func (g Geodesic) DirectCalcWithCapabilities(
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseCalcDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) float64 {
+func (g *Geodesic) InverseCalcDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) float64 {
 	capabilities := DISTANCE
 	_, s12, _, _, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
 
@@ -1224,7 +1224,7 @@ type DistanceArcLength struct {
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseCalcDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceArcLength {
+func (g *Geodesic) InverseCalcDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceArcLength {
 	capabilities := DISTANCE
 	a12, s12, _, _, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
 
@@ -1243,7 +1243,7 @@ type DistanceAzimuths struct {
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuths {
+func (g *Geodesic) InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuths {
 	capabilities := DISTANCE | AZIMUTH
 	_, s12, azi1, azi2, _, _, _, _ := g._gen_inverse_azi(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
 
@@ -1262,7 +1262,7 @@ type AzimuthsArcLength struct {
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseCalcAzimuthsArcLength(
+func (g *Geodesic) InverseCalcAzimuthsArcLength(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
 ) AzimuthsArcLength {
 	capabilities := AZIMUTH
@@ -1285,7 +1285,7 @@ type DistanceAzimuthsArcLength struct {
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseCalcDistanceAzimuthsArcLength(
+func (g *Geodesic) InverseCalcDistanceAzimuthsArcLength(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
 ) DistanceAzimuthsArcLength {
 	capabilities := DISTANCE | AZIMUTH
@@ -1312,7 +1312,7 @@ type DistanceAzimuthsArcLengthReducedLength struct {
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseCalcDistanceAzimuthsArcLengthReducedLength(
+func (g *Geodesic) InverseCalcDistanceAzimuthsArcLengthReducedLength(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
 ) DistanceAzimuthsArcLengthReducedLength {
 	capabilities := DISTANCE | AZIMUTH | REDUCEDLENGTH
@@ -1346,7 +1346,7 @@ type DistanceAzimuthsArcLengthReducedLengthScales struct {
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseCalcDistanceAzimuthsArcLengthReducedLengthScales(
+func (g *Geodesic) InverseCalcDistanceAzimuthsArcLengthReducedLengthScales(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
 ) DistanceAzimuthsArcLengthReducedLengthScales {
 	capabilities := DISTANCE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE
@@ -1382,7 +1382,7 @@ type AllInverseResults struct {
 // - lon1_deg longitude of point 1 [degrees].
 // - lat2_deg latitude of point 2 [degrees].
 // - lon2_deg longitude of point 2 [degrees].
-func (g Geodesic) InverseCalcAll(
+func (g *Geodesic) InverseCalcAll(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
 ) AllInverseResults {
 	capabilities := DISTANCE | AZIMUTH | REDUCEDLENGTH | GEODESICSCALE | AREA
@@ -1412,7 +1412,7 @@ func (g Geodesic) InverseCalcAll(
 // - lon2_deg longitude of point 2 [degrees].
 // - capabilities - One or more of the capabilities constant as defined in the file
 //     geodesiccapability.go. Usually, they are OR'd together, e.g. LATITUDE | LONGITUDE
-func (g Geodesic) InverseCalcWithCapabilities(
+func (g *Geodesic) InverseCalcWithCapabilities(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
 	capabilities uint64,
 ) AllInverseResults {
@@ -1436,7 +1436,7 @@ func (g Geodesic) InverseCalcWithCapabilities(
 // problem.
 // This function sets point 3 of the GeodesicLine to correspond to point 2 of the
 // inverse geodesic problem.
-func (g Geodesic) InverseLineWithCapabilities(
+func (g *Geodesic) InverseLineWithCapabilities(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
 	capabilities uint64,
 ) GeodesicLine {
@@ -1447,12 +1447,12 @@ func (g Geodesic) InverseLineWithCapabilities(
 		capabilities |= DISTANCE
 	}
 
-	line := new_geodesic_line_all_options(g, lat1_deg, lon1_deg, azi1, capabilities, salp1, calp1)
+	line := new_geodesic_line_all_options(*g, lat1_deg, lon1_deg, azi1, capabilities, salp1, calp1)
 	line.set_arc(a12)
 	return line
 }
 
-func (g Geodesic) _gen_direct_line(
+func (g *Geodesic) _gen_direct_line(
 	lat1_deg, lon1_deg, azi1_deg float64,
 	arcmode bool,
 	s12_a12_m float64,
@@ -1463,7 +1463,7 @@ func (g Geodesic) _gen_direct_line(
 		capabilities |= DISTANCE_IN
 	}
 	line := NewGeodesicLineWithCapability(
-		g,
+		*g,
 		lat1_deg,
 		lon1_deg,
 		azi1_deg,
@@ -1481,7 +1481,7 @@ func (g Geodesic) _gen_direct_line(
 // geodesic problem specified in terms of spherical arc length.
 // This function sets point 3 of the GeodesicLine to correspond to point 2 of the
 // direct geodesic problem
-func (g Geodesic) DirectLineWithCapabilities(
+func (g *Geodesic) DirectLineWithCapabilities(
 	lat1_deg, lon1_deg, azi1_deg, s12_m float64,
 	capabilities uint64,
 ) GeodesicLine {
@@ -1490,12 +1490,12 @@ func (g Geodesic) DirectLineWithCapabilities(
 
 // Line returns a GeodesicLine. This allows points along a geodesic starting at
 // lat1_deg, lon1_deg with azimuth azi1_deg to be found.
-func (g Geodesic) LineWithCapabilities(
+func (g *Geodesic) LineWithCapabilities(
 	lat1_deg, lon1_deg, azi1_deg float64,
 	capabilities uint64,
 ) GeodesicLine {
 	return NewGeodesicLineWithCapability(
-		g,
+		*g,
 		lat1_deg,
 		lon1_deg,
 		azi1_deg,

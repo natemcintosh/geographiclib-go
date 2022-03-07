@@ -238,7 +238,8 @@ func TestPlanimeter15(t *testing.T) {
 		t.Errorf("area = %v; want %v", got.Area, r)
 	}
 
-	inv := Wgs84().InverseCalcAll(lat[1], lon[1], lat[2], lat[2])
+	geod := Wgs84()
+	inv := geod.InverseCalcAll(lat[1], lon[1], lat[2], lat[2])
 	azi1 := inv.Azimuth1Deg
 	s12 := inv.DistanceM
 	got = polygon.TestEdge(azi1, s12, false, true)
