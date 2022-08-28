@@ -2283,38 +2283,6 @@ func TestDirect20(t *testing.T) {
 		if !almost_equal(S12, inv.S12M2, 0.1) {
 			t.Errorf("row %d -- Inverse() S12 = %v; want %v", row, inv.S12M2, S12)
 		}
-
-		// if !almost_equal(lat2, cinv.LatDeg, 1e-13) {
-		// 	t.Errorf("row %d -- CInverse() lat2 = %v; want %v", row, cinv.LatDeg, lat2)
-		// }
-
-		// if !almost_equal(lon2, cinv.LonDeg, 1e-13) {
-		// 	t.Errorf("row %d -- CInverse() lon2 = %v; want %v", row, cinv.LonDeg, lon2)
-		// }
-
-		// if !almost_equal(azi2, cinv.AziDeg, 1e-13) {
-		// 	t.Errorf("row %d -- CInverse() azi2 = %v; want %v", row, cinv.AziDeg, azi2)
-		// }
-
-		// if !almost_equal(a12, cinv.A12Deg, 1e-13) {
-		// 	t.Errorf("row %d -- CInverse() a12 = %v; want %v", row, cinv.A12Deg, a12)
-		// }
-
-		// if !almost_equal(m12, cinv.ReducedLengthM, 1e-8) {
-		// 	t.Errorf("row %d -- CInverse() m12 = %v; want %v", row, cinv.ReducedLengthM, m12)
-		// }
-
-		// if !almost_equal(M12, cinv.M12, 1e-15) {
-		// 	t.Errorf("row %d -- CInverse() M12 = %v; want %v", row, cinv.M12, M12)
-		// }
-
-		// if !almost_equal(M21, cinv.M21, 1e-15) {
-		// 	t.Errorf("row %d -- CInverse() M21 = %v; want %v", row, cinv.M21, M21)
-		// }
-
-		// if !almost_equal(S12, cinv.S12M2, 0.1) {
-		// 	t.Errorf("row %d -- CInverse() S12 = %v; want %v", row, cinv.S12M2, S12)
-		// }
 	}
 }
 
