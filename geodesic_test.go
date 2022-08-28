@@ -1764,7 +1764,6 @@ func read_dot_dat(filename string) ([]dat_struct, error) {
 func TestDirect100(t *testing.T) {
 	// Create a geod with which to do the computations
 	geod := Wgs84()
-	// cgeod := CWgs84()
 
 	// Get the set of 100 test cases from the test_fixtures folder
 	filename := "test_fixtures/GeodTest-100.dat"
@@ -1778,7 +1777,6 @@ func TestDirect100(t *testing.T) {
 	// For each test case, run the direct computation, and compare the results
 	for row_num, tc := range test_cases {
 		res := geod.DirectCalcAll(tc.lat1, tc.lon1, tc.azi1, tc.s12_dist)
-		// cres := cgeod.DirectCalcAll(tc.lat1, tc.lon1, tc.azi1, tc.s12_dist)
 
 		// Check each result. Note that there should not be any NaN results from this file
 		if !almost_equal(res.LatDeg, tc.lat2, float64EqualityThreshold) {
@@ -2245,7 +2243,6 @@ func BenchmarkInverse(b *testing.B) {
 
 func TestDirect20(t *testing.T) {
 	geod := Wgs84()
-	// cgeod := CWgs84()
 
 	for row, tC := range test_cases {
 		lat1, lon1, azi1 := tC[0], tC[1], tC[2]
@@ -2254,7 +2251,6 @@ func TestDirect20(t *testing.T) {
 		M12, M21, S12 := tC[9], tC[10], tC[11]
 
 		inv := geod.DirectCalcWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
-		// cinv := cgeod.DirectCalcWithCapabilities(lat1, lon1, azi1, s12, ALL|LONG_UNROLL)
 
 		if !almost_equal(lat2, inv.LatDeg, 1e-13) {
 			t.Errorf("row %d -- Inverse() lat2 = %v; want %v", row, inv.LatDeg, lat2)
@@ -2597,7 +2593,6 @@ func TestGeodSolve17(t *testing.T) {
 	// Check fix for LONG_UNROLL bug found on 2015-05-07
 	geod := Wgs84()
 	dir := geod.DirectCalcWithCapabilities(40, -75, -10, 2e7, STANDARD|LONG_UNROLL)
-	// cdir := cgeod.DirectCalcWithCapabilities(40, -75, -10, 2e7, STANDARD|LONG_UNROLL)
 	want_lat := -39.0
 	want_lon := -254.0
 	want_azi := -170.0
@@ -3480,36 +3475,4 @@ func TestInverseOldTest(t *testing.T) {
 
 		})
 	}
-}
-
-func TestDirectAndInverseInterface(t *testing.T) {
-	// The goal of this test is to ensure that both the Geodesic and the CGeodesic structs
-	// meet the DirectAndInverse interface
-	geod := Wgs84()
-
-	var lat1_deg, lon1_deg, lat2_deg, lon2_deg, azi1_deg, s12_m float64
-	capabilities := ALL
-
-	geod.DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m)
-	geod.DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m)
-	geod.DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m)
-	geod.DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m)
-	geod.DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m)
-	geod.DirectCalcLatLonAziReducedLengthGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m)
-	geod.DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
-	geod.DirectLineWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m, capabilities)
-	geod.EqualtorialRadius()
-	geod.Flattening()
-	geod.InverseCalcAll(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
-	geod.InverseCalcAzimuthsArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
-	geod.InverseCalcDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
-	geod.InverseCalcDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
-	geod.InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
-	geod.InverseCalcDistanceAzimuthsArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
-	geod.InverseCalcDistanceAzimuthsArcLengthReducedLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
-	geod.InverseCalcDistanceAzimuthsArcLengthReducedLengthScales(lat1_deg, lon1_deg, lat2_deg, lon2_deg)
-	geod.InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
-	geod.InverseLineWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg, capabilities)
-	geod.LineWithCapabilities(lat1_deg, lon1_deg, azi1_deg, capabilities)
-
 }

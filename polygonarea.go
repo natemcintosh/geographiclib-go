@@ -19,9 +19,15 @@ type PolygonArea struct {
 	crossings    int
 }
 
-func NewPolygonArea(earth Geodesic, is_polyline bool) PolygonArea {
+// NewPolygonArea creates a new struct for calculating area and perimeter of a polygon,
+// or for calculating the perimeter of a polyline (a set of connected lines).
+// Takes inputs:
+//   - g Geodesic on which you wish to calculate
+//   - is_polyline if true, then assume all points added will only form a polyline. No area
+//     will be calculated
+func NewPolygonArea(g Geodesic, is_polyline bool) PolygonArea {
 	// The total area of the ellipsoid in meter^2 (readonly)
-	area0 := 4 * math.Pi * earth.c2
+	area0 := 4 * math.Pi * g.c2
 
 	var ternary_opt uint64
 	if is_polyline {
@@ -45,7 +51,7 @@ func NewPolygonArea(earth Geodesic, is_polyline bool) PolygonArea {
 	Lon1_Deg := math.NaN()
 
 	p := PolygonArea{
-		Earth:        earth,
+		Earth:        g,
 		Polyline:     is_polyline,
 		Area0_M2:     area0,
 		mask:         mask,
@@ -256,7 +262,7 @@ func (p *PolygonArea) area_reduce_B(
 
 type PolygonResult struct {
 	Num       int     // the number of vertices in the polygon
-	Perimeter float64 // the perimeter fo the polygon or th elength of the polyline [meters]
+	Perimeter float64 // the perimeter fo the polygon or the length of the polyline [meters]
 	Area      float64 // the area of the polygon [meters^2]
 }
 

@@ -15,14 +15,14 @@
 // There are a variety of outputs associated with this calculation. We save computation by
 // only calculating the outputs you need. You can get any and all of the following
 //
-//  - lat2 latitude of point 2 [degrees].
-//  - lon2 longitude of point 2 [degrees].
-//  - azi2 (forward) azimuth at point 2 [degrees].
-//  - m12 reduced length of geodesic (meters).
-//  - M12 geodesic scale of point 2 relative to point 1 [dimensionless].
-//  - M21 geodesic scale of point 1 relative to point 2 [dimensionless].
-//  - S12 area under the geodesic [meters^2]
-//  - a12 arc length of between point 1 and point 2 [degrees].
+//   - lat2 latitude of point 2 [degrees].
+//   - lon2 longitude of point 2 [degrees].
+//   - azi2 (forward) azimuth at point 2 [degrees].
+//   - m12 reduced length of geodesic (meters).
+//   - M12 geodesic scale of point 2 relative to point 1 [dimensionless].
+//   - M21 geodesic scale of point 1 relative to point 2 [dimensionless].
+//   - S12 area under the geodesic [meters^2]
+//   - a12 arc length of between point 1 and point 2 [degrees].
 //
 // Call the appropriate function to get the output you need. The following functions are
 // available for solving the Direct problem. Each describes what it returns
@@ -73,11 +73,9 @@
 // Call the appropriate function to get the output you need. The following functions are
 // available for solving the Direct problem. Each describes what it returns
 //
-//
-//
-//  `lat1` and `lat2` should be in the range [&minus;90&deg;, 90&deg;].
-//  The values of `azi1` and `azi2` returned are in the range
-//  [&minus;180&deg;, 180&deg;].
+//	`lat1` and `lat2` should be in the range [&minus;90&deg;, 90&deg;].
+//	The values of `azi1` and `azi2` returned are in the range
+//	[&minus;180&deg;, 180&deg;].
 //
 // If either point is at a pole, the azimuth is defined by keeping the
 // longitude fixed, writing `lat` = &plusmn;(90&deg; &minus; &epsilon;),
@@ -90,30 +88,6 @@
 package geographiclibgo
 
 import "math"
-
-type DirectAndInverse interface {
-	DirectCalcAll(lat1_deg, lon1_deg, azi1_deg, s12_m float64) AllDirectResults
-	DirectCalcLatLon(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLon
-	DirectCalcLatLonAzi(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAzi
-	DirectCalcLatLonAziGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziGeodesicScales
-	DirectCalcLatLonAziReducedLength(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziReducedLength
-	DirectCalcLatLonAziReducedLengthGeodesicScales(lat1_deg, lon1_deg, azi1_deg, s12_m float64) LatLonAziReducedLengthGeodesicScales
-	DirectCalcWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m float64, capabilities uint64) AllDirectResults
-	DirectLineWithCapabilities(lat1_deg, lon1_deg, azi1_deg, s12_m float64, capabilities uint64) GeodesicLine
-	EqualtorialRadius() float64
-	Flattening() float64
-	InverseCalcAll(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) AllInverseResults
-	InverseCalcAzimuthsArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) AzimuthsArcLength
-	InverseCalcDistance(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) float64
-	InverseCalcDistanceArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceArcLength
-	InverseCalcDistanceAzimuths(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuths
-	InverseCalcDistanceAzimuthsArcLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuthsArcLength
-	InverseCalcDistanceAzimuthsArcLengthReducedLength(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuthsArcLengthReducedLength
-	InverseCalcDistanceAzimuthsArcLengthReducedLengthScales(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64) DistanceAzimuthsArcLengthReducedLengthScales
-	InverseCalcWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64, capabilities uint64) AllInverseResults
-	InverseLineWithCapabilities(lat1_deg, lon1_deg, lat2_deg, lon2_deg float64, capabilities uint64) GeodesicLine
-	LineWithCapabilities(lat1_deg, lon1_deg, azi1_deg float64, capabilities uint64) GeodesicLine
-}
 
 const WGS84_A float64 = 6378137.0
 
@@ -1406,11 +1380,11 @@ func (g *Geodesic) InverseCalcAll(
 // This function is useful if you want some other subset of capabilities than those offered
 // by the other InverseCalc...() methods.
 // Takes inputs
-// - lat1_deg latitude of point 1 [degrees].
-// - lon1_deg longitude of point 1 [degrees].
-// - lat2_deg latitude of point 2 [degrees].
-// - lon2_deg longitude of point 2 [degrees].
-// - capabilities - One or more of the capabilities constant as defined in the file
+//   - lat1_deg latitude of point 1 [degrees].
+//   - lon1_deg longitude of point 1 [degrees].
+//   - lat2_deg latitude of point 2 [degrees].
+//   - lon2_deg longitude of point 2 [degrees].
+//   - capabilities - One or more of the capabilities constant as defined in the file
 //     geodesiccapability.go. Usually, they are OR'd together, e.g. LATITUDE | LONGITUDE
 func (g *Geodesic) InverseCalcWithCapabilities(
 	lat1_deg, lon1_deg, lat2_deg, lon2_deg float64,
