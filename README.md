@@ -2,13 +2,11 @@
 Author: Nathan McIntosh
 
 ### About
-A golang port of geographiclib, as well as a C wrapper using cgo. This repository aims to provide
-all functionality in both the C wrapper and the go implementation.
+A golang port of [geographiclib](https://geographiclib.sourceforge.io/).
 
 ### Aims
- - Mimic the [rust port](https://github.com/georust/geographiclib-rs) and the [python port](https://pypi.org/project/geographiclib/) as closely as possible
- - Test as extensively as possible
- - Provide useful benchmarks comparing the go implementation to the c-wrapper version
+ - Mimic the [rust port](https://github.com/georust/geographiclib-rs), the [python port](https://pypi.org/project/geographiclib/), and the [java port](https://github.com/geographiclib/geographiclib-java) as closely as possible
+ - Test as extensively as possible. Match all the rust, python, and java tests
 
 ### Progress
 - [X] Go translation
@@ -23,18 +21,6 @@ all functionality in both the C wrapper and the go implementation.
     - [X] Geodisic Inverse tests
     - [X] Polygon Area
     - [X] Polygon Area tests
-- [ ] C Wrapper
-    - [X] Geodisic Direct
-    - [X] Geodisic Direct tests
-    - [ ] Geodisic line
-    - [ ] Geodisic line tests
-    - [X] Geodisic Inverse
-    - [X] Geodisic Inverse tests
-    - [ ] Polygon Area
-    - [ ] Polygon Area tests
-- [ ] Benchmarks comparing go implementation with C wrapper
-    - [X] Have benchmarks
-    - [ ] Create a summary of them for README
 - [X] Add DirectAndInverse interface
     - [ ] Explain it in README
 - [ ] Add description of the direct and inverse problem, with pictures
