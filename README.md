@@ -100,7 +100,7 @@ The results returned by `DirectCalc...()` and `InverseCalc...()` are structs tha
 - **M21** = $M_{21}$, geodesic scale at 1 relative to 2 (dimensionless)
 - **S12M2** = $S_{12}$, area between geodesic and equator (meters2)
 
-### Outmaks and caps
+### Outmasks and caps
 There are a number of functions provided by the API. Each returns a struct with the fields calculated. A method that returns a struct with fewer fields than another means fewer calculations were made. *For faster computation, call methods that return only the fields you need.*
 
 You can also specify your own subset of fields by using the `DirectCalcWithCapabilities()` or `InverseCalcWithCapabilities()` and passing in a `capabilities` (sometimes called `caps`) field. `capabilities` are obtained by `or`’ing together the following values
@@ -226,4 +226,5 @@ func Example() {
     - [X] Geodisic Inverse tests
     - [X] Polygon Area
     - [X] Polygon Area tests
+- [ ] Go through tips from [helpful folks on reddit](https://www.reddit.com/r/golang/comments/x0851k/i_created_a_port_of_geographiclib_is_there/)
 - [ ] Consider switching from having units in names to using github.com/golang/geo/ which uses types for units. It would perhaps involve more allocations; need to do some testing.
